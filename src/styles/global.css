@@ -1,0 +1,102 @@
+:root {
+  --bg: #000;
+  --fg: #fff;
+  --accent: #f7931a;
+  --accent-gold: #ffd700;
+  --border: #fff;
+  --font: "Courier New", Courier, monospace;
+  --border-width: 2px;
+}
+
+[data-theme="light"] {
+  --bg: #fff;
+  --fg: #000;
+  --border: #000;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font);
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  border: var(--border-width) solid var(--border);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: var(--border-width) solid var(--border);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: var(--accent-gold);
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  background: var(--bg);
+  color: var(--fg);
+  border: var(--border-width) solid var(--border);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+button:hover {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.card {
+  border: var(--border-width) solid var(--border);
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  flex-grow: 1;
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 12px;
+  }
+}

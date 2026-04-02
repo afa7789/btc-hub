@@ -1,0 +1,117 @@
+---
+const { pathname } = Astro.url;
+
+const navItems = [
+  { href: "/", label: "HOME" },
+  { href: "/sem-melhores", label: "SEM MELHORES" },
+  { href: "/all-the-money", label: "ALL THE MONEY" },
+  { href: "/dca", label: "DCA" },
+  { href: "/debase", label: "DEBASE" },
+  { href: "/satsukashii", label: "SATSUKASHII" },
+  { href: "/how-much-i-fucked-up", label: "FUCKED UP" },
+];
+---
+
+<nav class="nav">
+  <div class="nav__container">
+    <a href="/" class="nav__logo">BTC_THINGS</a>
+    
+    <div class="nav__links">
+      {navItems.map(item => (
+        <a 
+          href={item.href}
+          class:list={['nav__link', { 'nav__link--active': pathname === item.href }]}
+        >
+          {item.label}
+        </a>
+      ))}
+    </div>
+    
+    <button class="nav__mobile-toggle" aria-label="Toggle navigation">
+      ☰
+    </button>
+  </div>
+</nav>
+
+<style>
+  .nav {
+    border-bottom: var(--border-width) solid var(--border);
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+  }
+  
+  .nav__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .nav__logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+  
+  .nav__links {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .nav__link {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s;
+  }
+  
+  .nav__link:hover,
+  .nav__link--active {
+    text-decoration: none;
+    border-bottom-color: var(--accent);
+  }
+  
+  .nav__mobile-toggle {
+    display: none;
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    color: var(--fg);
+  }
+  
+  @media (max-width: 768px) {
+    .nav__links {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .nav__links--open {
+      display: flex;
+    }
+    
+    .nav__mobile-toggle {
+      display: block;
+    }
+  }
+</style>
+
+<script>
+  const toggle = document.querySelector('.nav__mobile-toggle');
+  const links = document.querySelector('.nav__links');
+  
+  toggle?.addEventListener('click', () => {
+    links?.classList.toggle('nav__links--open');
+  });
+</script>
