@@ -1,0 +1,200 @@
+---
+---
+
+<div class="ticker" id="ticker">
+  <div class="ticker__track" id="ticker-track">
+    <span class="ticker__loading">Loading prices...</span>
+  </div>
+</div>
+
+<style is:global>
+  .ticker {
+    background: #000;
+    color: #fff;
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: var(--font, monospace);
+    font-size: 0.8rem;
+    border-top: 1px solid #333;
+    border-bottom: 1px solid #333;
+    height: 32px;
+    line-height: 32px;
+    margin: 0;
+  }
+
+  .ticker__track {
+    display: inline-block;
+    animation: ticker-scroll 30s linear infinite;
+    padding-left: 100%;
+  }
+
+  .ticker__track:hover {
+    animation-play-state: paused;
+  }
+
+  .ticker__loading {
+    color: #888;
+    padding: 0 2rem;
+  }
+
+  .ticker__item {
+    display: inline-block;
+    padding: 0 2rem;
+  }
+
+  .ticker__symbol {
+    color: #fff;
+    font-weight: bold;
+    margin-right: 0.5rem;
+  }
+
+  .ticker__price {
+    margin-right: 0.5rem;
+  }
+
+  .ticker__up {
+    color: #22c55e;
+  }
+
+  .ticker__down {
+    color: #ef4444;
+  }
+
+  .ticker__flat {
+    color: #ccc;
+  }
+
+  @keyframes ticker-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+</style>
+
+<script>
+  // CoinGecko free tier: 10-30 req/min. Cache for 2 min, serve stale on failure.
+  const CACHE_KEY = 'ticker_cache';
+  const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
+  function getCache() {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (!raw) return null;
+      const cached = JSON.parse(raw);
+      return { data: cached.data, ts: cached.ts, stale: Date.now() - cached.ts > CACHE_TTL };
+    } catch { return null; }
+  }
+
+  function setCache(data) {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+    } catch {}
+  }
+
+  function buildItems(coins, gold) {
+    const items = [];
+
+    for (const coin of coins) {
+      const change = coin.price_change_percentage_24h || 0;
+      const cls = change > 0.5 ? 'up' : change < -0.5 ? 'down' : 'flat';
+      const changeStr = change > 0 ? `+${change.toFixed(1)}%` : `${change.toFixed(1)}%`;
+      const priceStr = coin.current_price >= 1
+        ? `$${coin.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : `$${coin.current_price.toFixed(4)}`;
+
+      items.push(
+        `<span class="ticker__item">` +
+        `<span class="ticker__symbol">${coin.symbol.toUpperCase()}</span>` +
+        `<span class="ticker__price">${priceStr}</span>` +
+        `<span class="ticker__${cls}">${changeStr}</span>` +
+        `</span>`
+      );
+    }
+
+    if (gold) {
+      const gc = gold.usd_24h_change || 0;
+      const gcCls = gc > 0.5 ? 'up' : gc < -0.5 ? 'down' : 'flat';
+      items.push(
+        `<span class="ticker__item">` +
+        `<span class="ticker__symbol">GOLD</span>` +
+        `<span class="ticker__price">$${gold.usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>` +
+        `<span class="ticker__${gcCls}">${gc > 0 ? '+' : ''}${gc.toFixed(1)}%</span>` +
+        `</span>`
+      );
+    }
+
+    return items;
+  }
+
+  function renderTicker(items) {
+    const track = document.getElementById('ticker-track');
+    if (!track || items.length === 0) return;
+
+    const content = items.join('');
+    track.innerHTML = content + content;
+
+    requestAnimationFrame(() => {
+      const trackWidth = track.scrollWidth / 2;
+      const speed = 60;
+      const duration = trackWidth / speed;
+      track.style.animationDuration = `${duration}s`;
+    });
+  }
+
+  async function fetchTickerData() {
+    const cryptoIds = 'bitcoin,ethereum,solana,monero,cardano,polkadot,chainlink,avalanche-2,dogecoin,litecoin';
+
+    const response = await fetch(
+      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${cryptoIds}&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=24h`
+    );
+    if (!response.ok) throw new Error(`API ${response.status}`);
+    const coins = await response.json();
+    if (!Array.isArray(coins)) throw new Error('Bad response');
+
+    let gold = null;
+    try {
+      const metalResponse = await fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=tether-gold&vs_currencies=usd&include_24hr_change=true'
+      );
+      if (metalResponse.ok) {
+        const metals = await metalResponse.json();
+        if (metals['tether-gold']) gold = metals['tether-gold'];
+      }
+    } catch {}
+
+    return { coins, gold };
+  }
+
+  async function loadTicker() {
+    const track = document.getElementById('ticker-track');
+    if (!track) return;
+
+    // Try cache first — show immediately if available
+    const cache = getCache();
+    if (cache) {
+      renderTicker(buildItems(cache.data.coins, cache.data.gold));
+      if (!cache.stale) return; // fresh cache, no need to fetch
+    }
+
+    // Fetch fresh data
+    try {
+      const data = await fetchTickerData();
+      setCache(data);
+      renderTicker(buildItems(data.coins, data.gold));
+    } catch (error) {
+      console.error('Ticker fetch error:', error);
+      // If we already rendered from cache, keep it. Otherwise show fallback.
+      if (!cache) {
+        track.innerHTML = '<span class="ticker__loading">Price data unavailable</span>';
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadTicker);
+
+  // Refresh every 2 minutes (matches cache TTL, avoids rate limits)
+  setInterval(loadTicker, 2 * 60 * 1000);
+</script>

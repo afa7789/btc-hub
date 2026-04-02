@@ -1,0 +1,11 @@
+[install]
+# Use global cache
+global = true
+
+[run]
+# Bun automatically restarts on file changes (like nodemon)
+# But Astro dev server already does hot reload, so we keep default
+
+[env]
+# Environment variables for development
+# ASTRO_TELEMETRY_DISABLED = true

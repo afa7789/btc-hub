@@ -1,70 +1,57 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Ticker from "../components/Ticker.astro";
 
 const tools = [
   {
     href: "/sem-melhores",
     title: "SEM MELHORES",
     description: "Top 100 cryptocurrency browser powered by CoinGecko API",
-    status: "Coming Soon",
+    status: "LIVE",
   },
   {
     href: "/all-the-money",
-    title: "ALL THE MONEY",
+    title: "ALL THE MONEY IN THE WORLD",
     description:
       "Global wealth block visualization - see all the money in the world",
-    status: "Coming Soon",
+    status: "LIVE",
   },
   {
     href: "/dca",
     title: "DCA CALCULATOR",
     description:
       "Dollar Cost Averaging calculator with Bitcoin historical data",
-    status: "Coming Soon",
+    status: "LIVE",
   },
   {
     href: "/debase",
     title: "DEBASE",
     description: "Inflation-adjusted asset charts with D3.js visualizations",
-    status: "Coming Soon",
+    status: "LIVE",
   },
   {
     href: "/satsukashii",
-    title: "SATSUKASHII",
+    title: "BIG MAC INDEX",
     description: "Big Mac Index vs Bitcoin price history comparison",
-    status: "Coming Soon",
+    status: "LIVE",
   },
   {
     href: "/how-much-i-fucked-up",
     title: "HOW MUCH I FUCKED UP",
     description:
       '"What if I invested X on date Y?" calculator with historical data',
-    status: "Coming Soon",
+    status: "LIVE",
   },
 ];
 ---
 
 <BaseLayout title="HOME">
+  <Ticker />
   <div class="landing">
     <header class="landing__header">
-      <h1 class="landing__title">BTC_THINGS</h1>
       <p class="landing__subtitle">
-        A unified platform for Bitcoin and cryptocurrency tools
+        Tools for visualizing Bitcoin, money, and purchasing power over time
       </p>
-      <div class="landing__stats">
-        <div class="landing__stat">
-          <span class="landing__stat-number">6</span>
-          <span class="landing__stat-label">TOOLS</span>
-        </div>
-        <div class="landing__stat">
-          <span class="landing__stat-number">∞</span>
-          <span class="landing__stat-label">DATA</span>
-        </div>
-        <div class="landing__stat">
-          <span class="landing__stat-number">0</span>
-          <span class="landing__stat-label">JS RUNTIME</span>
-        </div>
-      </div>
     </header>
 
     <section class="tools">
@@ -85,29 +72,6 @@ const tools = [
       </div>
     </section>
 
-    <section class="features">
-      <h2 class="features__title">FEATURES</h2>
-      <div class="features__grid">
-        <div class="feature">
-          <h3 class="feature__title">SHARED DATA</h3>
-          <p class="feature__description">
-            All tools use a unified data pipeline with CSV/JSON datasets
-          </p>
-        </div>
-        <div class="feature">
-          <h3 class="feature__title">STATIC OUTPUT</h3>
-          <p class="feature__description">
-            Zero JS by default, minimal dependencies, fast loading
-          </p>
-        </div>
-        <div class="feature">
-          <h3 class="feature__title">OPEN SOURCE</h3>
-          <p class="feature__description">
-            Built with Astro, D3.js, and TypeScript
-          </p>
-        </div>
-      </div>
-    </section>
   </div>
 </BaseLayout>
 
@@ -137,32 +101,6 @@ const tools = [
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
-  }
-  
-  .landing__stats {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    margin-top: 2rem;
-  }
-  
-  .landing__stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .landing__stat-number {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--accent-gold);
-  }
-  
-  .landing__stat-label {
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    opacity: 0.7;
   }
   
   .tools {
@@ -215,7 +153,8 @@ const tools = [
   .tool-card__status {
     font-size: 0.7rem;
     padding: 0.2rem 0.5rem;
-    border: 1px solid var(--border);
+    border: 1px solid var(--accent);
+    color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -237,48 +176,9 @@ const tools = [
     color: var(--accent);
   }
   
-  .features {
-    margin-bottom: 2rem;
-  }
-  
-  .features__title {
-    text-align: center;
-    margin-bottom: 2rem;
-    font-size: 1.8rem;
-  }
-  
-  .features__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-  }
-  
-  .feature {
-    border: var(--border-width) solid var(--border);
-    padding: 1.5rem;
-    text-align: center;
-  }
-  
-  .feature__title {
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-    color: var(--accent-gold);
-    border: none;
-    padding: 0;
-  }
-  
-  .feature__description {
-    font-size: 0.9rem;
-    opacity: 0.8;
-  }
-  
   @media (max-width: 768px) {
     .landing__title {
       font-size: 2rem;
-    }
-    
-    .landing__stats {
-      gap: 1.5rem;
     }
     
     .tools__grid {

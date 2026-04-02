@@ -1,0 +1,265 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const title = "BIG MAC INDEX";
+const description =
+  "Big Mac Index vs Bitcoin - How many satoshis to buy a Big Mac over time";
+---
+
+<BaseLayout title={title} description={description}>
+  <style>
+    .page-header {
+      margin-bottom: 2em;
+    }
+
+    .page-header h1 {
+      margin: 0;
+      border: none;
+      padding-bottom: 0;
+    }
+
+    .page-header a {
+      color: var(--fg);
+      text-decoration: none;
+    }
+
+    .page-header a:hover {
+      text-decoration: underline;
+    }
+
+    .chart-container {
+      width: 100%;
+      max-width: 960px;
+      margin: 20px auto;
+    }
+
+    .chart-container svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      font-family: var(--font, monospace);
+    }
+
+    .stats {
+      margin-top: 1.5em;
+    }
+
+    .stats p {
+      margin: 0.3em 0;
+    }
+
+    @media (max-width: 600px) {
+      .chart-container svg text {
+        font-size: 9px;
+      }
+    }
+  </style>
+
+  <article>
+    <header class="page-header">
+      <a href="https://github.com/afa7789/satsukashii">
+        <h1>BIG MAC INDEX</h1>
+      </a>
+    </header>
+
+    <section style="margin-bottom: 2em;">
+      <p>As Bitcoin's price increases, the number of satoshis needed to buy a Big Mac decreases. This chart overlays the USD price of a Big Mac (left axis, linear) with its cost in satoshis (right axis, log scale) to show that relationship over time.</p>
+    </section>
+
+    <section>
+      <div id="satsukashii-chart" class="chart-container"></div>
+      <div class="stats">
+        <p><strong>Latest Big Mac Price:</strong> <span id="bigmac-price"></span></p>
+        <p><strong>Satoshis per Big Mac:</strong> <span id="satoshi-price"></span></p>
+      </div>
+    </section>
+  </article>
+
+  <script is:inline src="https://d3js.org/d3.v7.min.js"></script>
+
+  <script is:inline>
+    async function drawChart() {
+      try {
+        const response = await fetch('/datasets/satsukashii/prices.json');
+        const data = await response.json();
+
+        const parsed = data.prices.map(d => ({
+          date: new Date(d.date),
+          bigmac_usd: d.bigmac_usd,
+          bigmac_satoshi: d.bigmac_satoshi,
+        }));
+
+        const container = document.getElementById('satsukashii-chart');
+        if (!container) return;
+
+        const styles = getComputedStyle(document.documentElement);
+        const bgColor = styles.getPropertyValue('--bg').trim() || '#0a0a0a';
+        const fgColor = styles.getPropertyValue('--fg').trim() || '#e0e0e0';
+        const borderColor = styles.getPropertyValue('--border').trim() || '#444';
+
+        const GREEN = '#22c55e';
+        const ORANGE = '#f97316';
+
+        const width = 960;
+        const height = 420;
+        const margin = { top: 20, right: 70, bottom: 60, left: 60 };
+        const innerW = width - margin.left - margin.right;
+        const innerH = height - margin.top - margin.bottom;
+
+        d3.select(container).selectAll('*').remove();
+
+        const svg = d3.select(container).append('svg')
+          .attr('viewBox', `0 0 ${width} ${height}`)
+          .attr('preserveAspectRatio', 'xMidYMid meet');
+
+        // Background
+        svg.append('rect')
+          .attr('width', width)
+          .attr('height', height)
+          .attr('fill', bgColor);
+
+        const g = svg.append('g')
+          .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Scales
+        const x = d3.scaleTime()
+          .domain(d3.extent(parsed, d => d.date))
+          .range([0, innerW]);
+
+        const yLeft = d3.scaleLinear()
+          .domain([0, 6.5])
+          .range([innerH, 0]);
+
+        const satMin = d3.min(parsed, d => d.bigmac_satoshi);
+        const satMax = d3.max(parsed, d => d.bigmac_satoshi);
+        const logTicks = [1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10].filter(v => v >= satMin * 0.3 && v <= satMax * 3);
+
+        const yRight = d3.scaleLog()
+          .domain([Math.max(satMin * 0.5, 1000), satMax * 2])
+          .range([innerH, 0])
+          .clamp(true);
+
+        // Grid lines (horizontal, from left axis)
+        g.append('g')
+          .selectAll('line')
+          .data(yLeft.ticks(6))
+          .join('line')
+          .attr('x1', 0)
+          .attr('x2', innerW)
+          .attr('y1', d => yLeft(d))
+          .attr('y2', d => yLeft(d))
+          .attr('stroke', borderColor)
+          .attr('stroke-width', 0.5)
+          .attr('stroke-dasharray', '4,3')
+          .attr('opacity', 0.5);
+
+        // X axis
+        const xAxis = g.append('g')
+          .attr('transform', `translate(0,${innerH})`)
+          .call(d3.axisBottom(x).ticks(d3.timeYear.every(2)).tickFormat(d3.timeFormat('%Y')));
+        xAxis.selectAll('text').attr('fill', fgColor).style('font-family', 'inherit').style('font-size', '11px');
+        xAxis.selectAll('line').attr('stroke', fgColor);
+        xAxis.select('.domain').attr('stroke', fgColor);
+
+        // Left Y axis (USD)
+        const leftAxis = g.append('g')
+          .call(d3.axisLeft(yLeft).ticks(6).tickFormat(d => `$${d}`));
+        leftAxis.selectAll('text').attr('fill', GREEN).style('font-family', 'inherit').style('font-size', '11px');
+        leftAxis.selectAll('line').attr('stroke', GREEN).attr('opacity', 0.5);
+        leftAxis.select('.domain').attr('stroke', GREEN);
+
+        // Right Y axis (Satoshis, log)
+        function formatSat(d) {
+          if (d >= 1e9) return (d / 1e9) + 'B';
+          if (d >= 1e6) return (d / 1e6) + 'M';
+          if (d >= 1e3) return (d / 1e3) + 'K';
+          return d;
+        }
+
+        const rightAxis = g.append('g')
+          .attr('transform', `translate(${innerW},0)`)
+          .call(d3.axisRight(yRight).tickValues(logTicks).tickFormat(formatSat));
+        rightAxis.selectAll('text').attr('fill', ORANGE).style('font-family', 'inherit').style('font-size', '11px');
+        rightAxis.selectAll('line').attr('stroke', ORANGE).attr('opacity', 0.5);
+        rightAxis.select('.domain').attr('stroke', ORANGE);
+
+        // Clip path
+        svg.append('defs').append('clipPath').attr('id', 'chart-clip')
+          .append('rect').attr('width', innerW).attr('height', innerH);
+
+        const plotArea = g.append('g').attr('clip-path', 'url(#chart-clip)');
+
+        // Big Mac USD line (stepped/staircase)
+        const usdLine = d3.line()
+          .x(d => x(d.date))
+          .y(d => yLeft(d.bigmac_usd))
+          .curve(d3.curveStepAfter);
+
+        plotArea.append('path')
+          .datum(parsed)
+          .attr('d', usdLine)
+          .attr('fill', 'none')
+          .attr('stroke', GREEN)
+          .attr('stroke-width', 2);
+
+        // Satoshi line (jagged, linear interpolation)
+        const satLine = d3.line()
+          .x(d => x(d.date))
+          .y(d => yRight(d.bigmac_satoshi));
+
+        plotArea.append('path')
+          .datum(parsed)
+          .attr('d', satLine)
+          .attr('fill', 'none')
+          .attr('stroke', ORANGE)
+          .attr('stroke-width', 1.5);
+
+        // Axis labels
+        g.append('text')
+          .attr('x', -innerH / 2)
+          .attr('y', -45)
+          .attr('transform', 'rotate(-90)')
+          .attr('text-anchor', 'middle')
+          .attr('fill', GREEN)
+          .style('font-family', 'inherit')
+          .style('font-size', '11px')
+          .text('Big Mac Price (USD)');
+
+        g.append('text')
+          .attr('x', innerW + 45)
+          .attr('y', innerH / 2)
+          .attr('transform', `rotate(90, ${innerW + 45}, ${innerH / 2})`)
+          .attr('text-anchor', 'middle')
+          .attr('fill', ORANGE)
+          .style('font-family', 'inherit')
+          .style('font-size', '11px')
+          .text('Satoshis per Big Mac (log)');
+
+        // Legend
+        const legendY = height - 18;
+        const legendG = svg.append('g')
+          .attr('transform', `translate(${width / 2 - 140}, ${legendY})`);
+
+        // USD legend
+        legendG.append('rect').attr('x', 0).attr('y', -10).attr('width', 14).attr('height', 14).attr('fill', GREEN);
+        legendG.append('text').attr('x', 20).attr('y', 2).attr('fill', fgColor).style('font-family', 'inherit').style('font-size', '11px').text('Big Mac USD');
+
+        // Satoshi legend
+        legendG.append('rect').attr('x', 140).attr('y', -10).attr('width', 14).attr('height', 14).attr('fill', ORANGE);
+        legendG.append('text').attr('x', 160).attr('y', 2).attr('fill', fgColor).style('font-family', 'inherit').style('font-size', '11px').text('Satoshis per Big Mac');
+
+        // Stats
+        if (parsed.length > 0) {
+          const latest = data.prices[data.prices.length - 1];
+          document.getElementById('bigmac-price').textContent = '$' + latest.bigmac_usd.toFixed(2);
+          document.getElementById('satoshi-price').textContent = latest.bigmac_satoshi.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        }
+
+      } catch (error) {
+        console.error('Error loading chart data:', error);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', drawChart);
+  </script>
+</BaseLayout>

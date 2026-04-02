@@ -1,0 +1,491 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const title = "HOW MUCH I FUCKED UP";
+const description =
+  "Calculator to see how much Bitcoin you could have bought with USD at any point in history";
+---
+
+<BaseLayout title={title} description={description}>
+  <style>
+    .calculator-header {
+      margin-bottom: 2em;
+    }
+    
+    .calculator-header h1 {
+      margin: 0;
+      border: none;
+      padding-bottom: 0;
+    }
+    
+    .calculator-header a {
+      color: var(--fg);
+      text-decoration: none;
+    }
+    
+    .calculator-header a:hover {
+      text-decoration: underline;
+    }
+    
+    .section {
+      margin-bottom: 1em;
+    }
+    
+    .calculator {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+    
+    .calculator-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .form-group label {
+      font-weight: bold;
+      color: var(--fg);
+    }
+    
+    .form-group input {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--fg);
+      font-size: 16px;
+    }
+    
+    .date-display {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--accent);
+      text-align: center;
+      margin-top: 5px;
+    }
+    
+    .calculate-btn {
+      grid-column: 1 / -1;
+      padding: 15px;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .calculate-btn:hover {
+      background: var(--accent-hover);
+    }
+    
+    .calculate-btn:disabled {
+      background: var(--text-muted);
+      cursor: not-allowed;
+    }
+    
+    .results {
+      margin-top: 30px;
+      padding: 20px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .result-item:last-child {
+      border-bottom: none;
+    }
+    
+    .result-label {
+      font-weight: bold;
+      color: var(--fg);
+    }
+    
+    .result-value {
+      font-size: 18px;
+      color: var(--accent);
+      font-weight: bold;
+    }
+    
+    .error-message {
+      color: #ff6384;
+      background: rgba(255, 99, 132, 0.1);
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      text-align: center;
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 10px;
+      color: var(--accent);
+    }
+    
+    @media (max-width: 600px) {
+      .calculator-form {
+        grid-template-columns: 1fr;
+      }
+      
+      .result-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+    }
+  </style>
+
+  <article>
+    <header class="calculator-header">
+      <a href="https://github.com/afa7789/btc-things">
+        <h1>HOW MUCH I FUCKED UP</h1>
+      </a>
+    </header>
+
+    <section class="section">
+      <p><strong>How it works:</strong> Select a date in the past, enter how much USD you could have invested, and see how much Bitcoin you could have bought and what it would be worth today. This calculator uses historical Bitcoin prices from our dataset and fetches the current price from CoinGecko.</p>
+    </section>
+
+    <section class="section">
+      <div class="calculator">
+        <div class="calculator-form">
+          <div class="form-group">
+            <label for="date-picker">Select Date:</label>
+            <input type="date" id="date-picker" value="2020-01-01">
+            <div class="date-display" id="selected-date"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="usd-input">USD Amount to Invest:</label>
+            <input type="number" id="usd-input" value="1000" min="1" step="1" placeholder="Enter USD amount">
+          </div>
+          
+          <button class="calculate-btn" id="calculate-btn">CALCULATE</button>
+        </div>
+        
+        <div class="loading" id="loading">Calculating...</div>
+        <div class="error-message" id="error" style="display: none;"></div>
+        
+        <div class="results" id="results" style="display: none;">
+          <div class="result-item">
+            <span class="result-label">Investment Date:</span>
+            <span class="result-value" id="result-date">-</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Bitcoin Price on Date:</span>
+            <span class="result-value" id="result-btc-price">-</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Bitcoin Amount You Could Have Bought:</span>
+            <span class="result-value" id="result-btc-amount">-</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Current Bitcoin Price:</span>
+            <span class="result-value" id="result-current-price">-</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">YOU COULD HAVE TODAY:</span>
+            <span class="result-value" id="result-value-today">-</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Profit Multiple:</span>
+            <span class="result-value" id="result-multiple">-</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <p><strong>Disclaimer:</strong> This calculator is for educational purposes only. Historical prices are from our dataset which may have gaps. Current price is fetched from CoinGecko API. Always do your own research before making investment decisions.</p>
+    </section>
+  </article>
+
+  <script is:inline src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
+
+  <script is:inline>
+    // IndexedDB cache wrapper
+    window.idbGet = async function(key) {
+      try {
+        if (typeof window.idb === 'undefined') {
+          throw new Error('idb library not loaded');
+        }
+        
+        const db = await window.idb.openDB('btcThingsStore', 1, {
+          upgrade(db) {
+            if (!db.objectStoreNames.contains('apiCache')) {
+              db.createObjectStore('apiCache');
+            }
+          }
+        });
+        const result = await db.get('apiCache', key);
+        if (result !== undefined) return result;
+      } catch (e) {
+        console.warn('IndexedDB unavailable, falling back to localStorage:', e);
+      }
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : null;
+    };
+
+    window.idbSet = async function(key, value) {
+      try {
+        if (typeof window.idb === 'undefined') {
+          throw new Error('idb library not loaded');
+        }
+        
+        const db = await window.idb.openDB('btcThingsStore', 1, {
+          upgrade(db) {
+            if (!db.objectStoreNames.contains('apiCache')) {
+              db.createObjectStore('apiCache');
+            }
+          }
+        });
+        await db.put('apiCache', value, key);
+        return;
+      } catch (e) {
+        console.warn('IndexedDB unavailable, falling back to localStorage:', e);
+      }
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (err) {
+        console.error('Both IndexedDB and localStorage failed:', err);
+      }
+    };
+
+    // Global state
+    let bitcoinData = [];
+    let currentIndex = 0;
+    
+    // DOM elements
+    const datePicker = document.getElementById('date-picker');
+    const selectedDate = document.getElementById('selected-date');
+    const usdInput = document.getElementById('usd-input');
+    const calculateBtn = document.getElementById('calculate-btn');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const results = document.getElementById('results');
+    
+    // Result elements
+    const resultDate = document.getElementById('result-date');
+    const resultBtcPrice = document.getElementById('result-btc-price');
+    const resultBtcAmount = document.getElementById('result-btc-amount');
+    const resultCurrentPrice = document.getElementById('result-current-price');
+    const resultValueToday = document.getElementById('result-value-today');
+    const resultMultiple = document.getElementById('result-multiple');
+    
+    // Format date for display
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+    
+    // Format currency
+    function formatCurrency(amount) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(amount);
+    }
+    
+    // Format Bitcoin amount
+    function formatBitcoin(amount) {
+      if (amount < 0.0001) {
+        return amount.toExponential(4);
+      }
+      return amount.toFixed(8);
+    }
+    
+    // Load Bitcoin data
+    async function loadBitcoinData() {
+      try {
+        loading.style.display = 'block';
+        error.style.display = 'none';
+        
+        const response = await fetch('/datasets/bitcoin_2010-07-17_2025-07-25.csv');
+        const csvText = await response.text();
+        
+        // Parse CSV
+        const lines = csvText.trim().split('\n');
+        const headers = lines[0].split(',');
+        
+        // Find Start and Close columns
+        const startIndex = headers.findIndex(h => h.trim() === 'Start');
+        const closeIndex = headers.findIndex(h => h.trim() === 'Close');
+        
+        if (startIndex === -1 || closeIndex === -1) {
+          throw new Error('Invalid CSV format');
+        }
+        
+        // Parse data rows
+        bitcoinData = [];
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',');
+          if (values.length > Math.max(startIndex, closeIndex)) {
+            const date = values[startIndex].trim();
+            const price = parseFloat(values[closeIndex].trim());
+            
+            if (date && !isNaN(price)) {
+              bitcoinData.push({ date, price });
+            }
+          }
+        }
+        
+        // Sort by date ascending
+        bitcoinData.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        // Set up date picker with min/max from data
+        datePicker.min = bitcoinData[0].date;
+        datePicker.max = bitcoinData[bitcoinData.length - 1].date;
+        datePicker.value = bitcoinData[0].date;
+        updateDateDisplay();
+        
+        loading.style.display = 'none';
+        
+      } catch (err) {
+        console.error('Error loading Bitcoin data:', err);
+        error.textContent = 'Error loading Bitcoin data. Please try again.';
+        error.style.display = 'block';
+        loading.style.display = 'none';
+      }
+    }
+    
+    // Find closest date index in data
+    function findClosestIndex(dateStr) {
+      const target = new Date(dateStr).getTime();
+      let closest = 0;
+      let closestDiff = Infinity;
+      for (let i = 0; i < bitcoinData.length; i++) {
+        const diff = Math.abs(new Date(bitcoinData[i].date).getTime() - target);
+        if (diff < closestDiff) {
+          closestDiff = diff;
+          closest = i;
+        }
+      }
+      return closest;
+    }
+
+    // Update date display when picker changes
+    function updateDateDisplay() {
+      if (bitcoinData.length === 0) return;
+      currentIndex = findClosestIndex(datePicker.value);
+      const data = bitcoinData[currentIndex];
+      selectedDate.textContent = `${formatDate(data.date)} — BTC was ${formatCurrency(data.price)}`;
+    }
+    
+    // Fetch current BTC price from CoinGecko
+    async function fetchCurrentBTCPrice() {
+      const cacheKey = 'btc_current_price';
+      const cacheDuration = 5 * 60 * 1000; // 5 minutes
+      
+      try {
+        // Check cache first
+        const cached = await window.idbGet(cacheKey);
+        if (cached && Date.now() - cached.timestamp < cacheDuration) {
+          return cached.price;
+        }
+        
+        // Fetch from CoinGecko
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+        const data = await response.json();
+        
+        if (data.bitcoin && data.bitcoin.usd) {
+          const price = data.bitcoin.usd;
+          
+          // Cache the result
+          await window.idbSet(cacheKey, {
+            price,
+            timestamp: Date.now()
+          });
+          
+          return price;
+        }
+        
+        throw new Error('Invalid response from CoinGecko');
+        
+      } catch (err) {
+        console.error('Error fetching current BTC price:', err);
+        
+        // Fallback to latest price from our dataset
+        if (bitcoinData.length > 0) {
+          return bitcoinData[bitcoinData.length - 1].price;
+        }
+        
+        throw new Error('Could not fetch current BTC price');
+      }
+    }
+    
+    // Calculate results
+    async function calculate() {
+      try {
+        loading.style.display = 'block';
+        error.style.display = 'none';
+        results.style.display = 'none';
+        
+        const usdAmount = parseFloat(usdInput.value);
+        if (isNaN(usdAmount) || usdAmount <= 0) {
+          throw new Error('Please enter a valid USD amount');
+        }
+        
+        if (bitcoinData.length === 0) {
+          throw new Error('Bitcoin data not loaded');
+        }
+        
+        const historicalData = bitcoinData[currentIndex];
+        const currentPrice = await fetchCurrentBTCPrice();
+        
+        const btcAmount = usdAmount / historicalData.price;
+        const valueToday = btcAmount * currentPrice;
+        const multiple = valueToday / usdAmount;
+        
+        // Display results
+        resultDate.textContent = formatDate(historicalData.date);
+        resultBtcPrice.textContent = formatCurrency(historicalData.price);
+        resultBtcAmount.textContent = formatBitcoin(btcAmount);
+        resultCurrentPrice.textContent = formatCurrency(currentPrice);
+        resultValueToday.textContent = formatCurrency(valueToday);
+        resultMultiple.textContent = `${multiple.toFixed(2)}x`;
+        
+        results.style.display = 'block';
+        loading.style.display = 'none';
+        
+      } catch (err) {
+        console.error('Calculation error:', err);
+        error.textContent = err.message;
+        error.style.display = 'block';
+        loading.style.display = 'none';
+      }
+    }
+    
+    // Event listeners
+    datePicker.addEventListener('input', updateDateDisplay);
+    calculateBtn.addEventListener('click', calculate);
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadBitcoinData);
+  </script>
+</BaseLayout>

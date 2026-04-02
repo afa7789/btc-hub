@@ -1,0 +1,208 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const title = "DCA Calculator";
+const description =
+  "Dollar Cost Averaging calculator for Bitcoin, Ethereum, Monero, Gold, and Silver";
+---
+
+<BaseLayout title={title} description={description}>
+  <style>
+    .dca-header {
+      margin-bottom: 2em;
+    }
+    
+    .dca-header h1 {
+      margin: 0;
+      border: none;
+      padding-bottom: 0;
+    }
+    
+    .input-group {
+      margin-bottom: 1em;
+    }
+    
+    .input-group label {
+      display: inline-block;
+      width: 100px;
+    }
+    
+    .input-group input,
+    .input-group select {
+      font-family: var(--font);
+      border: var(--border-width) solid var(--border);
+      padding: 0.5rem;
+      background: var(--bg);
+      color: var(--fg);
+    }
+    
+    .button-group {
+      margin: 1em 0;
+    }
+    
+    #results {
+      display: none;
+      margin-top: 2em;
+    }
+    
+    #transactions {
+      display: none;
+      margin-top: 2em;
+    }
+    
+    .result-item {
+      margin: 0.5em 0;
+    }
+    
+    .profit-positive {
+      color: #22c55e;
+    }
+    
+    .profit-negative {
+      color: #ef4444;
+    }
+    
+    #dca-chart {
+      width: 100%;
+      max-width: 800px;
+      margin: 1em 0;
+      border: var(--border-width) solid var(--border);
+    }
+    
+    #dca-chart text {
+      font-family: var(--font);
+      font-size: 12px;
+      fill: var(--fg);
+    }
+    
+    #dca-chart line {
+      stroke: var(--border);
+    }
+    
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 1em;
+    }
+    
+    th, td {
+      border: var(--border-width) solid var(--border);
+      padding: 0.5rem;
+      text-align: left;
+    }
+    
+    @media (max-width: 600px) {
+      .input-group {
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .input-group label {
+        width: 100%;
+        margin-bottom: 0.25em;
+      }
+      
+      table {
+        font-size: 0.85em;
+      }
+      
+      th, td {
+        padding: 0.25rem;
+      }
+    }
+  </style>
+
+  <article>
+    <header class="dca-header">
+      <h1>DCA Calculator</h1>
+    </header>
+
+    <p class="disclaimer" style="font-weight: bold; color: #ffb300; margin-bottom: 1em;">
+      Disclaimer: This is a demo tool for educational purposes. Data and calculations may not be as accurate as they appear. 
+      Always verify with primary sources before making financial decisions.
+    </p>
+
+    <section>
+      <div class="input-group">
+        <label for="asset">Asset:</label>
+        <select id="asset">
+          <option value="bitcoin" selected>Bitcoin</option>
+          <option value="ethereum">Ethereum</option>
+          <option value="monero">Monero</option>
+          <option value="gold">Gold</option>
+          <option value="silver">Silver</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label for="amount">Amount ($):</label>
+        <input type="number" id="amount" value="100" min="1">
+      </div>
+      
+      <div class="input-group">
+        <label for="frequency">Frequency:</label>
+        <select id="frequency">
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly" selected>Monthly</option>
+        </select>
+      </div>
+      
+      <div class="input-group">
+        <label for="start-date">Start:</label>
+        <input type="date" id="start-date" value="2020-01-01">
+      </div>
+      
+      <div class="input-group">
+        <label for="end-date">End:</label>
+        <input type="date" id="end-date" value="2024-12-31">
+      </div>
+      
+      <div class="button-group">
+        <button id="calculate-btn">Calculate</button>
+        <button id="clear-btn">Clear</button>
+      </div>
+    </section>
+
+    <section id="results">
+      <h2>Results</h2>
+      <p class="result-item">Total Invested: <span id="total-invested">$0</span></p>
+      <p class="result-item">Asset Acquired: <span id="bitcoin-acquired">0</span></p>
+      <p class="result-item">Current Value: <span id="current-value">$0</span></p>
+      <p class="result-item">Profit/Loss: <span id="profit-loss">$0</span></p>
+      <p class="result-item">Average Price: <span id="average-price">$0</span></p>
+      <p class="result-item">Purchases: <span id="purchase-count">0</span></p>
+    </section>
+
+    <section id="transactions">
+      <h2>Transactions</h2>
+      
+      <svg id="dca-chart" width="800" height="300" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid meet">
+        <text x="10" y="25" font-family="monospace" font-size="15" fill="currentColor">DCA Progress</text>
+        <line x1="50" y1="50" x2="50" y2="250" stroke="currentColor" stroke-width="1"/>
+        <line x1="50" y1="250" x2="750" y2="250" stroke="currentColor" stroke-width="1"/>
+        <text x="10" y="265" font-family="monospace" font-size="11" fill="currentColor">0</text>
+        <text x="10" y="155" font-family="monospace" font-size="11" fill="currentColor">Mid</text>
+        <text x="10" y="65" font-family="monospace" font-size="11" fill="currentColor">Max</text>
+        <text x="50" y="280" font-family="monospace" font-size="11" fill="currentColor">Start</text>
+        <text x="690" y="280" font-family="monospace" font-size="11" fill="currentColor">End</text>
+      </svg>
+      
+      <table id="transactions-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>BTC Price</th>
+            <th>BTC Bought</th>
+            <th>Total BTC</th>
+          </tr>
+        </thead>
+        <tbody id="transactions-tbody">
+        </tbody>
+      </table>
+    </section>
+  </article>
+
+  <script is:inline src="/scripts/dca/dca.js"></script>
+</BaseLayout>

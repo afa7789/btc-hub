@@ -1,0 +1,20 @@
+# Multi-stage build for BTC Things static site
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copy source
+COPY astro.config.mjs tsconfig.json biome.json ./
+COPY src/ ./src/
+COPY public/ ./public/
+
+# Build static site
+RUN npm run build
+
+# Output stage - just the dist directory
+FROM alpine:latest AS output
+COPY --from=builder /app/dist /dist

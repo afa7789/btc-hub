@@ -10,6 +10,10 @@ interface Props {
 }
 
 const { title, description = "Unified Bitcoin Tools Platform" } = Astro.props;
+const canonicalURL = new URL(
+  Astro.url.pathname,
+  Astro.site || "https://btc-things.example.com",
+);
 ---
 
 <!doctype html>
@@ -20,12 +24,29 @@ const { title, description = "Unified Bitcoin Tools Platform" } = Astro.props;
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title} | BTC_THINGS</title>
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={`${title} | BTC_THINGS`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="BTC_THINGS" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={canonicalURL} />
+    <meta property="twitter:title" content={`${title} | BTC_THINGS`} />
+    <meta property="twitter:description" content={description} />
+    
+    <link rel="canonical" href={canonicalURL} />
   </head>
   <body>
     <ThemeToggle />
-    
+
     <div class="container">
       <Nav />
+    </div>
+    <div class="container">
       
       <main class="main">
         <slot />
