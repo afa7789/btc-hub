@@ -74,10 +74,14 @@ const description =
       width: 100%;
       height: auto;
       display: block;
-      background: black;
+      background: var(--bg);
       font-family: monospace;
       overflow: visible;
       max-height: 400px;
+    }
+
+    [data-theme="light"] svg {
+      background: #1a1a1a;
     }
     
     .gold-line {
@@ -92,6 +96,10 @@ const description =
       stroke: #444;
       stroke-width: 1px;
       opacity: 0.5;
+    }
+
+    [data-theme="light"] .grid line {
+      stroke: #ccc;
     }
     
     .grid path {
@@ -121,6 +129,13 @@ const description =
       font-family: monospace;
       font-weight: bold;
       font-size: 14px;
+    }
+
+    [data-theme="light"] svg text,
+    [data-theme="light"] svg .domain,
+    [data-theme="light"] svg .tick line,
+    [data-theme="light"] svg .tick text {
+      fill: white;
     }
     
     @media (max-width: 600px) {
