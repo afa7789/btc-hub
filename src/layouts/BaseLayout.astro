@@ -48,13 +48,23 @@ const canonicalURL = new URL(
     
     <link rel="canonical" href={canonicalURL} />
 
+    <!-- A unica web font do site. display=swap com fallback monoespacado, para
+         o texto nunca ficar invisivel enquanto ela carrega. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap"
+    />
+
     <script is:inline>
       // Applied in <head>, before first paint, so a light-theme visitor never
       // sees a flash of the dark ground. ThemeToggle only handles the click.
       (() => {
+        // Escuro e o padrao da identidade; o tema claro so entra por escolha
+        // explicita, nao por preferencia do sistema.
         const saved = localStorage.getItem("theme");
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        if (saved === "light" || (!saved && !prefersDark)) {
+        if (saved === "light") {
           document.documentElement.setAttribute("data-theme", "light");
         } else {
           document.documentElement.removeAttribute("data-theme");

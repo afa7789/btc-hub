@@ -14,9 +14,10 @@ tipografia de terminal.
 
 **Princípios norteadores**
 
-- **Raw terminal aesthetic** — interfaces funcionais inspiradas em terminais
-  UNIX, monitores CRT e consoles financeiros estilo Bloomberg/teletexto. Sem
-  sombras falsas, sem cantos arredondados, sem decoração supérflua.
+- **Punk gothic terminal** — brutalismo web e estética de terminal UNIX como
+  base funcional, com títulos em blackletter por cima. Sem sombras falsas, sem
+  cantos arredondados, sem decoração supérflua: o único ornamento permitido é a
+  tipografia dos títulos, e ela é ornamento com trabalho a fazer.
 - **High-density information architecture** — tabelas com números alinhados à
   direita, gráficos vetoriais nítidos em SVG/D3, badges de estado do sistema
   `[LIVE]`, `[OFFLINE]`, `[RAW_DATA]`.
@@ -112,20 +113,38 @@ O `/satsukashii` é o caso oposto: desenha sobre o fundo da página, então segu
 o tema e usa `--bg-primary` / `--fg-primary` / `--series-fiat`, que invertem.
 Ele redesenha no evento `themechange`.
 
-## 3. Tipografia e escala monoespaçada
+## 3. Tipografia — terminal com títulos góticos
 
-Monoespaçada em todo o site, para garantir alinhamento colunar exato de números
-financeiros.
+Duas famílias, com papéis rígidos. A base é monoespaçada, para garantir o
+alinhamento colunar exato dos números financeiros. Os títulos de página e o logo
+são blackletter — é onde entra o gótico, sem contaminar a leitura de dados.
 
 ```css
-font-family: 'Courier New', 'SF Mono', Monaco, 'Cascadia Code',
-             'Roboto Mono', Menlo, Consolas, monospace;
+--font: 'Courier New', 'SF Mono', Monaco, 'Cascadia Code',
+        'Roboto Mono', Menlo, Consolas, monospace;
+
+--font-display: 'UnifrakturCook', 'Pirata One', 'Courier New', monospace;
 ```
+
+**Regras não negociáveis do `--font-display`:**
+
+- **Nunca em caixa alta.** Blackletter em CAPS é ornamento indecifrável. Quem usa
+  `--font-display` não leva `text-transform` nem `letter-spacing`. Os títulos de
+  página são escritos em Title Case na fonte (`"Debase"`, não `"DEBASE"`).
+- **Só em `h1`, `h2` e no logo.** Rótulos de nav, títulos de card (`h3`), badges,
+  cabeçalhos de tabela e botões continuam monoespaçados em caixa alta — é o
+  contraste entre os dois registros que produz o efeito, não o gótico sozinho.
+- **É a única web font do site.** Carregada com `display=swap` e fallback
+  monoespaçado, então o texto nunca fica invisível enquanto ela baixa. Aceita-se
+  o FOUT em troca da identidade; nenhuma outra web font entra.
+
+O tema escuro é o padrão da identidade: o claro só aparece por escolha explícita
+no toggle, não por `prefers-color-scheme`.
 
 | Nível | Tamanho | Tratamento |
 |---|---|---|
-| Display / H1 | 24–28px | `font-weight: 900`, `letter-spacing: 2px`, uppercase |
-| H2 / seção | 18–20px | bold, `letter-spacing: 1.5px` |
+| Display / H1 | `--text-display` × 2.3 | `--font-display`, peso 700, sem tracking, Title Case |
+| H2 / seção | `--text-section` × 1.9 | `--font-display`, peso 700, sem tracking, Title Case |
 | H3 / card header | 14–15px | bold |
 | Body | 13px | `line-height: 1.6` |
 | Números / tabelas | 13px | `font-variant-numeric: tabular-nums`, alinhado à direita |

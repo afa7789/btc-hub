@@ -82,6 +82,13 @@
   /* Tipografia — stack e escala */
   --font: "Courier New", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono",
     Menlo, Consolas, monospace;
+  /*
+   * Blackletter apenas para titulos de pagina e o logo. Em caixa alta ele fica
+   * indecifravel, entao quem usa --font-display nao leva text-transform nem
+   * letter-spacing. O resto do site continua monoespacado: o gotico e o
+   * contraste, nao a base.
+   */
+  --font-display: "UnifrakturCook", "Pirata One", "Courier New", monospace;
   --text-display: 1.75rem; /* 28px — H1 */
   --text-section: 1.25rem; /* 20px — H2 */
   --text-card: 0.9375rem; /* 15px — H3 */
@@ -192,15 +199,21 @@ h6 {
 }
 
 h1 {
-  font-size: var(--text-display);
-  font-weight: 900;
-  letter-spacing: 2px;
+  font-family: var(--font-display);
+  font-size: calc(var(--text-display) * 2.3);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.05;
 }
 
 h2 {
-  font-size: var(--text-section);
-  font-weight: bold;
-  letter-spacing: 1.5px;
+  font-family: var(--font-display);
+  font-size: calc(var(--text-section) * 1.9);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.1;
 }
 
 h3 {

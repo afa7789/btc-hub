@@ -75,7 +75,7 @@ const repos = [
     </header>
 
     <section class="tools">
-      <h2 class="tools__title">TOOLS</h2>
+      <h2 class="tools__title">Tools</h2>
       <div class="tools__grid">
         {tools.map(tool => (
           <a href={tool.href} class="tool-card">
@@ -93,7 +93,7 @@ const repos = [
     </section>
 
     <section class="repos">
-      <h2 class="repos__title">SOURCE</h2>
+      <h2 class="repos__title">Source</h2>
       <ul class="repos__list">
         {repos.map(repo => (
           <li class="repo">
@@ -135,6 +135,13 @@ const repos = [
   .repo {
     border: var(--border-width) solid var(--border-strong);
     padding: 1.5rem;
+  }
+  
+  /* WCAG 2.5.8: o link nasceu com 17px de altura. */
+  .repo a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
   }
   
   .repo__lang {
