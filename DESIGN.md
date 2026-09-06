@@ -128,22 +128,36 @@ são blackletter — é onde entra o gótico, sem contaminar a leitura de dados.
 
 ### 3.1 Banner ASCII
 
-A home abre com um banner FIGlet gerado em build time (`src/utils/ascii-banner.ts`),
-na tradição de MOTD de terminal.
+A home abre com um banner gerado por `scripts/render-ascii-banner.mjs`, na
+tradição de MOTD de terminal — letras góticas construídas com caracteres ASCII.
 
-- **Fonte de bloco sólido**, `ANSI Shadow`. Faces delicadas como `fraktur` viram
-  mingau abaixo de ~12px por caractere; blocos continuam legíveis como letra.
-  `Delta Corps Priest 1` é a alternativa com mais textura de metal, ao custo de
-  não desenhar o `_`.
-- **Só serve para string curta.** A largura é fixa em colunas de caractere:
-  `BTC_THINGS` são 77 colunas, mas `All the Money in the World` seriam 292 — a
-  2px por caractere no celular. Título de página fica no `--font-display`.
-- **O corpo é derivado do container**, `calc(100cqi / (colunas * 0.62))`, então
-  a arte encaixa exatamente na largura disponível.
+- **Não é FIGlet.** Nenhuma das 328 faces dele é blackletter de verdade *e*
+  legível: `fraktur` é a única genuína e precisa de ~25px por caractere;
+  `Caligraphy2` quebra os traços; `ANSI Shadow` e `Delta Corps Priest 1` são
+  blocos sólidos legíveis mas não góticos; `Whimsy` é decorativa/circense.
+  O script **rasteriza a própria fonte gótica** num canvas e amostra os pixels,
+  então as formas são gótico real.
+- **Limiar, não rampa.** Uma rampa de 10 níveis mapeia traço fino de blackletter
+  para caracteres leves (`:`, `-`, `.`), porque cada célula fica parcialmente
+  coberta, e as letras saem esqueléticas. Os níveis são `W` / `w` / `.`, que
+  preenchem o traço.
+- **Diz `BTC`, não `BTC_THINGS`.** Linhas de resolução `R` e corpo na tela `P`
+  são inversamente acoplados pela largura do container: `P ≈ 137/R`. Blackletter
+  precisa de ~20 linhas para mostrar os terminais angulares, o que com 10
+  caracteres daria 7px por caractere. Com 3 são 20 linhas a 18,5px. Mais
+  resolução piora: 150 colunas a 12,7px vira ruído. O nome completo vive no logo
+  do nav e no `<h1>` de `.sr-only` — o que também evita dizer a mesma coisa duas
+  vezes na mesma tela.
+- **O corpo é derivado do container**, `calc(100cqi / (colunas * 0.62))`.
 - **Escondido abaixo de 900px**, onde cairia para ~5px por caractere. Um fallback
   em `--font-display` assume o lugar.
-- **`<pre aria-hidden="true">` com um `<h1>` real em `.sr-only`.** Leitor de tela
-  ouve "BTC_THINGS", não a sopa de caracteres.
+- **`<pre aria-hidden="true">` com um `<h1>` real em `.sr-only`.**
+
+### 3.2 Favicon
+
+`scripts/make-favicon.mjs` extrai o contorno vetorial do `B` da fonte de display
+via opentype.js e escreve `public/favicon.svg`. Não dá para usar `<text>`: o
+favicon renderiza fora da página e não alcança web font.
 
 **Regras não negociáveis do `--font-display`:**
 

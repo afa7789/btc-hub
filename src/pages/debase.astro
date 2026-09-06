@@ -911,6 +911,14 @@ const description =
       });
     }
 
-    main().catch(console.error);
+    // ClientRouter: scripts ja executados nao rodam de novo, entao main()
+    // no topo so pintaria os graficos na primeira carga. astro:page-load
+    // dispara na primeira carga e apos cada navegacao; chart_draw limpa cada
+    // div antes de desenhar e os datasets ficam em IndexedDB, entao repetir e
+    // seguro (e nao refaz download).
+    document.addEventListener('astro:page-load', () => {
+      if (!document.getElementById('halving-chart')) return; // outra pagina
+      main().catch(console.error);
+    });
   </script>
 </BaseLayout>

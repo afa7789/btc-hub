@@ -147,3 +147,65 @@ fixes in `FIX_PLAN.md`:
 Hover, focus, active, modal-open and admin states were never captured. 200% text
 and 320px reflow were not exercised. No viewport between 390px and 1440px was
 tested. Screen-reader announcement behaviour was not confirmed with a real AT.
+
+
+---
+
+# Second pass — after the SPA and identity work
+
+Re-ran the full pipeline on the current build: 50 deterministic captures,
+axe over 32 screen x theme x viewport combinations, wiring and source detectors.
+
+| | first pass (before) | after fixes | this pass |
+|---|---|---|---|
+| axe `color-contrast` | 12 | 1 | **1** |
+| axe `select-name` | 4 | 0 | **0** |
+| horizontal overflow | 0 | 0 | **0** |
+| targets < 24px | 23 | 4 | **4** |
+| `detect-ui` warnings | 14 | 0 | **0** |
+| wiring errors | 1 | 0 | **0** |
+
+The single remaining axe entry is the `/debase` axis title measured mid-render,
+investigated and filed as P3 in `audits/debase-contrast-investigation.md`. The
+four small targets are inline prose links ("Learn more" x2, the Visual Capitalist
+credit, and the `/sem-melhores` heading link) — all filed, none introduced here.
+
+## Fixed in this pass
+
+- `/satsukashii` chart labels rendered at 11px on desktop and 10.4px on mobile.
+  The declared value was 11px/28px but the SVG scales by its viewBox, so the
+  declared number is not the rendered one. Now 13px/33px, measured at 13px and
+  12.2px. This was my own regression from the previous pass, where I set the
+  declared value without measuring the result.
+- `[CG_API: ONLINE]` renamed to `[PRICES: LIVE | STORED | UNAVAILABLE]`. The old
+  label named the API and its state, which is implementation detail; a visitor
+  needs to know whether the prices on screen are live.
+
+## Client-side routing, verified independently
+
+`<ClientRouter />` with the ticker under `transition:persist`. Measured on a
+five-navigation tour, not taken on report:
+
+| assertion | measured |
+|---|---|
+| document loads across 5 navigations | **1** |
+| `window` marker survives navigation | yes |
+| ticker is the same DOM node | yes |
+| ticker animation `currentTime` | 683ms -> 7783ms, advancing |
+| CoinGecko requests from the ticker | 2, on first load only |
+| `/debase` `svg path` after navigation | 77 |
+| console errors | 0 |
+
+Two claims in the subagent's report were checked and hold: the third CoinGecko
+request in my own tour is `/sem-melhores` fetching its own coin list, not a
+ticker refetch, and the console errors I first counted were the pre-existing
+`stlouisfed` CORS noise.
+
+## Known risk carried, not hidden
+
+The ticker's CSS animation genuinely restarts when the router swaps `<body>`;
+what exists is a `currentTime` restore on `astro:after-swap`. It measures as
+continuous and reads as continuous, but it is a workaround, and a future change
+that gives the track more than one animation would break the
+`getAnimations()[0]` assumption. Module-level state now lives for the whole
+session, so a stale-state bug that a full reload used to hide would now persist.

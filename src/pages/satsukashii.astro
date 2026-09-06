@@ -39,7 +39,8 @@ const description =
      * rotulo de 11px renderizava a 4.15px.
      */
     .chart-container :global(svg text) {
-      font-size: 11px;
+      /* Renderizado a 11px no desktop (escala 1) — abaixo do piso de 12px. */
+      font-size: 13px;
     }
 
     /* The SVG is appended by D3 at runtime and has no Astro scope attribute. */
@@ -59,9 +60,10 @@ const description =
     }
 
     @media (max-width: 600px) {
-      /* Compensa a reducao do viewBox: 28 x 0.377 = ~10.5px reais. */
+      /* Compensa a reducao do viewBox: em 390px a escala e 0.371, entao
+         33px rendem ~12.2px reais. */
       .chart-container :global(svg text) {
-        font-size: 28px;
+        font-size: 33px;
       }
     }
   </style>
@@ -90,6 +92,10 @@ const description =
 
   <script is:inline>
     async function drawChart() {
+      // O listener e global e sobrevive a navegacao — sem este guard o chart
+      // tentaria desenhar (e fazer fetch) em toda pagina do site.
+      if (!document.getElementById('satsukashii-chart')) return;
+
       try {
         const response = await fetch('/datasets/satsukashii/prices.json');
         const data = await response.json();
@@ -277,7 +283,11 @@ const description =
       }
     }
 
-    document.addEventListener('DOMContentLoaded', drawChart);
+    // ClientRouter: o documento nao recarrega e este script inline so executa
+    // uma vez por sessao, entao DOMContentLoaded so pegaria a primeira carga.
+    // astro:page-load dispara na primeira carga e apos cada navegacao;
+    // drawChart limpa o container antes de desenhar, entao repetir e seguro.
+    document.addEventListener('astro:page-load', drawChart);
 
     // Colours are read from the tokens at draw time, so a theme switch needs a
     // repaint to take effect.

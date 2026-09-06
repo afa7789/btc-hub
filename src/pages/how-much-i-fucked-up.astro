@@ -298,22 +298,33 @@ const investedDate = new Date(`${scenario.date}T00:00:00Z`).toLocaleDateString(
     let bitcoinData = [];
     let currentIndex = 0;
     
+    /*
+     * O ClientRouter troca o <body> sem recarregar o documento, entao estas
+     * referencias ficariam apontando para nos descartados apos a primeira
+     * navegacao. Sao religadas em cada astro:page-load (ver o fim do script).
+     */
     // DOM elements
-    const datePicker = document.getElementById('date-picker');
-    const selectedDate = document.getElementById('selected-date');
-    const usdInput = document.getElementById('usd-input');
-    const calculateBtn = document.getElementById('calculate-btn');
-    const loading = document.getElementById('loading');
-    const error = document.getElementById('error');
-    const results = document.getElementById('results');
-    
+    let datePicker, selectedDate, usdInput, calculateBtn, loading, error, results;
     // Result elements
-    const resultDate = document.getElementById('result-date');
-    const resultBtcPrice = document.getElementById('result-btc-price');
-    const resultBtcAmount = document.getElementById('result-btc-amount');
-    const resultCurrentPrice = document.getElementById('result-current-price');
-    const resultValueToday = document.getElementById('result-value-today');
-    const resultMultiple = document.getElementById('result-multiple');
+    let resultDate, resultBtcPrice, resultBtcAmount;
+    let resultCurrentPrice, resultValueToday, resultMultiple;
+
+    function queryElements() {
+      datePicker = document.getElementById('date-picker');
+      selectedDate = document.getElementById('selected-date');
+      usdInput = document.getElementById('usd-input');
+      calculateBtn = document.getElementById('calculate-btn');
+      loading = document.getElementById('loading');
+      error = document.getElementById('error');
+      results = document.getElementById('results');
+
+      resultDate = document.getElementById('result-date');
+      resultBtcPrice = document.getElementById('result-btc-price');
+      resultBtcAmount = document.getElementById('result-btc-amount');
+      resultCurrentPrice = document.getElementById('result-current-price');
+      resultValueToday = document.getElementById('result-value-today');
+      resultMultiple = document.getElementById('result-multiple');
+    }
     
     // Format date for display
     function formatDate(dateString) {
@@ -504,11 +515,21 @@ const investedDate = new Date(`${scenario.date}T00:00:00Z`).toLocaleDateString(
       }
     }
     
-    // Event listeners
-    datePicker.addEventListener('input', updateDateDisplay);
-    calculateBtn.addEventListener('click', calculate);
-    
-    // Initialize
-    document.addEventListener('DOMContentLoaded', loadBitcoinData);
+    /*
+     * DOMContentLoaded so dispara na primeira carga com o ClientRouter ligado,
+     * e este script inline nao e reexecutado nas navegacoes seguintes.
+     * astro:page-load cobre os dois casos. Os nos sao novos a cada troca, o que
+     * torna o rebind obrigatorio e ao mesmo tempo impossivel de duplicar.
+     */
+    document.addEventListener('astro:page-load', () => {
+      // #calculate-btn tambem existe em /dca, entao o guard usa um id
+      // exclusivo desta pagina.
+      if (!document.getElementById('date-picker')) return; // outra pagina
+
+      queryElements();
+      datePicker.addEventListener('input', updateDateDisplay);
+      calculateBtn.addEventListener('click', calculate);
+      loadBitcoinData();
+    });
   </script>
 </BaseLayout>

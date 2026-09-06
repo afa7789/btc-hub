@@ -1056,8 +1056,10 @@ function exportCurrentData() {
 // Keyboard shortcuts
 function initializeKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
+        // O handler vive no document e sobrevive a navegacao no cliente;
+        // fora desta pagina os atalhos nao valem.
+        if (!document.getElementById('visualization')) return;
 
-        
         // Ctrl/Cmd + F: Focus search
         if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
             e.preventDefault();
@@ -1226,8 +1228,17 @@ function initializeDataSourcesToggle() {
     }
 }
 
-// Chamar loadData na inicialização
-document.addEventListener('DOMContentLoaded', async () => {
+/*
+ * ClientRouter: o documento nao recarrega e este script so executa uma vez por
+ * sessao, entao DOMContentLoaded nao serve. astro:page-load dispara na primeira
+ * carga e depois de cada navegacao.
+ */
+let keyboardShortcutsBound = false;
+
+document.addEventListener('astro:page-load', async () => {
+    // Fora desta pagina nao ha nada para montar.
+    if (!document.getElementById('visualization')) return;
+
     // Load data
     const loadSuccess = await loadData();
     
@@ -1240,7 +1251,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Initialize all controls and features
         initializeControls();
-        initializeKeyboardShortcuts();
+        // Os atalhos ficam pendurados no document, que sobrevive a troca de
+        // pagina — rebindar a cada navegacao empilharia handlers.
+        if (!keyboardShortcutsBound) {
+            initializeKeyboardShortcuts();
+            keyboardShortcutsBound = true;
+        }
         initializeDataSourcesToggle();
 
         // createVisualization() já é chamado dentro de loadData agora,
@@ -1264,6 +1280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Simplified keyboard navigation - Ctrl+R refreshes
 document.addEventListener('keydown', (e) => {
+    if (!document.getElementById('visualization')) return;
     if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         location.reload(); // Simple refresh/reset

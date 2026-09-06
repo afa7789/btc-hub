@@ -10,13 +10,13 @@ import ThemeToggle from "./ThemeToggle.astro";
 
 <div class="utility-bar">
   <span class="utility-bar__status" id="api-status" data-state="unknown" role="status">
-    [CG_API: <span id="api-status-value">CHECKING</span>]
+    [PRICES: <span id="api-status-value">LOADING</span>]
   </span>
   <noscript>
     <style>
       #api-status { display: none; }
     </style>
-    <span class="utility-bar__status" data-state="offline">[CG_API: NO_JS]</span>
+    <span class="utility-bar__status" data-state="offline">[PRICES: NEEDS JS]</span>
   </noscript>
 
   <slot />
@@ -58,12 +58,35 @@ import ThemeToggle from "./ThemeToggle.astro";
 <script is:inline>
   // Ticker.astro is the only thing that actually talks to CoinGecko, so it
   // reports what happened and this bar just renders the verdict.
-  document.addEventListener("cg-api-status", (event) => {
-    const status = event.detail;
-    const host = document.getElementById("api-status");
-    const value = document.getElementById("api-status-value");
-    if (!host || !value) return;
-    host.dataset.state = status;
-    value.textContent = status.toUpperCase();
-  });
+  (() => {
+    // O ticker persiste entre navegacoes e so reporta a cada 2 min, mas esta
+    // barra e reconstruida a cada troca de pagina. Sem lembrar o ultimo status
+    // o badge voltava para CHECKING em toda navegacao.
+    let lastStatus = null;
+
+    // O estado interno descreve a API; o rotulo precisa descrever os precos que
+    // a pessoa esta vendo. "CG_API: ONLINE" nao diz nada a quem visita.
+    const LABEL = {
+      online: "LIVE",
+      cached: "STORED",
+      offline: "UNAVAILABLE",
+    };
+
+    function render(status) {
+      const host = document.getElementById("api-status");
+      const value = document.getElementById("api-status-value");
+      if (!host || !value) return;
+      host.dataset.state = status;
+      value.textContent = LABEL[status] ?? status.toUpperCase();
+    }
+
+    document.addEventListener("cg-api-status", (event) => {
+      lastStatus = event.detail;
+      render(lastStatus);
+    });
+
+    document.addEventListener("astro:page-load", () => {
+      if (lastStatus) render(lastStatus);
+    });
+  })();
 </script>

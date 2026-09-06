@@ -137,16 +137,30 @@ const STORAGE_KEY = "crypto_market_data";
 const STORAGE_TIME_KEY = "crypto_market_data_time";
 
 // === INTERVAL ===
-let updateInterval: ReturnType<typeof setInterval>;
+let updateInterval: ReturnType<typeof setInterval> | undefined;
 
 // === INIT ===
-document.addEventListener("DOMContentLoaded", async () => {
+/*
+ * Com o ClientRouter o documento nao recarrega e um modulo ja avaliado nao roda
+ * de novo, entao DOMContentLoaded so cobriria a primeira carga.
+ * astro:page-load dispara na primeira carga e depois de cada navegacao.
+ * setupEventListeners e setupModalEvents reconsultam os nos, que sao novos a
+ * cada troca; o que fica no document (o Escape do modal) e ligado uma so vez.
+ */
+let modalEventsBound = false;
+
+document.addEventListener("astro:page-load", async () => {
+  if (!document.getElementById("cryptoList")) return; // outra pagina
+
   await loadBlacklist();
   loadFromLocalStorage();
   await fetchCryptoData();
   startPeriodicUpdate();
   setupEventListeners();
-  setupModalEvents();
+  if (!modalEventsBound) {
+    setupModalEvents();
+    modalEventsBound = true;
+  }
   updateLanguage();
 });
 
@@ -681,6 +695,9 @@ function downloadFile(content: string, filename: string) {
 // === AUTO UPDATE ===
 
 function startPeriodicUpdate() {
+  // Reentrante: sem o clear, cada navegacao de volta a pagina empilharia mais
+  // um timer batendo na API.
+  if (updateInterval) clearInterval(updateInterval);
   updateInterval = setInterval(fetchCryptoData, 60000);
 }
 

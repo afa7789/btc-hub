@@ -1,6 +1,6 @@
 ---
+import wordmark from "../assets/wordmark.txt?raw";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { asciiBanner } from "../utils/ascii-banner";
 
 const tools = [
   {
@@ -52,7 +52,17 @@ const tools = [
 // Gerado no build. FIGlet "fraktur" e blackletter desenhado em ASCII — a
 // tradicao de banner de terminal. So cabe em string curta, entao vive aqui e
 // nao nos titulos das paginas.
-const banner = asciiBanner("BTC_THINGS");
+/*
+ * Gerado por scripts/render-ascii-banner.mjs a partir da propria fonte gotica.
+ *
+ * Diz "BTC", nao "BTC_THINGS", por uma restricao dura: linhas de resolucao e
+ * corpo na tela sao inversamente acoplados pela largura do container, em
+ * P = 137/R. Blackletter precisa de ~20 linhas para mostrar os terminais, o que
+ * com 10 caracteres daria 7px por caractere. Com 3 caracteres sao 20 linhas a
+ * 18.5px. O nome completo vive no logo do nav e no <h1> de .sr-only.
+ */
+const bannerLines = wordmark.replace(/\n+$/, "").split("\n");
+const bannerColumns = Math.max(...bannerLines.map((l: string) => l.length));
 
 const repos = [
   {
@@ -77,11 +87,9 @@ const repos = [
     <header class="landing__header">
       <h1 class="hero">
         <span class="sr-only">BTC_THINGS</span>
-        <pre
-          class="hero__art"
-          aria-hidden="true"
-          style={`--banner-cols: ${banner.columns}`}
-        >{banner.text}</pre>
+        <div class="hero__art" aria-hidden="true" style={`--banner-cols: ${bannerColumns}`}>
+          <pre>{bannerLines.join("\n")}</pre>
+        </div>
         <span class="hero__fallback" aria-hidden="true">BTC_THINGS</span>
       </h1>
       <p class="landing__subtitle">
@@ -139,13 +147,21 @@ const repos = [
     line-height: 1;
   }
   
+  /* Todas as linhas herdam o mesmo corpo, derivado do bloco mais largo, para o
+     caractere ter tamanho uniforme entre elas. */
   .hero__art {
-    font-family: var(--font);
     font-size: calc(100cqi / (var(--banner-cols) * 0.62));
-    line-height: 1.05;
     color: var(--accent-btc);
+    text-align: center;
+  }
+  
+  .hero__art pre {
+    font-family: var(--font);
+    font-size: inherit;
+    line-height: 1.02;
     white-space: pre;
-    overflow: hidden;
+    display: inline-block;
+    text-align: start;
   }
   
   .hero__fallback {

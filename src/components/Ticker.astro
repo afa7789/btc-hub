@@ -1,7 +1,9 @@
 ---
 ---
 
-<div class="ticker" id="ticker">
+<!-- transition:persist vai no elemento raiz, nao na tag do componente: em
+     componentes .astro a diretiva nao desce sozinha ate o DOM. -->
+<div class="ticker" id="ticker" transition:persist="ticker">
   <button type="button" class="ticker__pause" id="ticker-pause" aria-pressed="false">
     Pause prices
   </button>
@@ -266,16 +268,54 @@
     }
   }
 
-  document.getElementById('ticker-pause')?.addEventListener('click', (event) => {
-    const button = event.currentTarget;
+  // Delegado no document: o botao vive dentro do no persistido, mas delegar
+  // significa que nada precisa ser rebindado — e este script roda uma unica vez
+  // por sessao, ja que o router nao reexecuta scripts que ja rodaram.
+  document.addEventListener('click', (event) => {
+    const button = event.target instanceof Element
+      ? event.target.closest('#ticker-pause')
+      : null;
+    if (!button) return;
     const ticker = document.getElementById('ticker');
+    if (!ticker) return;
     const paused = ticker.dataset.paused !== 'true';
     ticker.dataset.paused = String(paused);
     button.setAttribute('aria-pressed', String(paused));
     button.textContent = paused ? 'Resume prices' : 'Pause prices';
   });
 
-  document.addEventListener('DOMContentLoaded', loadTicker);
+  /*
+   * A faixa e transition:persist, entao o mesmo no atravessa a navegacao — mas
+   * o router substitui o <body> inteiro, o que destaca e reinsere o no e faz o
+   * navegador reiniciar a animacao CSS do zero. Guardar e devolver o
+   * currentTime mantem o marquee exatamente onde estava.
+   */
+  let savedTime = null;
+
+  function trackAnimation() {
+    const track = document.getElementById('ticker-track');
+    return track?.getAnimations?.().find((a) => a.animationName === 'ticker-scroll')
+      ?? track?.getAnimations?.()[0]
+      ?? null;
+  }
+
+  document.addEventListener('astro:before-swap', () => {
+    savedTime = trackAnimation()?.currentTime ?? null;
+  });
+
+  document.addEventListener('astro:after-swap', () => {
+    if (savedTime == null) return;
+    const animation = trackAnimation();
+    if (animation) animation.currentTime = savedTime;
+  });
+
+  // Script de modulo: o DOM ja esta parseado quando ele roda. O guard cobre o
+  // caso de o bundle ser adiado alem do DOMContentLoaded.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadTicker, { once: true });
+  } else {
+    loadTicker();
+  }
 
   // Refresh every 2 minutes (matches cache TTL, avoids rate limits)
   setInterval(loadTicker, 2 * 60 * 1000);

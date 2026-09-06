@@ -64,14 +64,12 @@ const navItems = [
     gap: 1rem;
   }
   
-  /* Monoespacado de proposito: a home ja carrega o mesmo nome em ASCII
-     fraktur, e duas versoes goticas da marca na mesma tela competem. A chrome
-     fica terminal; o gotico vive nos titulos e no banner. */
   .nav__logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1;
     color: var(--accent);
   }
   
@@ -166,9 +164,11 @@ const navItems = [
 
 <script>
   // O abrir/fechar e CSS puro; o script so mantem aria-expanded em dia.
-  const input = document.getElementById('nav-open');
-
-  input?.addEventListener('change', () => {
+  // Delegado porque o router troca o <body> e o checkbox vira um no novo a
+  // cada navegacao — este script roda uma unica vez por sessao.
+  document.addEventListener('change', (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || input.id !== 'nav-open') return;
     input.setAttribute('aria-expanded', String(input.checked));
   });
 </script>

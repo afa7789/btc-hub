@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
 import Footer from "../components/Footer.astro";
 import Nav from "../components/Nav.astro";
@@ -48,13 +49,18 @@ const canonicalURL = new URL(
     
     <link rel="canonical" href={canonicalURL} />
 
+    <!-- Navegacao entre paginas vira troca no cliente: o documento nao recarrega
+         e o ticker (transition:persist) mantem animacao e dados. Sem JS o
+         componente some do caminho e os links voltam a ser navegacao normal. -->
+    <ClientRouter />
+
     <!-- A unica web font do site. display=swap com fallback monoespacado, para
          o texto nunca ficar invisivel enquanto ela carrega. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Pirata+One&display=swap"
     />
 
     <script is:inline>
@@ -69,6 +75,20 @@ const canonicalURL = new URL(
         } else {
           document.documentElement.removeAttribute("data-theme");
         }
+
+        // O router copia os atributos do <html> do documento novo por cima do
+        // atual, e o documento novo vem do disco sem data-theme. transition:persist
+        // nao se aplica ao <html>, entao o tema e carimbado no documento novo
+        // antes da troca — sem piscada e sem reset.
+        document.addEventListener("astro:before-swap", (event) => {
+          const theme = document.documentElement.getAttribute("data-theme");
+          const root = event.newDocument.documentElement;
+          if (theme) {
+            root.setAttribute("data-theme", theme);
+          } else {
+            root.removeAttribute("data-theme");
+          }
+        });
       })();
     </script>
   </head>

@@ -444,15 +444,29 @@ function clearCalculation() {
   window.location.reload();
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
+/*
+ * O ClientRouter troca o <body> sem recarregar o documento, e um script ja
+ * executado nao roda de novo. DOMContentLoaded so dispara na primeira carga,
+ * entao a inicializacao passa a pendurar em astro:page-load, que dispara na
+ * primeira carga e depois de cada navegacao. Os nos sao novos a cada troca, o
+ * que faz o rebind ser obrigatorio e, ao mesmo tempo, impossivel de duplicar.
+ */
+async function initDcaPage() {
+  // #calculate-btn tambem existe em /how-much-i-fucked-up, entao o guard usa um
+  // id exclusivo desta pagina.
+  if (!document.getElementById("dca-chart")) return; // outra pagina
+  const calculateBtn = document.getElementById("calculate-btn");
+
   // Preload bitcoin data
   await loadAssetData("bitcoin");
 
-  document.getElementById("calculate-btn").addEventListener("click", calculateDCA);
+  calculateBtn.addEventListener("click", calculateDCA);
   document.getElementById("clear-btn").addEventListener("click", clearCalculation);
   initializeDateInputs();
   loadLastCalculation();
-});
+}
+
+document.addEventListener("astro:page-load", initDcaPage);
 
 function initializeDateInputs() {
   document.querySelectorAll('input[type="date"]').forEach((input) => {
@@ -463,6 +477,8 @@ function initializeDateInputs() {
 }
 
 document.addEventListener("themechange", () => {
+  // O listener e global e sobrevive a navegacao; drawChart precisa do svg.
+  if (!document.getElementById("dca-chart")) return;
   const savedData = localStorage.getItem("lastDCACalculation");
   if (savedData) {
     try {
