@@ -11,7 +11,7 @@ const currentYear = new Date().getFullYear();
       <div class="footer__links">
         <a href="/" class="footer__link">HOME</a>
         <span class="footer__separator">|</span>
-        <a href="https://github.com" class="footer__link" target="_blank" rel="noopener">
+        <a href="https://github.com/afa7789/btc-things" class="footer__link" target="_blank" rel="noopener">
           GITHUB
         </a>
       </div>
@@ -56,6 +56,10 @@ const currentYear = new Date().getFullYear();
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    /* WCAG 2.5.8: 28x17 no mobile. */
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
   }
   
   .footer__separator {

@@ -1,12 +1,36 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { computeRegret, usd } from "../utils/prerender";
 
 const title = "HOW MUCH I FUCKED UP";
 const description =
   "Calculator to see how much Bitcoin you could have bought with USD at any point in history";
+
+// Computed at build time so the page opens on a real answer rather than an
+// empty form, and keeps showing one when JavaScript is unavailable. The client
+// re-runs this with a live CoinGecko quote as soon as it loads.
+const DEFAULTS = { date: "2020-01-01", usd: 1000 };
+const scenario = computeRegret(DEFAULTS);
+const priceNowDate = new Date(
+  `${scenario.priceNowDate}T00:00:00Z`,
+).toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  timeZone: "UTC",
+});
+const investedDate = new Date(`${scenario.date}T00:00:00Z`).toLocaleDateString(
+  "en-US",
+  {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  },
+);
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} prerendered>
   <style>
     .calculator-header {
       margin-bottom: 2em;
@@ -31,13 +55,19 @@ const description =
       margin-bottom: 1em;
     }
     
+    .prerendered-note {
+      margin-top: 1em;
+      font-size: 0.8em;
+      opacity: 0.65;
+    }
+    
     .calculator {
       max-width: 800px;
       margin: 0 auto;
       padding: 20px;
       border: 1px solid var(--border);
       border-radius: 8px;
-      background: var(--surface);
+      background: var(--bg-surface);
     }
     
     .calculator-form {
@@ -75,25 +105,14 @@ const description =
       margin-top: 5px;
     }
     
+    /* Appearance comes from .btn-primary in global.css; only layout here. */
     .calculate-btn {
       grid-column: 1 / -1;
-      padding: 15px;
-      background: var(--accent);
-      color: var(--bg);
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    
-    .calculate-btn:hover {
-      background: var(--accent-hover);
     }
     
     .calculate-btn:disabled {
-      background: var(--text-muted);
+      background: var(--fg-muted);
+      border-color: var(--fg-muted);
       cursor: not-allowed;
     }
     
@@ -127,10 +146,10 @@ const description =
     }
     
     .error-message {
-      color: #ff6384;
-      background: rgba(255, 99, 132, 0.1);
+      color: var(--status-negative);
+      border: 1px solid var(--status-negative);
       padding: 10px;
-      border-radius: 4px;
+      border-radius: 0;
       margin-top: 10px;
       text-align: center;
     }
@@ -171,46 +190,50 @@ const description =
         <div class="calculator-form">
           <div class="form-group">
             <label for="date-picker">Select Date:</label>
-            <input type="date" id="date-picker" value="2020-01-01">
-            <div class="date-display" id="selected-date"></div>
+            <input type="date" id="date-picker" value={scenario.date}>
+            <div class="date-display" id="selected-date">{investedDate} &#8212; BTC was {usd(scenario.priceThen)}</div>
           </div>
           
           <div class="form-group">
             <label for="usd-input">USD Amount to Invest:</label>
-            <input type="number" id="usd-input" value="1000" min="1" step="1" placeholder="Enter USD amount">
+            <input type="number" id="usd-input" value={scenario.usd} min="1" step="1" placeholder="Enter USD amount">
           </div>
           
-          <button class="calculate-btn" id="calculate-btn">CALCULATE</button>
+          <button type="button" class="calculate-btn btn-primary" id="calculate-btn">CALCULATE</button>
         </div>
         
         <div class="loading" id="loading">Calculating...</div>
-        <div class="error-message" id="error" style="display: none;"></div>
+        <div class="error-message" id="error" role="alert" style="display: none;"></div>
         
-        <div class="results" id="results" style="display: none;">
+        <div class="results" id="results" role="status">
           <div class="result-item">
             <span class="result-label">Investment Date:</span>
-            <span class="result-value" id="result-date">-</span>
+            <span class="result-value" id="result-date">{investedDate}</span>
           </div>
           <div class="result-item">
             <span class="result-label">Bitcoin Price on Date:</span>
-            <span class="result-value" id="result-btc-price">-</span>
+            <span class="result-value" id="result-btc-price">{usd(scenario.priceThen)}</span>
           </div>
           <div class="result-item">
             <span class="result-label">Bitcoin Amount You Could Have Bought:</span>
-            <span class="result-value" id="result-btc-amount">-</span>
+            <span class="result-value" id="result-btc-amount">{scenario.btcAmount.toFixed(8)}</span>
           </div>
           <div class="result-item">
             <span class="result-label">Current Bitcoin Price:</span>
-            <span class="result-value" id="result-current-price">-</span>
+            <span class="result-value" id="result-current-price">{usd(scenario.priceNow)}</span>
           </div>
           <div class="result-item">
             <span class="result-label">YOU COULD HAVE TODAY:</span>
-            <span class="result-value" id="result-value-today">-</span>
+            <span class="result-value" id="result-value-today">{usd(scenario.valueToday)}</span>
           </div>
           <div class="result-item">
             <span class="result-label">Profit Multiple:</span>
-            <span class="result-value" id="result-multiple">-</span>
+            <span class="result-value" id="result-multiple">{scenario.multiple.toFixed(2)}x</span>
           </div>
+          <p class="prerendered-note">
+            Prerendered with the last close in our dataset ({priceNowDate}). With
+            JavaScript on, the current price is refreshed from CoinGecko.
+          </p>
         </div>
       </div>
     </section>
@@ -294,7 +317,7 @@ const description =
     
     // Format date for display
     function formatDate(dateString) {
-      const date = new Date(dateString);
+      const date = new Date(dateString + 'T00:00:00');
       return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -361,7 +384,7 @@ const description =
         // Set up date picker with min/max from data
         datePicker.min = bitcoinData[0].date;
         datePicker.max = bitcoinData[bitcoinData.length - 1].date;
-        datePicker.value = bitcoinData[0].date;
+        // Keep the prerendered default date; only widen the allowed range.
         updateDateDisplay();
         
         loading.style.display = 'none';

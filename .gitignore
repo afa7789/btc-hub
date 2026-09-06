@@ -30,3 +30,10 @@ Thumbs.db
 
 # typescript
 *.tsbuildinfo
+
+# frontend audit — relatorios sao versionados, artefatos efemeros nao
+.ux-review/screenshots/
+.ux-review/audits/
+.ux-review/comparisons/
+.ux-review/harness/
+.ux-review/discovery.raw.md

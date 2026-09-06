@@ -2,14 +2,22 @@
 import "../styles/global.css";
 import Footer from "../components/Footer.astro";
 import Nav from "../components/Nav.astro";
-import ThemeToggle from "../components/ThemeToggle.astro";
+import NoScriptBanner from "../components/NoScriptBanner.astro";
+import Ticker from "../components/Ticker.astro";
+import UtilityBar from "../components/UtilityBar.astro";
 
 interface Props {
   title: string;
   description?: string;
+  /** True only for pages that compute a default scenario at build time. */
+  prerendered?: boolean;
 }
 
-const { title, description = "Unified Bitcoin Tools Platform" } = Astro.props;
+const {
+  title,
+  description = "Unified Bitcoin Tools Platform",
+  prerendered = false,
+} = Astro.props;
 const canonicalURL = new URL(
   Astro.url.pathname,
   Astro.site || "https://btc-things.example.com",
@@ -39,16 +47,35 @@ const canonicalURL = new URL(
     <meta property="twitter:description" content={description} />
     
     <link rel="canonical" href={canonicalURL} />
+
+    <script is:inline>
+      // Applied in <head>, before first paint, so a light-theme visitor never
+      // sees a flash of the dark ground. ThemeToggle only handles the click.
+      (() => {
+        const saved = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (saved === "light" || (!saved && !prefersDark)) {
+          document.documentElement.setAttribute("data-theme", "light");
+        } else {
+          document.documentElement.removeAttribute("data-theme");
+        }
+      })();
+    </script>
   </head>
   <body>
-    <ThemeToggle />
+    <a href="#main" class="skip-link">Skip to content</a>
+    <NoScriptBanner prerendered={prerendered} />
+    <Ticker />
 
     <div class="container">
+      <UtilityBar>
+        <slot name="utility" />
+      </UtilityBar>
       <Nav />
     </div>
     <div class="container">
       
-      <main class="main">
+      <main class="main" id="main" tabindex="-1">
         <slot />
       </main>
       

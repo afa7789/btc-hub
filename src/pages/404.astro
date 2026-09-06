@@ -1,0 +1,67 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+/**
+ * Without this, an unknown URL fell through to whatever nginx serves — the
+ * layout shell with no content at best. Every route below is a real page, so
+ * the fastest recovery is the list itself.
+ */
+const routes = [
+  { href: "/", label: "HOME" },
+  { href: "/sem-melhores", label: "SEM MELHORES" },
+  { href: "/all-the-money", label: "ALL THE MONEY IN THE WORLD" },
+  { href: "/dca", label: "DCA CALCULATOR" },
+  { href: "/debase", label: "DEBASE" },
+  { href: "/satsukashii", label: "BIG MAC INDEX" },
+  { href: "/how-much-i-fucked-up", label: "HOW MUCH I FUCKED UP" },
+];
+---
+
+<BaseLayout
+  title="404"
+  description="That page does not exist on BTC_THINGS."
+>
+  <article class="not-found">
+    <h1>404 &mdash; NO SUCH PAGE</h1>
+    <p class="not-found__lede">
+      That URL is not one of ours. Everything BTC_THINGS has is listed below.
+    </p>
+
+    <ul class="not-found__routes">
+      {routes.map(route => (
+        <li><a href={route.href}>{route.label}</a></li>
+      ))}
+    </ul>
+  </article>
+</BaseLayout>
+
+<style>
+  .not-found {
+    max-width: 640px;
+  }
+
+  .not-found__lede {
+    margin-bottom: 2rem;
+    color: var(--fg-secondary);
+  }
+
+  .not-found__routes {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  /* WCAG 2.5.8: eram 18px no desktop e 14px no mobile, na pagina cuja unica
+     funcao e recuperacao. */
+  .not-found__routes a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+  }
+
+  .not-found__routes a::before {
+    content: "> ";
+    color: var(--fg-muted);
+  }
+</style>

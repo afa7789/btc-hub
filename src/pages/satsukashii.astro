@@ -33,7 +33,17 @@ const description =
       margin: 20px auto;
     }
 
-    .chart-container svg {
+    /*
+     * O tamanho vive aqui, nao no D3: um .style() inline vencia a media query
+     * abaixo, e com o viewBox de 960 reduzido a 362px num viewport de 390 o
+     * rotulo de 11px renderizava a 4.15px.
+     */
+    .chart-container :global(svg text) {
+      font-size: 11px;
+    }
+
+    /* The SVG is appended by D3 at runtime and has no Astro scope attribute. */
+    .chart-container :global(svg) {
       width: 100%;
       height: auto;
       display: block;
@@ -49,8 +59,9 @@ const description =
     }
 
     @media (max-width: 600px) {
-      .chart-container svg text {
-        font-size: 9px;
+      /* Compensa a reducao do viewBox: 28 x 0.377 = ~10.5px reais. */
+      .chart-container :global(svg text) {
+        font-size: 28px;
       }
     }
   </style>
@@ -92,13 +103,19 @@ const description =
         const container = document.getElementById('satsukashii-chart');
         if (!container) return;
 
+        // This chart is drawn on the page background, so unlike /debase it
+        // follows the theme. Colours come from the tokens for that reason.
         const styles = getComputedStyle(document.documentElement);
-        const bgColor = styles.getPropertyValue('--bg').trim() || '#0a0a0a';
-        const fgColor = styles.getPropertyValue('--fg').trim() || '#e0e0e0';
-        const borderColor = styles.getPropertyValue('--border').trim() || '#444';
+        const token = (name, fallback) =>
+          styles.getPropertyValue(name).trim() || fallback;
 
-        const GREEN = '#22c55e';
-        const ORANGE = '#f97316';
+        const bgColor = token('--bg-primary', '#0a0a0a');
+        const fgColor = token('--fg-primary', '#e0e0e0');
+        const borderColor = token('--border-strong', '#444');
+
+        // Green is the fiat side (Big Mac in USD), orange the Bitcoin side.
+        const GREEN = token('--series-fiat', '#22c55e');
+        const ORANGE = token('--accent-btc', '#f97316');
 
         const width = 960;
         const height = 420;
@@ -157,14 +174,14 @@ const description =
         const xAxis = g.append('g')
           .attr('transform', `translate(0,${innerH})`)
           .call(d3.axisBottom(x).ticks(d3.timeYear.every(2)).tickFormat(d3.timeFormat('%Y')));
-        xAxis.selectAll('text').attr('fill', fgColor).style('font-family', 'inherit').style('font-size', '11px');
+        xAxis.selectAll('text').attr('fill', fgColor).style('font-family', 'inherit');
         xAxis.selectAll('line').attr('stroke', fgColor);
         xAxis.select('.domain').attr('stroke', fgColor);
 
         // Left Y axis (USD)
         const leftAxis = g.append('g')
           .call(d3.axisLeft(yLeft).ticks(6).tickFormat(d => `$${d}`));
-        leftAxis.selectAll('text').attr('fill', GREEN).style('font-family', 'inherit').style('font-size', '11px');
+        leftAxis.selectAll('text').attr('fill', GREEN).style('font-family', 'inherit');
         leftAxis.selectAll('line').attr('stroke', GREEN).attr('opacity', 0.5);
         leftAxis.select('.domain').attr('stroke', GREEN);
 
@@ -179,7 +196,7 @@ const description =
         const rightAxis = g.append('g')
           .attr('transform', `translate(${innerW},0)`)
           .call(d3.axisRight(yRight).tickValues(logTicks).tickFormat(formatSat));
-        rightAxis.selectAll('text').attr('fill', ORANGE).style('font-family', 'inherit').style('font-size', '11px');
+        rightAxis.selectAll('text').attr('fill', ORANGE).style('font-family', 'inherit');
         rightAxis.selectAll('line').attr('stroke', ORANGE).attr('opacity', 0.5);
         rightAxis.select('.domain').attr('stroke', ORANGE);
 
@@ -222,7 +239,7 @@ const description =
           .attr('text-anchor', 'middle')
           .attr('fill', GREEN)
           .style('font-family', 'inherit')
-          .style('font-size', '11px')
+          
           .text('Big Mac Price (USD)');
 
         g.append('text')
@@ -232,7 +249,7 @@ const description =
           .attr('text-anchor', 'middle')
           .attr('fill', ORANGE)
           .style('font-family', 'inherit')
-          .style('font-size', '11px')
+          
           .text('Satoshis per Big Mac (log)');
 
         // Legend
@@ -242,11 +259,11 @@ const description =
 
         // USD legend
         legendG.append('rect').attr('x', 0).attr('y', -10).attr('width', 14).attr('height', 14).attr('fill', GREEN);
-        legendG.append('text').attr('x', 20).attr('y', 2).attr('fill', fgColor).style('font-family', 'inherit').style('font-size', '11px').text('Big Mac USD');
+        legendG.append('text').attr('x', 20).attr('y', 2).attr('fill', fgColor).style('font-family', 'inherit').text('Big Mac USD');
 
         // Satoshi legend
         legendG.append('rect').attr('x', 140).attr('y', -10).attr('width', 14).attr('height', 14).attr('fill', ORANGE);
-        legendG.append('text').attr('x', 160).attr('y', 2).attr('fill', fgColor).style('font-family', 'inherit').style('font-size', '11px').text('Satoshis per Big Mac');
+        legendG.append('text').attr('x', 160).attr('y', 2).attr('fill', fgColor).style('font-family', 'inherit').text('Satoshis per Big Mac');
 
         // Stats
         if (parsed.length > 0) {
@@ -261,5 +278,9 @@ const description =
     }
 
     document.addEventListener('DOMContentLoaded', drawChart);
+
+    // Colours are read from the tokens at draw time, so a theme switch needs a
+    // repaint to take effect.
+    document.addEventListener('themechange', drawChart);
   </script>
 </BaseLayout>

@@ -1,13 +1,60 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import {
+  computeDca,
+  lastDate,
+  sampleTransactions,
+  usd,
+} from "../utils/prerender";
 
 const title = "DCA Calculator";
 const description =
   "Dollar Cost Averaging calculator for Bitcoin, Ethereum, Monero, Gold, and Silver";
+
+// The default scenario is computed at build time so the page opens on a real
+// result instead of an empty form — and still shows one without JavaScript.
+// These values must match the form defaults below and dca.js's clear() reset.
+const DEFAULTS = {
+  asset: "bitcoin",
+  amount: 100,
+  frequency: "monthly" as const,
+  startDate: "2020-01-01",
+  // Runs to the end of the dataset, so "current value" stays current as the
+  // CSVs are refreshed instead of freezing on a hardcoded date.
+  endDate: lastDate("bitcoin"),
+};
+
+const scenario = computeDca(DEFAULTS);
+const rows = sampleTransactions(scenario.transactions);
+const sampled = rows.length < scenario.transactions.length;
+
+// Mirrors drawChart() in dca.js, but painted in currentColor so it survives a
+// theme switch with no script running.
+const CHART = { x: 50, y: 50, width: 700, height: 200 };
+const points = scenario.transactions;
+const maxInvested = Math.max(...points.map((t) => t.totalInvested));
+const maxValue = Math.max(...points.map((t) => t.totalUnits * t.price));
+const maxY = Math.max(maxInvested, maxValue);
+const scaleX = (i: number) =>
+  CHART.x + (i / Math.max(points.length - 1, 1)) * CHART.width;
+const scaleY = (v: number) =>
+  CHART.y + CHART.height - (v / maxY) * CHART.height;
+const polyline = (pick: (t: (typeof points)[number]) => number) =>
+  points.map((t, i) => `${scaleX(i)},${scaleY(pick(t))}`).join(" ");
+const investedLine = polyline((t) => t.totalInvested);
+const valueLine = polyline((t) => t.totalUnits * t.price);
+const short = (v: number) =>
+  v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v.toFixed(0)}`;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} prerendered>
   <style>
+    .disclaimer {
+      font-weight: bold;
+      color: var(--data-gold);
+      margin-bottom: 1em;
+    }
+    
     .dca-header {
       margin-bottom: 2em;
     }
@@ -41,12 +88,10 @@ const description =
     }
     
     #results {
-      display: none;
       margin-top: 2em;
     }
     
     #transactions {
-      display: none;
       margin-top: 2em;
     }
     
@@ -55,11 +100,11 @@ const description =
     }
     
     .profit-positive {
-      color: #22c55e;
+      color: var(--status-positive);
     }
     
     .profit-negative {
-      color: #ef4444;
+      color: var(--status-negative);
     }
     
     #dca-chart {
@@ -69,14 +114,22 @@ const description =
       border: var(--border-width) solid var(--border);
     }
     
-    #dca-chart text {
+    /* D3 creates these nodes at runtime, so they carry no Astro scope
+       attribute — :global() is required or the rules never apply. */
+    #dca-chart :global(text) {
       font-family: var(--font);
       font-size: 12px;
       fill: var(--fg);
     }
-    
-    #dca-chart line {
+
+    #dca-chart :global(line) {
       stroke: var(--border);
+    }
+    
+    /* Com a raiz de volta a 15px no mobile, as 5 colunas monoespacadas passam
+       de 390px. Rola dentro do proprio contexto em vez de empurrar a pagina. */
+    .table-scroll {
+      overflow-x: auto;
     }
     
     table {
@@ -88,7 +141,14 @@ const description =
     th, td {
       border: var(--border-width) solid var(--border);
       padding: 0.5rem;
-      text-align: left;
+      text-align: start;
+    }
+    
+    /* O seletor escopado acima compila para th[data-astro-cid-...] — (0,1,1),
+       que vence o .num global em (0,1,0). A regra precisa existir aqui. */
+    th.num,
+    td.num {
+      text-align: right;
     }
     
     @media (max-width: 600px) {
@@ -117,7 +177,7 @@ const description =
       <h1>DCA Calculator</h1>
     </header>
 
-    <p class="disclaimer" style="font-weight: bold; color: #ffb300; margin-bottom: 1em;">
+    <p class="disclaimer">
       Disclaimer: This is a demo tool for educational purposes. Data and calculations may not be as accurate as they appear. 
       Always verify with primary sources before making financial decisions.
     </p>
@@ -150,28 +210,28 @@ const description =
       
       <div class="input-group">
         <label for="start-date">Start:</label>
-        <input type="date" id="start-date" value="2020-01-01">
+        <input type="date" id="start-date" value={DEFAULTS.startDate}>
       </div>
       
       <div class="input-group">
         <label for="end-date">End:</label>
-        <input type="date" id="end-date" value="2024-12-31">
+        <input type="date" id="end-date" value={DEFAULTS.endDate}>
       </div>
       
       <div class="button-group">
-        <button id="calculate-btn">Calculate</button>
-        <button id="clear-btn">Clear</button>
+        <button type="button" id="calculate-btn" class="btn-primary">Calculate</button>
+        <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
       </div>
     </section>
 
-    <section id="results">
+    <section id="results" role="status">
       <h2>Results</h2>
-      <p class="result-item">Total Invested: <span id="total-invested">$0</span></p>
-      <p class="result-item">Asset Acquired: <span id="bitcoin-acquired">0</span></p>
-      <p class="result-item">Current Value: <span id="current-value">$0</span></p>
-      <p class="result-item">Profit/Loss: <span id="profit-loss">$0</span></p>
-      <p class="result-item">Average Price: <span id="average-price">$0</span></p>
-      <p class="result-item">Purchases: <span id="purchase-count">0</span></p>
+      <p class="result-item">Total Invested: <span id="total-invested">{usd(scenario.totalInvested)}</span></p>
+      <p class="result-item">Asset Acquired: <span id="bitcoin-acquired">{scenario.totalUnits.toFixed(scenario.decimals)} {scenario.symbol}</span></p>
+      <p class="result-item">Current Value: <span id="current-value">{usd(scenario.currentValue)}</span></p>
+      <p class="result-item">Profit/Loss: <span id="profit-loss" class={scenario.profitLoss >= 0 ? "profit-positive" : "profit-negative"}>{usd(scenario.profitLoss)} ({scenario.profitLoss >= 0 ? "+" : ""}{scenario.profitLossPercent.toFixed(1)}%)</span></p>
+      <p class="result-item">Average Price: <span id="average-price">{usd(scenario.averagePrice)}</span></p>
+      <p class="result-item">Purchases: <span id="purchase-count">{scenario.transactions.length.toLocaleString("en-US")}</span></p>
     </section>
 
     <section id="transactions">
@@ -182,25 +242,47 @@ const description =
         <line x1="50" y1="50" x2="50" y2="250" stroke="currentColor" stroke-width="1"/>
         <line x1="50" y1="250" x2="750" y2="250" stroke="currentColor" stroke-width="1"/>
         <text x="10" y="265" font-family="monospace" font-size="11" fill="currentColor">0</text>
-        <text x="10" y="155" font-family="monospace" font-size="11" fill="currentColor">Mid</text>
-        <text x="10" y="65" font-family="monospace" font-size="11" fill="currentColor">Max</text>
+        <text x="10" y="155" font-family="monospace" font-size="11" fill="currentColor">{short(maxY / 2)}</text>
+        <text x="10" y="65" font-family="monospace" font-size="11" fill="currentColor">{short(maxY)}</text>
         <text x="50" y="280" font-family="monospace" font-size="11" fill="currentColor">Start</text>
         <text x="690" y="280" font-family="monospace" font-size="11" fill="currentColor">End</text>
+        <polyline class="chart-line" points={investedLine} stroke="currentColor" stroke-width="2" stroke-dasharray="5,5" fill="none" />
+        <polyline class="chart-line" points={valueLine} stroke="currentColor" stroke-width="3" fill="none" />
+        <text class="chart-label" x="280" y="30" font-family="monospace" font-size="12" fill="currentColor">--- Total Invested ({short(maxInvested)})</text>
+        <text class="chart-label" x="280" y="50" font-family="monospace" font-size="12" fill="currentColor">&#8212; Portfolio Value ({short(maxValue)})</text>
       </svg>
       
-      <table id="transactions-table">
+      <!-- tabindex: uma regiao rolavel precisa ser alcancavel por teclado. -->
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Transactions table">
+        <table id="transactions-table">
         <thead>
           <tr>
             <th>Date</th>
             <th>Amount</th>
-            <th>BTC Price</th>
-            <th>BTC Bought</th>
-            <th>Total BTC</th>
+            <th class="num">Price</th>
+            <th class="num">Bought</th>
+            <th class="num">Total</th>
           </tr>
         </thead>
         <tbody id="transactions-tbody">
-        </tbody>
-      </table>
+          {sampled && (
+            <tr>
+              <td colspan="5" style="text-align: center; font-style: italic;">
+                Showing {rows.length} evenly spaced transactions from {scenario.transactions.length} total
+              </td>
+            </tr>
+          )}
+          {rows.map(tx => (
+            <tr>
+              <td>{tx.date}</td>
+              <td class="num">{usd(tx.amount)}</td>
+              <td class="num">{usd(tx.price)}</td>
+              <td class="num">{tx.unitsBought.toFixed(scenario.decimals)}</td>
+              <td class="num">{tx.totalUnits.toFixed(scenario.decimals)}</td>
+            </tr>
+          ))}
+        </table>
+      </div>
     </section>
   </article>
 

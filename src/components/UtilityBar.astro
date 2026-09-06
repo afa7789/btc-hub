@@ -1,0 +1,69 @@
+---
+import ThemeToggle from "./ThemeToggle.astro";
+
+/**
+ * Single home for the global controls. Pages that need their own switch (the
+ * language toggle on /sem-melhores, for one) render it into the `utility` slot
+ * instead of floating a second button over the corner of the page.
+ */
+---
+
+<div class="utility-bar">
+  <span class="utility-bar__status" id="api-status" data-state="unknown" role="status">
+    [CG_API: <span id="api-status-value">CHECKING</span>]
+  </span>
+  <noscript>
+    <style>
+      #api-status { display: none; }
+    </style>
+    <span class="utility-bar__status" data-state="offline">[CG_API: NO_JS]</span>
+  </noscript>
+
+  <slot />
+
+  <ThemeToggle />
+</div>
+
+<style>
+  .utility-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.4rem 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .utility-bar__status {
+    font-size: var(--text-micro);
+    letter-spacing: 1px;
+    color: var(--fg-muted);
+    white-space: nowrap;
+  }
+
+  .utility-bar__status[data-state="online"] {
+    color: var(--status-positive);
+  }
+
+  .utility-bar__status[data-state="offline"] {
+    color: var(--status-negative);
+  }
+
+  .utility-bar__status[data-state="cached"] {
+    color: var(--data-gold);
+  }
+</style>
+
+<script is:inline>
+  // Ticker.astro is the only thing that actually talks to CoinGecko, so it
+  // reports what happened and this bar just renders the verdict.
+  document.addEventListener("cg-api-status", (event) => {
+    const status = event.detail;
+    const host = document.getElementById("api-status");
+    const value = document.getElementById("api-status-value");
+    if (!host || !value) return;
+    host.dataset.state = status;
+    value.textContent = status.toUpperCase();
+  });
+</script>

@@ -34,6 +34,8 @@ interface LanguageTexts {
   circulatingSupply: string;
   totalSupply: string;
   viewOnCoingecko: string;
+  staleNotice: string;
+  exampleNotice: string;
 }
 
 // === CONFIG ===
@@ -84,6 +86,10 @@ const texts: Record<"pt" | "en", LanguageTexts> = {
     circulatingSupply: "Supply Circulante:",
     totalSupply: "Supply Total:",
     viewOnCoingecko: "Ver no CoinGecko",
+    staleNotice:
+      "A API do CoinGecko não respondeu. Mostrando os últimos dados salvos neste navegador — os preços podem estar desatualizados.",
+    exampleNotice:
+      "A API do CoinGecko não respondeu e não há dados salvos neste navegador. Mostrando um exemplo fixo com poucas moedas — não são preços reais.",
   },
   en: {
     searchPlaceholder: "Search cryptocurrencies...",
@@ -111,10 +117,19 @@ const texts: Record<"pt" | "en", LanguageTexts> = {
     circulatingSupply: "Circulating Supply:",
     totalSupply: "Total Supply:",
     viewOnCoingecko: "View on CoinGecko",
+    staleNotice:
+      "The CoinGecko API did not respond. Showing the last data saved in this browser — prices may be out of date.",
+    exampleNotice:
+      "The CoinGecko API did not respond and no data is saved in this browser. Showing a fixed sample of a few coins — these are not real prices.",
   },
 };
 
 // === CACHE ===
+// "live"    = data straight from CoinGecko
+// "stale"   = the API failed, we are showing what localStorage still had
+// "example" = the API failed and there was nothing cached: hardcoded sample
+type DataStatus = "live" | "stale" | "example";
+let dataStatus: DataStatus = "live";
 let cachedData: CoinData[] | null = null;
 let lastFetchTime = 0;
 const CACHE_DURATION = 30000; // 30s
@@ -133,9 +148,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupEventListeners();
   setupModalEvents();
   updateLanguage();
-
-  // Sync theme toggle button with global theme
-  updateThemeButton();
 });
 
 // === DATA LOADING ===
@@ -162,15 +174,12 @@ async function fetchCryptoData() {
 
   try {
     console.log("Fetching new data from API...");
-    const response = await fetch(
+    const response = await fetchWithRetry(
       "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1",
     );
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     const data: CoinData[] = await response.json();
+    dataStatus = "live";
     cacheData(data);
     saveToLocalStorage(data);
     loadDataFromCache();
@@ -179,19 +188,59 @@ async function fetchCryptoData() {
 
     if (cachedData) {
       console.log("Using in-memory cache due to error");
+      dataStatus = "stale";
       loadDataFromCache();
     } else {
       const localData = loadFromLocalStorage();
       if (localData) {
         console.log("Using localStorage as fallback");
+        dataStatus = "stale";
         cacheData(localData);
         loadDataFromCache();
       } else {
         console.log("No data available, loading example data");
+        dataStatus = "example";
         loadExampleData();
       }
     }
   }
+}
+
+// The CoinGecko free tier rate-limits aggressively, and a 429 comes back
+// without CORS headers, so it surfaces as a network failure. One delayed
+// retry turns most of those into a normal load instead of a fallback.
+async function fetchWithRetry(url: string, retryDelayMs = 2000) {
+  try {
+    const response = await fetch(url);
+    if (response.ok) return response;
+    throw new Error(`HTTP error! status: ${response.status}`);
+  } catch (error) {
+    await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response;
+  }
+}
+
+// Tells the reader when the table is not showing live data. Without it the
+// example fallback looks exactly like a real (but much shorter) top 100.
+function updateDataNotice() {
+  const notice = document.getElementById("dataNotice");
+  if (!notice) return;
+
+  if (dataStatus === "live") {
+    notice.textContent = "";
+    notice.hidden = true;
+    return;
+  }
+
+  notice.textContent =
+    dataStatus === "stale"
+      ? texts[currentLanguage].staleNotice
+      : texts[currentLanguage].exampleNotice;
+  notice.hidden = false;
 }
 
 function isValidCache() {
@@ -307,6 +356,7 @@ function loadExampleData() {
 function renderCryptoList(filterText = "") {
   const container = document.getElementById("cryptoList");
   if (!container) return;
+  updateDataNotice();
   container.innerHTML = "";
 
   if (isAdminMode) {
@@ -421,7 +471,8 @@ function createCoinRow(coin: CoinData, position: number): HTMLTableRowElement {
   const changeCell = document.createElement("td");
   changeCell.className = "text-right column-change";
   const change24h = coin.price_change_percentage_24h || 0;
-  const changeColor = change24h >= 0 ? "var(--accent-gold)" : "#ff0000";
+  const changeColor =
+    change24h >= 0 ? "var(--status-positive)" : "var(--status-negative)";
   changeCell.style.color = changeColor;
   changeCell.textContent = `${change24h >= 0 ? "+" : ""}${change24h.toFixed(2)}%`;
 
@@ -556,33 +607,6 @@ function setupEventListeners() {
   if (languageToggle) {
     languageToggle.addEventListener("click", toggleLanguage);
   }
-
-  // Listen for global theme changes
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.attributeName === "data-theme") {
-        updateThemeButton();
-      }
-    });
-  });
-
-  observer.observe(document.documentElement, { attributes: true });
-
-  // Add click handler for the local theme toggle button
-  const themeToggle = document.getElementById("themeToggle") as HTMLButtonElement | null;
-  if (themeToggle) {
-    themeToggle.addEventListener("click", () => {
-      const isLight = document.documentElement.getAttribute("data-theme") === "light";
-      if (isLight) {
-        document.documentElement.removeAttribute("data-theme");
-        localStorage.setItem("theme", "dark");
-      } else {
-        document.documentElement.setAttribute("data-theme", "light");
-        localStorage.setItem("theme", "light");
-      }
-      updateThemeButton();
-    });
-  }
 }
 
 function handleAdminMode(e: KeyboardEvent) {
@@ -689,19 +713,8 @@ function updateLanguage() {
   }
 
   document.documentElement.lang = currentLanguage === "pt" ? "pt-BR" : "en";
-}
 
-// === THEME ===
-
-function updateThemeButton() {
-  const themeToggle = document.getElementById(
-    "themeToggle",
-  ) as HTMLButtonElement | null;
-  if (!themeToggle) return;
-
-  const isLight =
-    document.documentElement.getAttribute("data-theme") === "light";
-  themeToggle.textContent = isLight ? "🌙" : "☀️";
+  updateDataNotice();
 }
 
 // Cleanup

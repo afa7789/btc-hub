@@ -1,17 +1,154 @@
+/*
+ * BTC_THINGS design system — see DESIGN.md.
+ *
+ * Tokens come in two layers. The semantic layer (--bg-*, --fg-*, --accent-*,
+ * --status-*) is the one to reach for in new code. The legacy layer (--bg,
+ * --fg, --accent, --border) is kept as aliases because every tool page and the
+ * standalone scripts in public/ still reference it; it resolves to the
+ * semantic tokens, so both stay in sync.
+ *
+ * Light theme redefines the semantic layer only. The accent and status colors
+ * are darkened there — #ff9900 and #00ff66 are built for a black ground and
+ * fall under 3:1 contrast on white.
+ */
+
 :root {
-  --bg: #000;
-  --fg: #fff;
-  --accent: #f7931a;
-  --accent-gold: #ffd700;
-  --border: #fff;
-  --font: "Courier New", Courier, monospace;
+  /* Bases de fundo */
+  --bg-primary: #000000;
+  --bg-surface: #0a0a0a;
+  --bg-elevated: #141414;
+  --bg-highlight: #1a1a1a;
+
+  /* Linhas e contornos */
+  --border-subtle: #222222;
+  --border-strong: #ffffff;
+  --border-accent: #ff9900;
+
+  /* Tipografia */
+  --fg-primary: #ffffff;
+  --fg-secondary: #aaaaaa;
+  /* #666 dava 3.66:1 sobre preto — abaixo de AA para texto normal. */
+  --fg-muted: #8c8c8c;
+
+  /* Ação e semântica */
+  --accent-btc: #ff9900;
+  --accent-btc-dim: #cc7a00;
+  /* Texto sobre um fundo --accent-btc; no claro o acento escurece e o preto
+     cairia para 4.30:1. */
+  --on-accent: #000000;
+  --status-positive: #00ff66;
+  --status-negative: #ff3333;
+  --data-gold: #ffd700;
+  --data-cyan: #00e5ff;
+  --status-warning: #ffb300;
+
+  /*
+   * Séries de dados. Cada ativo tem uma cor fixa: BTC é laranja em qualquer
+   * gráfico do site, ETH é azul, e assim por diante. Reconhecer a série pela
+   * cor só funciona se ela não mudar de página para página.
+   */
+  --series-btc: #f7931a;
+  --series-eth: #627eea;
+  --series-xmr: #ff6600;
+  --series-gold: #ffd700;
+  --series-silver: #c0c0c0;
+  --series-srs: #1a73e8;
+  --series-eth-stake: #a35fd1; /* #6f2c91 dava 2.31:1 sobre o canvas escuro */
+  --series-fiat: #22c55e;
+  /*
+   * Eixo de variante, nao de ativo: cada grafico do /debase desenha a mesma
+   * serie em nominal / ajustada-fixa / ajustada-1971. Antes eram os nomes CSS
+   * crus "blue" (2.30:1) e "purple" (2.10:1), abaixo do minimo de 3:1 para
+   * elemento nao textual sobre --chart-bg.
+   */
+  --series-real-fixed: #4a9eff;
+  --series-real-1971: #22c55e;
+
+  /*
+   * Canvas fixo escuro. Os gráficos do /debase desenham as séries acima sobre
+   * fundo preto em qualquer tema — no claro, prata e ouro sumiriam. Estes três
+   * tokens são deliberadamente ausentes do bloco [data-theme="light"].
+   */
+  --chart-bg: #0a0a0a;
+  --chart-ink: #ffffff;
+  --chart-grid: #444444;
+  /*
+   * A legenda do D3 e desenhada abaixo do painel, sobre o fundo da PAGINA, nao
+   * sobre o canvas. Por isso ela precisa virar com o tema — ao contrario dos
+   * tres tokens acima, que sao deliberadamente fixos.
+   */
+  --chart-legend-ink: var(--fg-primary);
+
+  /* Tipografia — stack e escala */
+  --font: "Courier New", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono",
+    Menlo, Consolas, monospace;
+  --text-display: 1.75rem; /* 28px — H1 */
+  --text-section: 1.25rem; /* 20px — H2 */
+  --text-card: 0.9375rem; /* 15px — H3 */
+  --text-body: 0.8125rem; /* 13px */
+  --text-micro: 0.6875rem; /* 11px — tags e timestamps */
+
   --border-width: 2px;
+
+  /* Faz o date picker, o scrollbar e os widgets nativos seguirem o tema. */
+  color-scheme: dark;
+
+  /* Aliases legados */
+  --bg: var(--bg-primary);
+  --fg: var(--fg-primary);
+  --surface: var(--bg-surface);
+  --accent: var(--accent-btc);
+  --accent-gold: var(--data-gold);
+  --border: var(--border-strong);
 }
 
 [data-theme="light"] {
-  --bg: #fff;
-  --fg: #000;
-  --border: #000;
+  --bg-primary: #ffffff;
+  --bg-surface: #f5f5f5;
+  --bg-elevated: #ebebeb;
+  --bg-highlight: #e0e0e0;
+
+  --border-subtle: #dddddd;
+  --border-strong: #000000;
+  --border-accent: #9c5800;
+
+  --fg-primary: #000000;
+  --fg-secondary: #444444;
+  /* #767676 so passava sobre branco puro (4.54:1); falhava em --bg-surface
+     (4.17:1), --bg-elevated (3.81:1) e --bg-highlight (3.44:1). */
+  --fg-muted: #5f5f5f;
+
+  /* #a85f00 dava 4.47:1 sobre --bg-surface — errava o AA por 0.03. */
+  --accent-btc: #9c5800;
+  --accent-btc-dim: #7a4400;
+  --on-accent: #ffffff;
+  --status-positive: #00803a;
+  --status-negative: #cc0000;
+  --data-gold: #8a7100;
+  --data-cyan: #006d7a;
+  --status-warning: #8a5a00;
+
+  /* Só as séries desenhadas sobre o fundo da página precisam escurecer. */
+  --series-fiat: #00803a;
+
+  color-scheme: light;
+}
+
+/* WCAG 2.4.1: 10 controles de chrome precedem o conteudo em toda pagina. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+
+.skip-link:focus-visible {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 1000;
+  padding: 0.5rem 1rem;
+  background: var(--bg-primary);
+  color: var(--fg-primary);
+  border: var(--border-width) solid var(--border-accent);
 }
 
 *,
@@ -24,14 +161,15 @@
 
 html {
   font-family: var(--font);
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 1.6;
   -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background-color: var(--bg);
-  color: var(--fg);
-  border: var(--border-width) solid var(--border);
+  background-color: var(--bg-primary);
+  color: var(--fg-primary);
+  border: var(--border-width) solid var(--border-strong);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -44,59 +182,196 @@ h4,
 h5,
 h6 {
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  border-bottom: var(--border-width) solid var(--border);
+  /* Sem isto os headings herdavam o 1.6 do corpo e um titulo de duas linhas
+     deixava de ler como uma unidade. */
+  line-height: 1.15;
+  text-wrap: balance;
+  border-bottom: var(--border-width) solid var(--border-strong);
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
 }
 
+h1 {
+  font-size: var(--text-display);
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+h2 {
+  font-size: var(--text-section);
+  font-weight: bold;
+  letter-spacing: 1.5px;
+}
+
+h3 {
+  font-size: var(--text-card);
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+h4,
+h5,
+h6 {
+  font-size: var(--text-body);
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
 a {
-  color: var(--accent);
+  color: var(--accent-btc);
   text-decoration: none;
 }
 
 a:hover {
   text-decoration: underline;
-  color: var(--accent-gold);
+  color: var(--data-gold);
+}
+
+:focus-visible {
+  outline: var(--border-width) solid var(--border-accent);
+  outline-offset: 2px;
 }
 
 button {
   font-family: inherit;
   font-size: inherit;
-  background: var(--bg);
-  color: var(--fg);
-  border: var(--border-width) solid var(--border);
+  background: var(--bg-primary);
+  color: var(--fg-primary);
+  border: var(--border-width) solid var(--border-strong);
   padding: 0.5rem 1rem;
   cursor: pointer;
   text-transform: uppercase;
 }
 
 button:hover {
-  background: var(--fg);
-  color: var(--bg);
+  background: var(--fg-primary);
+  color: var(--bg-primary);
+}
+
+/* Ação principal de uma página: calcular, submeter. */
+.btn-primary {
+  background: var(--accent-btc);
+  color: var(--on-accent);
+  font-weight: bold;
+  border: var(--border-width) solid var(--accent-btc);
+  border-radius: 0;
+  padding: 12px 24px;
+}
+
+.btn-primary:hover {
+  background: var(--bg-primary);
+  color: var(--accent-btc);
+}
+
+.btn-secondary {
+  background: var(--bg-surface);
+  color: var(--fg-primary);
+  /* Mesma caixa que .btn-primary: o par renderizava com duas alturas. */
+  padding: 12px 24px;
+  border: var(--border-width) solid var(--fg-muted);
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  background: var(--bg-elevated);
+  color: var(--fg-primary);
+  border: var(--border-width) solid var(--border-strong);
+  padding: 0.5rem;
+  border-radius: 0;
+}
+
+/*
+ * Tabelas financeiras. Números alinham em coluna por causa de tabular-nums;
+ * marque a célula com .num para alinhá-la à direita.
+ */
+table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+th {
+  background: var(--bg-elevated);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+tbody tr:hover {
+  background: var(--bg-highlight);
+}
+
+.num {
+  text-align: right;
+}
+
+/* Micro-label de estado: [LIVE], [OFFLINE], [RAW_DATA]. */
+.tag {
+  font-size: var(--text-micro);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent-btc);
+}
+
+.status-positive {
+  color: var(--status-positive);
+}
+
+.status-negative {
+  color: var(--status-negative);
+}
+
+.muted {
+  color: var(--fg-muted);
+}
+
+/*
+ * O reset zera todas as margens e nada devolvia a do paragrafo, entao dois
+ * paragrafos seguidos ficavam com o mesmo espacamento das linhas internas.
+ * A medida evita linhas de ~125ch em 1200px de monoespacada.
+ */
+p {
+  max-width: 68ch;
+}
+
+p:not(:last-child) {
+  margin-bottom: 1em;
 }
 
 .card {
-  border: var(--border-width) solid var(--border);
+  border: var(--border-width) solid var(--border-strong);
   padding: 1rem;
   margin: 1rem 0;
 }
 
+/*
+ * width: 100% e obrigatorio: body e um flex column e margem inline automatica
+ * num item de coluna-flex suprime o align-items: stretch, fazendo a caixa cair
+ * para fit-content. Sem ele o nav media 1200px e o conteudo 742px.
+ */
 .container {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1rem;
   flex-grow: 1;
 }
 
+/*
+ * Encolher a raiz e escala global, nao adaptacao: reduzia o corpo para 9.75px
+ * e --text-micro para 8.25px justamente onde a legibilidade importa mais.
+ */
 @media (max-width: 768px) {
   html {
-    font-size: 14px;
+    font-size: 15px;
   }
-}
 
-@media (max-width: 480px) {
-  html {
-    font-size: 12px;
+  /* Abaixo de 16px o Safari do iOS aplica zoom a cada foco de campo. */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
   }
 }

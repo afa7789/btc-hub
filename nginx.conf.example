@@ -44,6 +44,12 @@ server {
         try_files $uri $uri/ =404;
     }
 
+    # Astro builds dist/404.html; without this nginx serves its own bare page.
+    error_page 404 /404.html;
+    location = /404.html {
+        internal;
+    }
+
     # Redirect trailing slashes to non-trailing
     location ~ ^/(.*)/$ {
         return 301 /$1;

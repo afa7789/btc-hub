@@ -1,62 +1,67 @@
 ---
 ---
 
-<button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
-  <span class="theme-toggle__icon">☀️</span>
-  <span class="theme-toggle__text">THEME</span>
+<!-- Sem aria-label: o nome acessivel precisa conter o rotulo visivel (2.5.3),
+     e o estado vai em aria-pressed em vez de ficar so no emoji. -->
+<button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
+  <span class="theme-toggle__icon" aria-hidden="true">☀️</span>
+  <span class="theme-toggle__text">Theme</span>
 </button>
 
 <style>
+  /* Positioned by UtilityBar; this component only styles the control. */
   .theme-toggle {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 1000;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-    background: var(--bg);
-    border: var(--border-width) solid var(--border);
+    padding: 0.25rem 0.6rem;
+    font-size: var(--text-micro);
+    letter-spacing: 1px;
+    background: var(--bg-surface);
+    color: var(--fg-secondary);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .theme-toggle:hover {
+    background: var(--fg-primary);
+    color: var(--bg-primary);
   }
   
   .theme-toggle__icon {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 </style>
 
 <script is:inline>
-  // Check for saved theme preference or default to dark
-  const savedTheme = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  
-  if (savedTheme === 'light' || (!savedTheme && !prefersDark)) {
-    document.documentElement.setAttribute('data-theme', 'light');
-    updateToggleIcon('light');
-  } else {
-    document.documentElement.removeAttribute('data-theme');
-    updateToggleIcon('dark');
-  }
+  // BaseLayout already picked the theme in <head>; this only reflects it in the
+  // button and handles the click.
+  updateToggleIcon(
+    document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark',
+  );
   
   function updateToggleIcon(theme) {
     const icon = document.querySelector('.theme-toggle__icon');
     if (icon) {
       icon.textContent = theme === 'light' ? '🌙' : '☀️';
     }
+    document
+      .getElementById('theme-toggle')
+      ?.setAttribute('aria-pressed', String(theme === 'light'));
   }
   
   document.getElementById('theme-toggle')?.addEventListener('click', () => {
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const next = isLight ? 'dark' : 'light';
     
     if (isLight) {
       document.documentElement.removeAttribute('data-theme');
-      localStorage.setItem('theme', 'dark');
-      updateToggleIcon('dark');
     } else {
       document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('theme', 'light');
-      updateToggleIcon('light');
     }
+    localStorage.setItem('theme', next);
+    updateToggleIcon(next);
+    
+    // dca.js repaints its chart on this; nothing was ever emitting it.
+    document.dispatchEvent(new CustomEvent('themechange', { detail: next }));
   });
 </script>

@@ -438,18 +438,10 @@ function sampleTransactionsByFrequency(transactions, frequency) {
 }
 
 function clearCalculation() {
+  // The default scenario is prerendered into the HTML at build time, so the
+  // cheapest way back to a clean slate is to drop the saved run and reload.
   localStorage.removeItem("lastDCACalculation");
-  document.getElementById("asset").value = "bitcoin";
-  document.getElementById("amount").value = "100";
-  document.getElementById("frequency").value = "monthly";
-  document.getElementById("start-date").value = "2020-01-01";
-  document.getElementById("end-date").value = "2024-12-31";
-  document.getElementById("results").style.display = "none";
-  document.getElementById("transactions").style.display = "none";
-
-  const svg = document.getElementById("dca-chart");
-  svg.style.display = "none";
-  svg.querySelectorAll(".chart-line, .chart-dot, .chart-label").forEach((el) => el.remove());
+  window.location.reload();
 }
 
 document.addEventListener("DOMContentLoaded", async () => {

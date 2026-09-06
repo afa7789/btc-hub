@@ -1,0 +1,62 @@
+standard: custom:DESIGN.md
+platform: web
+viewports:
+  - { name: mobile,  width: 390,  height: 844,  dpr: 2 }
+  - { name: desktop, width: 1440, height: 1000, dpr: 2 }
+screens:
+  - id: home
+    route: /
+    component: index.astro
+    role: public
+    confidence: high
+    evidence: [src/pages/index.astro:1]
+    states: [default, no-js]
+  - id: sem-melhores
+    route: /sem-melhores
+    component: sem-melhores.astro
+    role: public
+    confidence: high
+    evidence: [src/pages/sem-melhores.astro:1]
+    states: [default, api-unavailable, no-js]
+  - id: all-the-money
+    route: /all-the-money
+    component: all-the-money.astro
+    role: public
+    confidence: high
+    evidence: [src/pages/all-the-money.astro:1]
+    states: [default, no-js]
+  - id: dca
+    route: /dca
+    component: dca.astro
+    role: public
+    confidence: high
+    evidence: [src/pages/dca.astro:1]
+    states: [default, no-js]
+  - id: debase
+    route: /debase
+    component: debase.astro
+    role: public
+    confidence: high
+    evidence: [src/pages/debase.astro:1]
+    states: [default, no-js]
+  - id: satsukashii
+    route: /satsukashii
+    component: satsukashii.astro
+    role: public
+    confidence: high
+    evidence: [src/pages/satsukashii.astro:1]
+    states: [default, no-js]
+  - id: how-much-i-fucked-up
+    route: /how-much-i-fucked-up
+    component: how-much-i-fucked-up.astro
+    role: public
+    confidence: high
+    evidence: [src/pages/how-much-i-fucked-up.astro:1]
+    states: [default, no-js]
+  - id: not-found
+    route: /this-route-does-not-exist
+    component: 404.astro
+    role: public
+    confidence: high
+    evidence: [src/pages/404.astro:1]
+    states: [default]

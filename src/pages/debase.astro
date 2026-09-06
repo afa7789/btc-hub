@@ -29,13 +29,15 @@ const description =
     
     .disclaimer {
       font-weight: bold;
-      color: #ffb300;
+      color: var(--status-warning);
     }
     
     .section {
       margin-bottom: 1em;
     }
     
+    /* The charts render axis labels outside the SVG box (overflow: visible),
+       so the dark ground lives on the container, not on the SVG itself. */
     .brutalist-chart {
       width: 100%;
       margin: 20px 0;
@@ -44,6 +46,11 @@ const description =
       max-width: 900px;
       margin-left: auto;
       margin-right: auto;
+      box-sizing: border-box;
+      /* Horizontal only: an empty container must keep clientHeight === 0,
+         which chart_draw.js relies on to fall back to its default height. */
+      padding: 0 30px;
+      background: var(--chart-bg);
     }
     
     .ath-display {
@@ -57,100 +64,95 @@ const description =
     }
     
     .ath-display strong {
-      color: #c8c8c8;
+      color: var(--fg-secondary);
     }
     
     .next-halving {
       margin-top: 2em;
       font-weight: bold;
-      color: #ffb300;
+      color: var(--status-warning);
     }
     
-    .legend text {
+    /* D3 builds these nodes at runtime, so they never receive Astro's scope
+       attribute. They must be addressed with :global() or the rules are dead. */
+    /* Fica fora do painel escuro: usa a tinta que acompanha o tema, nao
+       --chart-ink, ou some no branco sobre branco no tema claro. */
+    article :global(.legend text) {
       font-family: monospace;
+      fill: var(--chart-legend-ink);
     }
-    
-    svg {
+
+    /* The chart canvas stays dark in both themes — see --chart-* in
+       global.css. Silver and gold would vanish on a light ground. */
+    article :global(svg) {
       width: 100%;
       height: auto;
       display: block;
-      background: var(--bg);
       font-family: monospace;
       overflow: visible;
       max-height: 400px;
     }
 
-    [data-theme="light"] svg {
-      background: #1a1a1a;
-    }
-    
-    .gold-line {
-      stroke: #FFD700;
+    article :global(.gold-line) {
+      stroke: var(--series-gold);
       stroke-width: 4px;
       stroke-linejoin: round;
       stroke-linecap: round;
       fill: none;
     }
-    
-    .grid line {
-      stroke: #444;
+
+    article :global(.grid line) {
+      stroke: var(--chart-grid);
       stroke-width: 1px;
       opacity: 0.5;
     }
 
-    [data-theme="light"] .grid line {
-      stroke: #ccc;
-    }
-    
-    .grid path {
+    article :global(.grid path) {
       stroke: none;
     }
-    
-    svg text {
+
+    article :global(svg text) {
       font-size: 16px;
       font-family: monospace;
-      fill: white;
+      fill: var(--chart-ink);
       font-weight: bold;
       text-transform: uppercase;
     }
-    
-    svg .domain {
-      stroke: white;
+
+    article :global(svg .domain) {
+      stroke: var(--chart-ink);
       stroke-width: 3px;
     }
-    
-    svg .tick line {
-      stroke: white;
+
+    article :global(svg .tick line) {
+      stroke: var(--chart-ink);
       stroke-width: 2px;
     }
-    
-    svg .tick text {
-      fill: white;
+
+    article :global(svg .tick text) {
+      fill: var(--chart-ink);
       font-family: monospace;
       font-weight: bold;
       font-size: 14px;
     }
 
-    [data-theme="light"] svg text,
-    [data-theme="light"] svg .domain,
-    [data-theme="light"] svg .tick line,
-    [data-theme="light"] svg .tick text {
-      fill: white;
-    }
-    
     @media (max-width: 600px) {
       .ath-display {
         padding: 0 10px;
         margin-top: 40px;
         margin-left: 40px;
       }
-      
-      svg text {
-        font-size: 32px !important;
+
+      /* Antes: 32px/24px !important dentro de um espaco de desenho de 362px,
+         o que sobrepunha os ticks e cortava o titulo dos dois lados. Com o
+         viewBox de 800 em chart_draw.js o texto escala junto, entao o valor
+         aqui compensa a reducao (~0.45x em 390px). */
+      article :global(svg text) {
+        font-size: 26px;
       }
-      
-      svg .tick text {
-        font-size: 24px !important;
+
+      article :global(svg .tick text) {
+        font-size: 22px;
       }
     }
   </style>
@@ -170,7 +172,7 @@ const description =
       <p><strong>Why 1971?</strong> — In 1971, the US ended the convertibility of the dollar to gold (the "Nixon
         Shock"), marking the start of the modern fiat era. Comparing assets from this point helps visualize
         long-term inflation and monetary effects on asset prices. <a href="https://wtfhappenedin1971.com/"
-          target="_blank" rel="noopener" style="color:#ffb300; text-decoration:underline;">Learn more</a></p>
+          target="_blank" rel="noopener" style="color: var(--status-warning); text-decoration: underline;">Learn more</a></p>
     </section>
 
     <!-- Dollar Purchasing Power Chart -->
@@ -430,6 +432,14 @@ const description =
   <script is:inline src="/scripts/debase/import_from_cpi.js"></script>
 
   <script is:inline>
+    // d3 sets stroke as a presentation attribute, where var() is not allowed,
+    // so series colours are resolved from the design tokens once at runtime
+    // instead of being duplicated as literals here.
+    const seriesColor = (name, fallback) =>
+      getComputedStyle(document.documentElement)
+        .getPropertyValue(`--series-${name}`)
+        .trim() || fallback;
+
     // SRS and ETH Stake APY constants
     const SRS_APY = 0.045;
     const ETH_STAKE_APY = 0.027;
@@ -749,9 +759,9 @@ const description =
       document.getElementById('gold-ath-inflation-1971').textContent = `$${goldData.inflation1971.ATH.toFixed(2)}`;
 
       const goldChartData = [
-        { data: goldData.normal, label: "Gold Price (Normal)", color: "orange", cssClass: "normal-gold-line" },
-        { data: goldData.inflationFixed, label: "Gold Inflation Adjusted (Fixed)", color: "blue", cssClass: "inflation-fixed-line" },
-        { data: goldData.inflation1971, label: "Gold Inflation Adjusted (1971)", color: "green", cssClass: "inflation-1971-line" }
+        { data: goldData.normal, label: "Gold Price (Normal)", color: seriesColor("gold", "#ffd700"), cssClass: "normal-gold-line" },
+        { data: goldData.inflationFixed, label: "Gold Inflation Adjusted (Fixed)", color: seriesColor("real-fixed", "#4a9eff"), cssClass: "inflation-fixed-line" },
+        { data: goldData.inflation1971, label: "Gold Inflation Adjusted (1971)", color: seriesColor("real-1971", "#22c55e"), cssClass: "inflation-1971-line" }
       ];
       chart_drawing.drawCombinedChart(goldChartData, "gold-chart", "Gold Price", "USD $");
 
@@ -763,9 +773,9 @@ const description =
       document.getElementById('silver-ath-inflation-fixed').textContent = `$${silverData.inflationFixed.ATH.toFixed(2)}`;
       document.getElementById('silver-ath-inflation-1971').textContent = `$${silverData.inflation1971.ATH.toFixed(2)}`;
       const silverChartData = [
-        { data: silverData.normal, label: "Silver Price (Normal)", color: "silver", cssClass: "normal-silver-line" },
-        { data: silverData.inflationFixed, label: "Silver Inflation Adjusted (Fixed)", color: "blue", cssClass: "inflation-fixed-silver-line" },
-        { data: silverData.inflation1971, label: "Silver Inflation Adjusted (1971)", color: "green", cssClass: "inflation-1971-silver-line" }
+        { data: silverData.normal, label: "Silver Price (Normal)", color: seriesColor("silver", "#c0c0c0"), cssClass: "normal-silver-line" },
+        { data: silverData.inflationFixed, label: "Silver Inflation Adjusted (Fixed)", color: seriesColor("real-fixed", "#4a9eff"), cssClass: "inflation-fixed-silver-line" },
+        { data: silverData.inflation1971, label: "Silver Inflation Adjusted (1971)", color: seriesColor("real-1971", "#22c55e"), cssClass: "inflation-1971-silver-line" }
       ];
       chart_drawing.drawCombinedChart(silverChartData, "silver-chart", "Silver Price", "USD $");
 
@@ -777,9 +787,9 @@ const description =
       document.getElementById('eth-ath-inflation-fixed').textContent = `$${ethData.inflationFixed.ATH.toFixed(2)}`;
       document.getElementById('eth-ath-inflation-1971').textContent = `$${ethData.inflation1971.ATH.toFixed(2)}`;
       const ethChartData = [
-        { data: ethData.normal, label: "ETH Price (Normal)", color: "purple", cssClass: "normal-eth-line" },
-        { data: ethData.inflationFixed, label: "ETH Inflation Adjusted (Fixed)", color: "blue", cssClass: "inflation-fixed-eth-line" },
-        { data: ethData.inflation1971, label: "ETH Inflation Adjusted (1971)", color: "green", cssClass: "inflation-1971-eth-line" }
+        { data: ethData.normal, label: "ETH Price (Normal)", color: seriesColor("eth", "#627eea"), cssClass: "normal-eth-line" },
+        { data: ethData.inflationFixed, label: "ETH Inflation Adjusted (Fixed)", color: seriesColor("real-fixed", "#4a9eff"), cssClass: "inflation-fixed-eth-line" },
+        { data: ethData.inflation1971, label: "ETH Inflation Adjusted (1971)", color: seriesColor("real-1971", "#22c55e"), cssClass: "inflation-1971-eth-line" }
       ];
       chart_drawing.drawCombinedChart(ethChartData, "eth-chart", "Ethereum Price", "USD $");
 
@@ -791,9 +801,9 @@ const description =
       document.getElementById('btc-ath-inflation-fixed').textContent = `$${btcData.inflationFixed.ATH.toFixed(2)}`;
       document.getElementById('btc-ath-inflation-1971').textContent = `$${btcData.inflation1971.ATH.toFixed(2)}`;
       const btcChartData = [
-        { data: btcData.normal, label: "BTC Price (Normal)", color: "orange", cssClass: "normal-btc-line" },
-        { data: btcData.inflationFixed, label: "BTC Inflation Adjusted (Fixed)", color: "blue", cssClass: "inflation-fixed-btc-line" },
-        { data: btcData.inflation1971, label: "BTC Inflation Adjusted (1971)", color: "green", cssClass: "inflation-1971-btc-line" }
+        { data: btcData.normal, label: "BTC Price (Normal)", color: seriesColor("gold", "#ffd700"), cssClass: "normal-btc-line" },
+        { data: btcData.inflationFixed, label: "BTC Inflation Adjusted (Fixed)", color: seriesColor("real-fixed", "#4a9eff"), cssClass: "inflation-fixed-btc-line" },
+        { data: btcData.inflation1971, label: "BTC Inflation Adjusted (1971)", color: seriesColor("real-1971", "#22c55e"), cssClass: "inflation-1971-btc-line" }
       ];
       chart_drawing.drawCombinedChart(btcChartData, "btc-chart", "Bitcoin Price", "USD $");
 
@@ -805,9 +815,9 @@ const description =
       document.getElementById('xmr-ath-inflation-fixed').textContent = `$${xmrData.inflationFixed.ATH.toFixed(2)}`;
       document.getElementById('xmr-ath-inflation-1971').textContent = `$${xmrData.inflation1971.ATH.toFixed(2)}`;
       const xmrChartData = [
-        { data: xmrData.normal, label: "XMR Price (Normal)", color: "red", cssClass: "normal-xmr-line" },
-        { data: xmrData.inflationFixed, label: "XMR Inflation Adjusted (Fixed)", color: "blue", cssClass: "inflation-fixed-xmr-line" },
-        { data: xmrData.inflation1971, label: "XMR Inflation Adjusted (1971)", color: "green", cssClass: "inflation-1971-xmr-line" }
+        { data: xmrData.normal, label: "XMR Price (Normal)", color: seriesColor("xmr", "#ff6600"), cssClass: "normal-xmr-line" },
+        { data: xmrData.inflationFixed, label: "XMR Inflation Adjusted (Fixed)", color: seriesColor("real-fixed", "#4a9eff"), cssClass: "inflation-fixed-xmr-line" },
+        { data: xmrData.inflation1971, label: "XMR Inflation Adjusted (1971)", color: seriesColor("real-1971", "#22c55e"), cssClass: "inflation-1971-xmr-line" }
       ];
       chart_drawing.drawCombinedChart(xmrChartData, "xmr-chart", "Monero Price", "USD $");
 
@@ -821,9 +831,9 @@ const description =
       document.getElementById('xmr-gold-ath').textContent = `${xmrGoldAdjusted.ATH.toFixed(6)} oz`;
 
       const goldAdjustedChartData = [
-        { data: ethGoldAdjusted, label: "ETH/Gold", color: "purple", cssClass: "eth-gold-line" },
-        { data: btcGoldAdjusted, label: "BTC/Gold", color: "orange", cssClass: "btc-gold-line" },
-        { data: xmrGoldAdjusted, label: "XMR/Gold", color: "red", cssClass: "xmr-gold-line" }
+        { data: ethGoldAdjusted, label: "ETH/Gold", color: seriesColor("eth", "#627eea"), cssClass: "eth-gold-line" },
+        { data: btcGoldAdjusted, label: "BTC/Gold", color: seriesColor("gold", "#ffd700"), cssClass: "btc-gold-line" },
+        { data: xmrGoldAdjusted, label: "XMR/Gold", color: seriesColor("xmr", "#ff6600"), cssClass: "xmr-gold-line" }
       ];
       chart_drawing.drawCombinedChart(goldAdjustedChartData, "gold-adjusted-crypto-chart", "Crypto Assets Adjusted by Gold", "Ounces of Gold");
 
@@ -833,9 +843,9 @@ const description =
       const xmrUsdRelative = normalizeUsdSeriesFromOwnStart(xmrData.normal, "XMR");
 
       const cryptoRelativeGrowthUsdChartData = [
-        { data: btcUsdRelative, label: "BTC (Relative Price Ratio)", color: "#f7931a", cssClass: "btc-usd-rel-line" },
-        { data: ethUsdRelative, label: "ETH (Relative Price Ratio)", color: "#627eea", cssClass: "eth-usd-rel-line" },
-        { data: xmrUsdRelative, label: "XMR (Relative Price Ratio)", color: "#ff6600", cssClass: "xmr-usd-rel-line" }
+        { data: btcUsdRelative, label: "BTC (Relative Price Ratio)", color: seriesColor("btc", "#f7931a"), cssClass: "btc-usd-rel-line" },
+        { data: ethUsdRelative, label: "ETH (Relative Price Ratio)", color: seriesColor("eth", "#627eea"), cssClass: "eth-usd-rel-line" },
+        { data: xmrUsdRelative, label: "XMR (Relative Price Ratio)", color: seriesColor("xmr", "#ff6600"), cssClass: "xmr-usd-rel-line" }
       ];
       chart_drawing.drawRelativeGrowthChart(cryptoRelativeGrowthUsdChartData, "crypto-relative-growth-usd-chart");
 
@@ -846,8 +856,8 @@ const description =
       const silverUsdRelative = normalizeUsdSeriesFromOwnStart(silverFrom2000, "SILVER");
 
       const goldSilverRelativeGrowthChartData = [
-        { data: goldUsdRelative, label: "GOLD (Relative Price Ratio)", color: "#ffd700", cssClass: "gold-usd-rel-line" },
-        { data: silverUsdRelative, label: "SILVER (Relative Price Ratio)", color: "#c0c0c0", cssClass: "silver-usd-rel-line" }
+        { data: goldUsdRelative, label: "GOLD (Relative Price Ratio)", color: seriesColor("gold", "#ffd700"), cssClass: "gold-usd-rel-line" },
+        { data: silverUsdRelative, label: "SILVER (Relative Price Ratio)", color: seriesColor("silver", "#c0c0c0"), cssClass: "silver-usd-rel-line" }
       ];
       chart_drawing.drawRelativeGrowthChart(goldSilverRelativeGrowthChartData, "gold-silver-relative-growth-chart", "Gold and Silver Relative Ratio (from 2000)");
 
@@ -864,8 +874,8 @@ const description =
       );
 
       const comparisonChartData = [
-        { data: comparisonData.srs, label: "SRS (Simulated 4.5% APY)", color: "#1a73e8", cssClass: "srs-simulated-line" },
-        { data: comparisonData.ethStake, label: "Ethereum Stake (Simulated 2.7% APY + ETH Price)", color: "#6f2c91", cssClass: "eth-stake-simulated-line" }
+        { data: comparisonData.srs, label: "SRS (Simulated 4.5% APY)", color: seriesColor("srs", "#1a73e8"), cssClass: "srs-simulated-line" },
+        { data: comparisonData.ethStake, label: "Ethereum Stake (Simulated 2.7% APY + ETH Price)", color: seriesColor("eth-stake", "#6f2c91"), cssClass: "eth-stake-simulated-line" }
       ];
       chart_drawing.drawRelativeGrowthChart(comparisonChartData, "srs-eth-stake-relative-chart-full", "SRS vs. Ethereum Stake (Since July 2023)");
 

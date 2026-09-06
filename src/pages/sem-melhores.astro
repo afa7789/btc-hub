@@ -4,6 +4,8 @@ import "../styles/sem-melhores.css";
 ---
 
 <BaseLayout title="SemMelhores">
+  <button type="button" slot="utility" id="languageToggle" class="language-toggle" aria-label="Switch language">🇺🇸</button>
+
   <div class="sem-melhores-page">
     <header class="main-header">
       <div class="header-left">
@@ -15,16 +17,15 @@ import "../styles/sem-melhores.css";
         </h1>
         <p class="subtitle">~as 100 melhores~ criptomoedas, desconsiderando stablecoins e staked ativos</p>
       </div>
-      <div class="header-right">
-        <button id="themeToggle" class="theme-toggle">☀️</button>
-        <button id="languageToggle" class="language-toggle">🇺🇸</button>
-      </div>
     </header>
     
     <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Pesquisar criptomoedas..." />
+      <label for="searchInput" class="search-label">Pesquisar criptomoedas</label>
+      <input type="search" id="searchInput" placeholder="BTC, ethereum..." />
     </div>
     
+    <p id="dataNotice" class="data-notice" role="status" hidden></p>
+
     <div id="cryptoList"></div>
 
     <div id="coinModal" class="modal">
@@ -45,8 +46,23 @@ import "../styles/sem-melhores.css";
 <script src="../scripts/sem-melhores/script.ts"></script>
 
 <style>
-  /* Hide global theme toggle when on SemMelhores page to avoid conflict */
-  :global(#theme-toggle) {
-    display: none !important;
+  .search-label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: var(--text-micro);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--fg-secondary);
+  }
+  
+  /* Matches the theme control it sits beside in the utility bar. */
+  .language-toggle {
+    /* 26x21 antes: abaixo do minimo de toque. */
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.25rem 0.6rem;
+    font-size: var(--text-micro);
+    background: var(--bg-surface);
+    border: 1px solid var(--fg-muted);
   }
 </style>

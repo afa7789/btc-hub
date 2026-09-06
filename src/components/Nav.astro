@@ -1,5 +1,7 @@
 ---
-const { pathname } = Astro.url;
+// Built pages are served as /dca/, so the raw pathname never matched the
+// hrefs below and the active state was dead. Compare without trailing slashes.
+const current = Astro.url.pathname.replace(/\/+$/, "") || "/";
 
 const navItems = [
   { href: "/sem-melhores", label: "SEM MELHORES" },
@@ -15,20 +17,32 @@ const navItems = [
   <div class="nav__container">
     <a href="/" class="nav__logo">BTC_THINGS</a>
     
-    <div class="nav__links">
+    <input
+      type="checkbox"
+      id="nav-open"
+      class="nav__toggle-input"
+      aria-label="Menu"
+      aria-expanded="false"
+      aria-controls="nav-links"
+    />
+    <div class="nav__links" id="nav-links">
       {navItems.map(item => (
         <a 
           href={item.href}
-          class:list={['nav__link', { 'nav__link--active': pathname === item.href }]}
+          class:list={['nav__link', { 'nav__link--active': current === item.href }]}
+          aria-current={current === item.href ? 'page' : undefined}
         >
           {item.label}
         </a>
       ))}
     </div>
     
-    <button class="nav__mobile-toggle" aria-label="Toggle navigation">
-      ☰
-    </button>
+    <!-- Rotulo de checkbox, nao botao: sem JS o menu ainda abre, e sem ele o
+         nav mobile ficava inalcancavel nas 8 paginas. -->
+    <label for="nav-open" class="nav__mobile-toggle">
+      <span aria-hidden="true">☰</span>
+      <span class="nav__mobile-toggle-text">Menu</span>
+    </label>
   </div>
 </nav>
 
@@ -74,18 +88,59 @@ const navItems = [
     transition: border-color 0.2s;
   }
   
-  .nav__link:hover,
-  .nav__link--active {
-    text-decoration: none;
-    border-bottom-color: var(--accent);
+  .nav__link {
+    color: var(--fg-secondary);
   }
   
+  .nav__link:hover {
+    text-decoration: none;
+    color: var(--accent-btc);
+    border-bottom-color: var(--accent-btc);
+  }
+  
+  /* Active page reads as a terminal prompt, so it stays distinct from hover. */
+  .nav__link--active {
+    color: var(--accent-btc);
+    font-weight: bold;
+    border-bottom-color: var(--accent-btc);
+  }
+  
+  .nav__link--active::before {
+    content: "> ";
+  }
+  
+  .nav__link--active::after {
+    content: " <";
+  }
+  
+  .nav__toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  /* Tratado como controle, nao como glifo decorativo: era o unico caminho
+     para o nav no mobile e nao tinha moldura nenhuma. */
   .nav__mobile-toggle {
     display: none;
-    font-size: 1.5rem;
-    background: none;
-    border: none;
-    color: var(--fg);
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--text-body);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0.35rem 0.7rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--fg-muted);
+    color: var(--accent-btc);
+    cursor: pointer;
+    min-height: 44px;
+  }
+  
+  .nav__toggle-input:focus-visible + .nav__links + .nav__mobile-toggle,
+  .nav__toggle-input:focus-visible ~ .nav__mobile-toggle {
+    outline: var(--border-width) solid var(--border-accent);
+    outline-offset: 2px;
   }
   
   @media (max-width: 768px) {
@@ -96,21 +151,21 @@ const navItems = [
       gap: 0.5rem;
     }
     
-    .nav__links--open {
+    .nav__toggle-input:checked ~ .nav__links {
       display: flex;
     }
     
     .nav__mobile-toggle {
-      display: block;
+      display: inline-flex;
     }
   }
 </style>
 
 <script>
-  const toggle = document.querySelector('.nav__mobile-toggle');
-  const links = document.querySelector('.nav__links');
-  
-  toggle?.addEventListener('click', () => {
-    links?.classList.toggle('nav__links--open');
+  // O abrir/fechar e CSS puro; o script so mantem aria-expanded em dia.
+  const input = document.getElementById('nav-open');
+
+  input?.addEventListener('change', () => {
+    input.setAttribute('aria-expanded', String(input.checked));
   });
 </script>

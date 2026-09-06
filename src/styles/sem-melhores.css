@@ -106,15 +106,17 @@
   box-sizing: border-box;
 }
 
-.sem-melhores-page #searchInput:focus {
-  outline: none;
+.sem-melhores-page #searchInput:focus-visible {
+  /* A 1px border colour change is too weak to be the only focus indicator. */
+  outline: var(--border-width) solid var(--border-accent);
+  outline-offset: 2px;
   background-color: var(--bg);
   color: var(--fg);
   border-color: var(--accent);
 }
 
 .sem-melhores-page #searchInput::placeholder {
-  color: #666;
+  color: var(--fg-muted);
 }
 
 /* TABLE */
@@ -350,14 +352,14 @@
   }
 
   .sem-melhores-page .subtitle {
-    font-size: 0.75em;
+    font-size: 0.9em;
     line-height: 1.3;
   }
 
   .sem-melhores-page th,
   .sem-melhores-page td {
     padding: 6px 4px;
-    font-size: 0.7rem;
+    font-size: 0.85rem;
   }
 
   .sem-melhores-page .coin-container {
@@ -384,7 +386,7 @@
   }
 
   .sem-melhores-page #searchInput {
-    font-size: 14px;
+    font-size: max(16px, 1em);
     padding: 8px;
   }
 }
@@ -399,14 +401,14 @@
   }
 
   .sem-melhores-page .subtitle {
-    font-size: 0.65em;
+    font-size: 0.85em;
     line-height: 1.2;
   }
 
   .sem-melhores-page th,
   .sem-melhores-page td {
     padding: 5px 3px;
-    font-size: 0.65rem;
+    font-size: 0.85rem;
   }
 
   .sem-melhores-page .coin-container {
@@ -428,4 +430,14 @@
   .sem-melhores-page .column-volume {
     display: none;
   }
+}
+
+/* Shown when the table is not backed by live CoinGecko data. */
+.data-notice {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.8rem;
+  border: 2px solid var(--accent, #f7931a);
+  color: var(--accent, #f7931a);
+  font-weight: bold;
+  line-height: 1.4;
 }

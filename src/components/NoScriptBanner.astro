@@ -1,0 +1,45 @@
+---
+/**
+ * Only /dca and /how-much-i-fucked-up compute a default scenario at build time.
+ * The other four tools draw everything client-side, so a banner promising
+ * "prerendered data" on those pages describes a page the visitor is not
+ * looking at. Each page states its own truth.
+ */
+interface Props {
+  prerendered?: boolean;
+}
+
+const { prerendered = false } = Astro.props;
+---
+
+<noscript>
+  <div class="noscript-banner">
+    <span class="noscript-banner__tag">[JS_DISABLED]</span>
+    <span class="noscript-banner__text">
+      {prerendered
+        ? "Showing a default scenario calculated at build time. Changing the inputs, recalculating and live prices all need JavaScript."
+        : "This tool draws its charts and data in the browser, so the page below stays empty. /dca and /how-much-i-fucked-up still show real numbers without JavaScript."}
+    </span>
+  </div>
+</noscript>
+
+<style>
+  .noscript-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    border-bottom: var(--border-width) solid var(--accent);
+    background: var(--bg);
+    color: var(--fg);
+  }
+
+  .noscript-banner__tag {
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+</style>

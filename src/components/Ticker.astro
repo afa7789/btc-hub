@@ -2,21 +2,30 @@
 ---
 
 <div class="ticker" id="ticker">
+  <button type="button" class="ticker__pause" id="ticker-pause" aria-pressed="false">
+    Pause prices
+  </button>
   <div class="ticker__track" id="ticker-track">
     <span class="ticker__loading">Loading prices...</span>
   </div>
+  <noscript>
+    <!-- Scoped to the no-JS case: the track can never be filled, so replace it. -->
+    <style>.ticker__track { display: none; }</style>
+    <span class="ticker__loading">Live prices need JavaScript</span>
+  </noscript>
 </div>
 
 <style is:global>
   .ticker {
-    background: #000;
-    color: #fff;
+    position: relative;
+    background: var(--bg-surface);
+    color: var(--fg-primary);
     overflow: hidden;
     white-space: nowrap;
     font-family: var(--font, monospace);
     font-size: 0.8rem;
-    border-top: 1px solid #333;
-    border-bottom: 1px solid #333;
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
     height: 32px;
     line-height: 32px;
     margin: 0;
@@ -28,12 +37,66 @@
     padding-left: 100%;
   }
 
-  .ticker__track:hover {
+  /*
+   * WCAG 2.2.2 needs a mechanism everyone can reach. Hover excludes keyboard
+   * and touch, and :focus-within never fired because the track holds only
+   * spans — so the strip gets a real control.
+   */
+  /*
+   * Sobreposto, nao em fluxo: o track usa padding-left: 100% como mecanismo de
+   * marquee, e padding nao encolhe em item flex — poe-lo numa linha flex
+   * inflava a faixa e vazava 6px na horizontal.
+   */
+  .ticker__pause {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    height: 32px;
+    padding: 0 0.6rem;
+    font-size: var(--text-micro);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: var(--bg-elevated);
+    color: var(--fg-secondary);
+    border: none;
+    border-right: 1px solid var(--border-subtle);
+    cursor: pointer;
+  }
+
+  .ticker__pause:hover {
+    background: var(--fg-primary);
+    color: var(--bg-primary);
+  }
+
+  .ticker__track:hover,
+  .ticker[data-paused="true"] .ticker__track {
     animation-play-state: paused;
   }
 
+  /*
+   * WCAG 2.2.2: the ticker now sits on every page, so a permanently moving
+   * strip is not acceptable for everyone. Under reduced motion it stops and
+   * becomes a scrollable strip instead.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .ticker {
+      overflow-x: auto;
+    }
+
+    /* Nada esta em movimento aqui, entao nao ha o que pausar. */
+    .ticker__pause {
+      display: none;
+    }
+
+    .ticker__track {
+      animation: none;
+      padding-left: 0;
+    }
+  }
+
   .ticker__loading {
-    color: #888;
+    color: var(--fg-muted);
     padding: 0 2rem;
   }
 
@@ -43,7 +106,7 @@
   }
 
   .ticker__symbol {
-    color: #fff;
+    color: var(--fg-primary);
     font-weight: bold;
     margin-right: 0.5rem;
   }
@@ -53,15 +116,15 @@
   }
 
   .ticker__up {
-    color: #22c55e;
+    color: var(--status-positive);
   }
 
   .ticker__down {
-    color: #ef4444;
+    color: var(--status-negative);
   }
 
   .ticker__flat {
-    color: #ccc;
+    color: var(--fg-secondary);
   }
 
   @keyframes ticker-scroll {
@@ -168,6 +231,11 @@
     return { coins, gold };
   }
 
+  // UtilityBar renders the [CG_API: ...] badge from this.
+  function reportStatus(status) {
+    document.dispatchEvent(new CustomEvent('cg-api-status', { detail: status }));
+  }
+
   async function loadTicker() {
     const track = document.getElementById('ticker-track');
     if (!track) return;
@@ -176,7 +244,10 @@
     const cache = getCache();
     if (cache) {
       renderTicker(buildItems(cache.data.coins, cache.data.gold));
-      if (!cache.stale) return; // fresh cache, no need to fetch
+      if (!cache.stale) {
+        reportStatus('cached'); // fresh cache, no need to fetch
+        return;
+      }
     }
 
     // Fetch fresh data
@@ -184,14 +255,25 @@
       const data = await fetchTickerData();
       setCache(data);
       renderTicker(buildItems(data.coins, data.gold));
+      reportStatus('online');
     } catch (error) {
       console.error('Ticker fetch error:', error);
+      reportStatus('offline');
       // If we already rendered from cache, keep it. Otherwise show fallback.
       if (!cache) {
         track.innerHTML = '<span class="ticker__loading">Price data unavailable</span>';
       }
     }
   }
+
+  document.getElementById('ticker-pause')?.addEventListener('click', (event) => {
+    const button = event.currentTarget;
+    const ticker = document.getElementById('ticker');
+    const paused = ticker.dataset.paused !== 'true';
+    ticker.dataset.paused = String(paused);
+    button.setAttribute('aria-pressed', String(paused));
+    button.textContent = paused ? 'Resume prices' : 'Pause prices';
+  });
 
   document.addEventListener('DOMContentLoaded', loadTicker);
 

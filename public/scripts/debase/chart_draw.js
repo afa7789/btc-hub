@@ -34,8 +34,9 @@ function halvingDraw({
   const svg = d3
     .select(`#${divId}`)
     .append("svg")
-    .attr("width", width)
-    .attr("height", height);
+    .attr("viewBox", `0 0 ${width} ${height}`)
+    .attr("preserveAspectRatio", "xMidYMid meet")
+    .attr("width", "100%");
 
   allHalvings.forEach((halving, i) => {
     const beforeStart = new Date(halving.getTime() - 500 * 24 * 3600 * 1000);
@@ -258,8 +259,11 @@ function drawCombinedChart(
   const svg = d3
     .select(`#${divId}`)
     .append("svg")
-    .attr("width", internalWidth)
-    .attr("height", internalHeight);
+    // viewBox em vez de width/height fixos: o desenho escala como unidade em
+    // vez de amontoar texto de tamanho constante num espaco que encolheu.
+    .attr("viewBox", `0 0 ${internalWidth} ${internalHeight}`)
+    .attr("preserveAspectRatio", "xMidYMid meet")
+    .attr("width", "100%");
 
   const x = d3
     .scaleTime()
@@ -456,8 +460,11 @@ function drawDollarPurchasingPowerChart(purchasingPowerData) {
   const svg = d3
     .select("#usd-purchasing-power-chart")
     .append("svg")
-    .attr("width", internalWidth)
-    .attr("height", internalHeight);
+    // viewBox em vez de width/height fixos: o desenho escala como unidade em
+    // vez de amontoar texto de tamanho constante num espaco que encolheu.
+    .attr("viewBox", `0 0 ${internalWidth} ${internalHeight}`)
+    .attr("preserveAspectRatio", "xMidYMid meet")
+    .attr("width", "100%");
 
   const x = d3
     .scaleTime()
@@ -622,8 +629,11 @@ function drawRelativeGrowthChart(
   const svg = d3
     .select(`#${divId}`)
     .append("svg")
-    .attr("width", internalWidth)
-    .attr("height", internalHeight);
+    // viewBox em vez de width/height fixos: o desenho escala como unidade em
+    // vez de amontoar texto de tamanho constante num espaco que encolheu.
+    .attr("viewBox", `0 0 ${internalWidth} ${internalHeight}`)
+    .attr("preserveAspectRatio", "xMidYMid meet")
+    .attr("width", "100%");
 
   const x = d3
     .scaleTime()

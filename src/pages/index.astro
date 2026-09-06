@@ -1,6 +1,5 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Ticker from "../components/Ticker.astro";
 
 const tools = [
   {
@@ -46,7 +45,6 @@ const tools = [
 ---
 
 <BaseLayout title="HOME">
-  <Ticker />
   <div class="landing">
     <header class="landing__header">
       <p class="landing__subtitle">
@@ -124,7 +122,7 @@ const tools = [
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
-    transition: all 0.2s;
+    transition: border-color 0.2s, background-color 0.2s;
     text-decoration: none;
   }
   
@@ -161,7 +159,8 @@ const tools = [
   
   .tool-card__description {
     font-size: 0.9rem;
-    opacity: 0.8;
+    /* Herdava --accent-btc do <a>; opacity .8 compunha para #b97f33 = 3.41:1. */
+    color: var(--fg-secondary);
     flex-grow: 1;
     margin-bottom: 1rem;
   }
