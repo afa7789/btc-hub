@@ -42,6 +42,28 @@ const tools = [
     status: "LIVE",
   },
 ];
+
+/*
+ * Deliberadamente fora de `tools`: aquele grid promete "clique e abre uma
+ * pagina deste site". Estes sao repositorios externos, entao ficam numa secao
+ * propria, com o destino escrito no rotulo.
+ */
+const repos = [
+  {
+    href: "https://github.com/afa7789/mnmncs",
+    title: "MNMNCS",
+    description:
+      "BIP-39 in C — generates entropy and mnemonics, derives the seed with PBKDF2 and keys with BIP-32, and exports xprv and WIF for Electrum and Bitcoin Core.",
+    lang: "C",
+  },
+  {
+    href: "https://github.com/afa7789/btc_descriptors_parser",
+    title: "BTC_DESCRIPTORS_PARSER",
+    description:
+      "Bitcoin output descriptor parser and address generator in C — derives keys along BIP-32/44 paths and emits addresses across the common formats. Built on OpenSSL and json-c.",
+    lang: "C",
+  },
+];
 ---
 
 <BaseLayout title="HOME">
@@ -70,10 +92,63 @@ const tools = [
       </div>
     </section>
 
+    <section class="repos">
+      <h2 class="repos__title">SOURCE</h2>
+      <ul class="repos__list">
+        {repos.map(repo => (
+          <li class="repo">
+            <a href={repo.href} target="_blank" rel="noopener">
+              {repo.title} on GitHub
+              <span class="repo__external" aria-hidden="true"> ↗</span>
+            </a>
+            <span class="repo__lang">[{repo.lang}]</span>
+            <p class="repo__description">{repo.description}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+
   </div>
 </BaseLayout>
 
 <style>
+  .repos {
+    margin-top: 4rem;
+  }
+  
+  .repos__title {
+    font-size: var(--text-section);
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto 2rem;
+  }
+  
+  .repos__list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .repo {
+    border: var(--border-width) solid var(--border-strong);
+    padding: 1.5rem;
+  }
+  
+  .repo__lang {
+    margin-left: 0.5rem;
+    font-size: var(--text-micro);
+    letter-spacing: 1px;
+    color: var(--fg-muted);
+  }
+  
+  .repo__description {
+    margin-top: 0.75rem;
+    color: var(--fg-secondary);
+  }
+  
   .landing {
     max-width: 1200px;
     margin: 0 auto;
