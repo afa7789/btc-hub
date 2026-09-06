@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { asciiBanner } from "../utils/ascii-banner";
 
 const tools = [
   {
@@ -48,6 +49,11 @@ const tools = [
  * pagina deste site". Estes sao repositorios externos, entao ficam numa secao
  * propria, com o destino escrito no rotulo.
  */
+// Gerado no build. FIGlet "fraktur" e blackletter desenhado em ASCII — a
+// tradicao de banner de terminal. So cabe em string curta, entao vive aqui e
+// nao nos titulos das paginas.
+const banner = asciiBanner("BTC_THINGS");
+
 const repos = [
   {
     href: "https://github.com/afa7789/mnmncs",
@@ -69,6 +75,15 @@ const repos = [
 <BaseLayout title="HOME">
   <div class="landing">
     <header class="landing__header">
+      <h1 class="hero">
+        <span class="sr-only">BTC_THINGS</span>
+        <pre
+          class="hero__art"
+          aria-hidden="true"
+          style={`--banner-cols: ${banner.columns}`}
+        >{banner.text}</pre>
+        <span class="hero__fallback" aria-hidden="true">BTC_THINGS</span>
+      </h1>
       <p class="landing__subtitle">
         Tools for visualizing Bitcoin, money, and purchasing power over time
       </p>
@@ -112,6 +127,48 @@ const repos = [
 </BaseLayout>
 
 <style>
+  /*
+   * A largura da arte e fixa em colunas de caractere, entao o corpo e derivado
+   * da largura do container: monoespacada avanca ~0.6em por caractere.
+   */
+  .hero {
+    container-type: inline-size;
+    border: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    line-height: 1;
+  }
+  
+  .hero__art {
+    font-family: var(--font);
+    font-size: calc(100cqi / (var(--banner-cols) * 0.62));
+    line-height: 1.05;
+    color: var(--accent-btc);
+    white-space: pre;
+    overflow: hidden;
+  }
+  
+  .hero__fallback {
+    display: none;
+  }
+  
+  /* Abaixo disto a arte cai para ~4px por caractere e vira ruido. */
+  @media (max-width: 900px) {
+    .hero__art {
+      display: none;
+    }
+  
+    .hero__fallback {
+      display: block;
+      text-align: center;
+      color: var(--accent-btc);
+      /* Herdava o tamanho de h1 (~64px) e estourava 390px em 22px. */
+      font-size: clamp(1.75rem, 11vw, 3rem);
+      line-height: 1.05;
+      overflow-wrap: anywhere;
+    }
+  }
+  
   .repos {
     margin-top: 4rem;
   }

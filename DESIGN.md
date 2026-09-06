@@ -126,6 +126,25 @@ são blackletter — é onde entra o gótico, sem contaminar a leitura de dados.
 --font-display: 'UnifrakturCook', 'Pirata One', 'Courier New', monospace;
 ```
 
+### 3.1 Banner ASCII
+
+A home abre com um banner FIGlet gerado em build time (`src/utils/ascii-banner.ts`),
+na tradição de MOTD de terminal.
+
+- **Fonte de bloco sólido**, `ANSI Shadow`. Faces delicadas como `fraktur` viram
+  mingau abaixo de ~12px por caractere; blocos continuam legíveis como letra.
+  `Delta Corps Priest 1` é a alternativa com mais textura de metal, ao custo de
+  não desenhar o `_`.
+- **Só serve para string curta.** A largura é fixa em colunas de caractere:
+  `BTC_THINGS` são 77 colunas, mas `All the Money in the World` seriam 292 — a
+  2px por caractere no celular. Título de página fica no `--font-display`.
+- **O corpo é derivado do container**, `calc(100cqi / (colunas * 0.62))`, então
+  a arte encaixa exatamente na largura disponível.
+- **Escondido abaixo de 900px**, onde cairia para ~5px por caractere. Um fallback
+  em `--font-display` assume o lugar.
+- **`<pre aria-hidden="true">` com um `<h1>` real em `.sr-only`.** Leitor de tela
+  ouve "BTC_THINGS", não a sopa de caracteres.
+
 **Regras não negociáveis do `--font-display`:**
 
 - **Nunca em caixa alta.** Blackletter em CAPS é ornamento indecifrável. Quem usa
