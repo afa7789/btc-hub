@@ -67,12 +67,6 @@ const description =
       color: var(--fg-secondary);
     }
     
-    .next-halving {
-      margin-top: 2em;
-      font-weight: bold;
-      color: var(--status-warning);
-    }
-    
     /* D3 builds these nodes at runtime, so they never receive Astro's scope
        attribute. They must be addressed with :global() or the rules are dead. */
     /* Fica fora do painel escuro: usa a tinta que acompanha o tema, nao
@@ -345,13 +339,11 @@ const description =
     <br>
 
     <section class="section" style="margin-bottom:2em;">
-      <div id="halving-chart" class="brutalist-chart"></div>
-      <div id="next-halving" class="next-halving"></div>
-      <p><strong>Halvings and the 500-Day Strategy:</strong><br>
-        This chart shows the dates of Bitcoin halvings marked with vertical lines. The periods 500 days before and
-        after each halving are highlighted in different colors. The estimated date of the next halving is also
-        displayed. The idea is that buying during the 500 days leading up to a halving and holding until the end of
-        the 500 days after the halving is a potentially effective strategy.</p>
+      <p>
+        Bitcoin's halvings are a supply-schedule question rather than a
+        purchasing-power one, so they have their own page:
+        <a href="/halving">the halvings and the 500-day window</a>.
+      </p>
     </section>
   </article>
 
@@ -878,37 +870,6 @@ const description =
         { data: comparisonData.ethStake, label: "Ethereum Stake (Simulated 2.7% APY + ETH Price)", color: seriesColor("eth-stake", "#6f2c91"), cssClass: "eth-stake-simulated-line" }
       ];
       chart_drawing.drawRelativeGrowthChart(comparisonChartData, "srs-eth-stake-relative-chart-full", "SRS vs. Ethereum Stake (Since July 2023)");
-
-      // Halvings
-      const halvingTimestamps = await fetch('/datasets/halvings.txt')
-        .then(response => response.text())
-        .then(text => text.split('\n').map(line => line.trim()).filter(line => line && !isNaN(line)).map(Number));
-      
-      const halvings = halvingTimestamps.map(ts => new Date(ts * 1000));
-      const lastHalving = halvings[halvings.length - 1];
-      const nextHalving = new Date(lastHalving.getTime() + 4 * 365.25 * 24 * 3600 * 1000);
-      const windowStart = new Date(nextHalving.getTime() - 500 * 24 * 3600 * 1000);
-      
-      document.getElementById('next-halving').innerHTML =
-        `Estimated next halving: ${nextHalving.toLocaleDateString()}<br>` +
-        `500-day window start: ${windowStart.toLocaleDateString()}`;
-
-      const btcDataH = { timestamp: [], price: [] };
-      const infoBTCH = csvManager.getDatasetInfo('BTC');
-
-      csvManager.iterateRange('BTC', infoBTCH.firstDate, infoBTCH.lastDate, (date, data) => {
-        btcDataH.timestamp.push(new Date(date));
-        btcDataH.price.push(data.Close);
-      });
-
-      chart_drawing.halvingDraw({
-        divId: 'halving-chart',
-        halvingTimestamps,
-        nextHalving,
-        width: document.getElementById('halving-chart').clientWidth || 800,
-        height: document.getElementById('halving-chart').clientHeight || 400,
-        btcData: btcDataH
-      });
     }
 
     // ClientRouter: scripts ja executados nao rodam de novo, entao main()
@@ -917,7 +878,9 @@ const description =
     // div antes de desenhar e os datasets ficam em IndexedDB, entao repetir e
     // seguro (e nao refaz download).
     document.addEventListener('astro:page-load', () => {
-      if (!document.getElementById('halving-chart')) return; // outra pagina
+      // Guarda em id unico desta pagina. Era #halving-chart, que mudou de
+      // pagina na extracao do /halving e teria matado o /debase inteiro.
+      if (!document.getElementById('usd-purchasing-power-chart')) return;
       main().catch(console.error);
     });
   </script>

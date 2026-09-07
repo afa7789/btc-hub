@@ -1,18 +1,10 @@
 ---
 import wordmark from "../assets/wordmark.txt?raw";
+import { tools } from "../data/routes";
 
 // Built pages are served as /dca/, so the raw pathname never matched the
 // hrefs below and the active state was dead. Compare without trailing slashes.
 const current = Astro.url.pathname.replace(/\/+$/, "") || "/";
-
-const navItems = [
-  { href: "/sem-melhores", label: "SEM MELHORES" },
-  { href: "/all-the-money", label: "ALL THE MONEY IN THE WORLD" },
-  { href: "/dca", label: "DCA CALCULATOR" },
-  { href: "/debase", label: "DEBASE" },
-  { href: "/satsukashii", label: "BIG MAC INDEX" },
-  { href: "/how-much-i-fucked-up", label: "HOW MUCH I FUCKED UP" },
-];
 
 /*
  * Gerado por scripts/render-ascii-banner.mjs rasterizando a propria fonte
@@ -42,7 +34,7 @@ const wordmarkColumns = Math.max(
       aria-controls="nav-links"
     />
     <div class="nav__links" id="nav-links">
-      {navItems.map(item => (
+      {tools.map(item => (
         <a 
           href={item.href}
           class:list={['nav__link', { 'nav__link--active': current === item.href }]}

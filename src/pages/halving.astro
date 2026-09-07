@@ -1,0 +1,243 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const title = "Halving";
+const description =
+  "Bitcoin halvings plotted against the price, with the 500-day window around each one.";
+---
+
+<BaseLayout title={title} description={description}>
+  <style>
+    .page-header h1 {
+      margin: 0;
+      border: none;
+      padding-bottom: 0;
+    }
+
+    .section {
+      margin-bottom: 1em;
+    }
+
+    /* Mesma regra do /debase: o canvas fica escuro nos dois temas porque as
+       series sao pensadas para fundo preto. Ver DESIGN.md secao 2.2. */
+    .brutalist-chart {
+      width: 100%;
+      max-width: 900px;
+      margin: 20px auto;
+      display: block;
+      overflow: visible;
+      box-sizing: border-box;
+      /* Horizontal apenas: um container vazio precisa manter clientHeight === 0,
+         de que chart_draw.js depende para cair na altura padrao. */
+      padding: 0 30px;
+      background: var(--chart-bg);
+    }
+
+    .next-halving {
+      margin-top: 2em;
+      font-weight: bold;
+      color: var(--status-warning);
+    }
+
+    article :global(svg) {
+      width: 100%;
+      height: auto;
+      display: block;
+      font-family: monospace;
+      overflow: visible;
+      max-height: 400px;
+    }
+
+    article :global(svg text) {
+      font-size: 16px;
+      font-family: monospace;
+      fill: var(--chart-ink);
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    article :global(svg .domain) {
+      stroke: var(--chart-ink);
+      stroke-width: 3px;
+    }
+
+    article :global(svg .tick line) {
+      stroke: var(--chart-ink);
+      stroke-width: 2px;
+    }
+
+    article :global(svg .tick text) {
+      fill: var(--chart-ink);
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    /* Fora do painel escuro: acompanha o tema, ou some no claro. */
+    article :global(.legend text) {
+      font-family: monospace;
+      fill: var(--chart-legend-ink);
+    }
+
+    @media (max-width: 600px) {
+      article :global(svg text) {
+        font-size: 26px;
+      }
+
+      article :global(svg .tick text) {
+        font-size: 22px;
+      }
+    }
+  </style>
+
+  <article>
+    <header class="page-header">
+      <h1>Halving</h1>
+    </header>
+
+    <section class="section">
+      <p>
+        Every 210,000 blocks the block subsidy is cut in half, so new supply
+        arrives at half the previous rate. The chart plots the price on a log
+        scale with each halving marked, and shades the 500 days before and after
+        it.
+      </p>
+    </section>
+
+    <section class="section">
+      <div id="halving-chart" class="brutalist-chart"></div>
+      <div id="next-halving" class="next-halving"></div>
+      <noscript>
+        <p>
+          This chart is drawn in the browser from a price dataset. Enable
+          JavaScript to see it.
+        </p>
+      </noscript>
+      <p>
+        <strong>The 500-day window:</strong> the shaded bands cover the 500 days
+        leading up to each halving and the 500 days after it. The idea people
+        take from this is that buying into the run-up and holding through the
+        window has historically worked out — the chart shows the four times it
+        has happened, which is four data points, not a law.
+      </p>
+    </section>
+  </article>
+
+  <script is:inline src="https://d3js.org/d3.v7.min.js"></script>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
+  <script is:inline src="/scripts/debase/chart_draw.js"></script>
+  <script is:inline src="/scripts/debase/dataset_manager.js"></script>
+
+  <script is:inline>
+    /*
+     * dataset_manager.js espera estes dois helpers no window; sem eles ele
+     * ainda funciona (refaz o fetch do CSV) mas loga erro a cada carga.
+     * Duplicados do /debase — a alternativa seria extrair um modulo, o que
+     * vale a pena quando existir uma terceira pagina usando o manager.
+     */
+    window.idbGet = async function (key) {
+      try {
+        if (typeof window.idb === 'undefined') {
+          throw new Error('idb library not loaded');
+        }
+
+        const db = await window.idb.openDB('csvDataStore', 1, {
+          upgrade(db) {
+            db.createObjectStore('datasets');
+          }
+        });
+        const result = await db.get('datasets', key);
+        if (result !== undefined) return result;
+      } catch (e) {
+        console.warn('IndexedDB unavailable, falling back to localStorage:', e);
+      }
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : null;
+    };
+
+    window.idbSet = async function (key, value) {
+      try {
+        if (typeof window.idb === 'undefined') {
+          throw new Error('idb library not loaded');
+        }
+
+        const db = await window.idb.openDB('csvDataStore', 1, {
+          upgrade(db) {
+            db.createObjectStore('datasets');
+          }
+        });
+        await db.put('datasets', value, key);
+        return;
+      } catch (e) {
+        console.warn('IndexedDB unavailable, falling back to localStorage:', e);
+      }
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (err) {
+        console.error('Both IndexedDB and localStorage failed:', err);
+      }
+    };
+
+    async function drawHalvingChart() {
+      const container = document.getElementById("halving-chart");
+      if (!container) return;
+
+      // Só o BTC: o /debase carrega seis datasets porque precisa do CPI para
+      // ajustar por inflação, e nada disso importa aqui.
+      await csvManager.initAllDatasets([
+        {
+          name: "BTC",
+          csvPath: "/datasets/bitcoin_2010-07-17_2025-07-25.csv",
+          fetchFunction: null,
+        },
+      ]);
+
+      const halvingTimestamps = await fetch("/datasets/halvings.txt")
+        .then((response) => response.text())
+        .then((text) =>
+          text
+            .split("\n")
+            .map((line) => line.trim())
+            .filter((line) => line && !Number.isNaN(Number(line)))
+            .map(Number),
+        );
+
+      const halvings = halvingTimestamps.map((ts) => new Date(ts * 1000));
+      const lastHalving = halvings[halvings.length - 1];
+      const nextHalving = new Date(
+        lastHalving.getTime() + 4 * 365.25 * 24 * 3600 * 1000,
+      );
+      const windowStart = new Date(
+        nextHalving.getTime() - 500 * 24 * 3600 * 1000,
+      );
+
+      document.getElementById("next-halving").innerHTML =
+        `Estimated next halving: ${nextHalving.toLocaleDateString()}<br>` +
+        `500-day window start: ${windowStart.toLocaleDateString()}`;
+
+      const btcData = { timestamp: [], price: [] };
+      const info = csvManager.getDatasetInfo("BTC");
+      csvManager.iterateRange("BTC", info.firstDate, info.lastDate, (date, data) => {
+        btcData.timestamp.push(new Date(date));
+        btcData.price.push(data.Close);
+      });
+
+      chart_drawing.halvingDraw({
+        divId: "halving-chart",
+        halvingTimestamps,
+        nextHalving,
+        width: container.clientWidth || 800,
+        height: container.clientHeight || 400,
+        btcData,
+      });
+    }
+
+    // ClientRouter: um script ja executado nao roda de novo, entao a ligacao
+    // precisa ser em astro:page-load, nao DOMContentLoaded.
+    document.addEventListener("astro:page-load", () => {
+      if (document.getElementById("halving-chart")) drawHalvingChart();
+    });
+    if (document.readyState !== "loading" && document.getElementById("halving-chart")) {
+      drawHalvingChart();
+    }
+  </script>
+</BaseLayout>

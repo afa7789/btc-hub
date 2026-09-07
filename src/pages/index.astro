@@ -1,47 +1,6 @@
 ---
+import { tools } from "../data/routes";
 import BaseLayout from "../layouts/BaseLayout.astro";
-
-const tools = [
-  {
-    href: "/sem-melhores",
-    title: "SEM MELHORES",
-    description: "Top 100 cryptocurrency browser powered by CoinGecko API",
-    status: "LIVE",
-  },
-  {
-    href: "/all-the-money",
-    title: "ALL THE MONEY IN THE WORLD",
-    description:
-      "Global wealth block visualization - see all the money in the world",
-    status: "LIVE",
-  },
-  {
-    href: "/dca",
-    title: "DCA CALCULATOR",
-    description:
-      "Dollar Cost Averaging calculator with Bitcoin historical data",
-    status: "LIVE",
-  },
-  {
-    href: "/debase",
-    title: "DEBASE",
-    description: "Inflation-adjusted asset charts with D3.js visualizations",
-    status: "LIVE",
-  },
-  {
-    href: "/satsukashii",
-    title: "BIG MAC INDEX",
-    description: "Big Mac Index vs Bitcoin price history comparison",
-    status: "LIVE",
-  },
-  {
-    href: "/how-much-i-fucked-up",
-    title: "HOW MUCH I FUCKED UP",
-    description:
-      '"What if I invested X on date Y?" calculator with historical data',
-    status: "LIVE",
-  },
-];
 
 /*
  * Deliberadamente fora de `tools`: aquele grid promete "clique e abre uma
@@ -87,7 +46,7 @@ const repos = [
         {tools.map(tool => (
           <a href={tool.href} class="tool-card">
             <div class="tool-card__header">
-              <h3 class="tool-card__title">{tool.title}</h3>
+              <h3 class="tool-card__title">{tool.label}</h3>
               <span class="tool-card__status">{tool.status}</span>
             </div>
             <p class="tool-card__description">{tool.description}</p>

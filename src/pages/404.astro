@@ -1,4 +1,5 @@
 ---
+import { tools } from "../data/routes";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 /**
@@ -6,15 +7,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
  * layout shell with no content at best. Every route below is a real page, so
  * the fastest recovery is the list itself.
  */
-const routes = [
-  { href: "/", label: "HOME" },
-  { href: "/sem-melhores", label: "SEM MELHORES" },
-  { href: "/all-the-money", label: "ALL THE MONEY IN THE WORLD" },
-  { href: "/dca", label: "DCA CALCULATOR" },
-  { href: "/debase", label: "DEBASE" },
-  { href: "/satsukashii", label: "BIG MAC INDEX" },
-  { href: "/how-much-i-fucked-up", label: "HOW MUCH I FUCKED UP" },
-];
+// O nav ja oferece as ferramentas e o logo ja volta para a home; esta lista
+// existe porque no 404 o nav pode estar colapsado no mobile.
+const routes = tools;
 ---
 
 <BaseLayout
