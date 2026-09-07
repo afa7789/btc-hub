@@ -10,9 +10,22 @@ const fit = fitRainbow();
 
 // Desenhado aqui e nao no navegador: e um grafico estatico, entao renderiza
 // sem JavaScript — o unico do site que faz isso.
-const W = 960;
+/*
+ * Geometria dimensionada PARA O TEXTO, nao ao contrario. O SVG tem viewBox,
+ * entao tudo aqui e multiplicado pela escala renderizada (largura na tela /
+ * largura do viewBox). No menor viewport a escala e 760/1120 = 0,679, entao
+ * um `font-size: 11px` sairia com 7,5px reais — a armadilha do antigo
+ * /satsukashii. As fontes (18px nos eixos, 20px nas legendas,
+ * declaradas no <style> abaixo) passam de 11px RENDERIZADOS na pior escala, e
+ * as margens crescem para caber o texto maior.
+ */
+const LABEL_FONT = 20;
+/** Espacamento minimo entre duas legendas de banda, em unidades do viewBox. */
+const LABEL_GAP = LABEL_FONT * 1.25;
+
+const W = 1120;
 const H = 540;
-const M = { top: 20, right: 210, bottom: 44, left: 64 };
+const M = { top: 20, right: 330, bottom: 52, left: 96 };
 const innerW = W - M.left - M.right;
 const innerH = H - M.top - M.bottom;
 
@@ -92,6 +105,71 @@ const yearTicks = fit.points
     ).getUTCFullYear(),
   }));
 
+/*
+ * O canvas do grafico e escuro nos dois temas (--chart-bg). As cores das
+ * bandas foram escolhidas para AREAS, nao para texto: "Basically a fire sale"
+ * (#1f4fd8) sobre #0a0a0a mede 2,58:1. A legenda e texto, entao cada cor e
+ * clareada em direcao ao branco ate passar 4,5:1 — o matiz continua o mesmo,
+ * logo o mapa cor->faixa continua legivel.
+ */
+const CHART_BG: [number, number, number] = [10, 10, 10];
+
+const channel = (c: number) => {
+  const s = c / 255;
+  return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+};
+const luminance = ([r, g, b]: [number, number, number]) =>
+  0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+const contrast = (a: [number, number, number], b: [number, number, number]) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, z) => z - x);
+  return ((hi as number) + 0.05) / ((lo as number) + 0.05);
+};
+const toRgb = (hex: string): [number, number, number] => [
+  Number.parseInt(hex.slice(1, 3), 16),
+  Number.parseInt(hex.slice(3, 5), 16),
+  Number.parseInt(hex.slice(5, 7), 16),
+];
+const toHex = ([r, g, b]: [number, number, number]) =>
+  `#${[r, g, b].map((v) => Math.round(v).toString(16).padStart(2, "0")).join("")}`;
+
+/** Clareia em direcao ao branco ate 4,5:1 sobre o canvas, preservando o matiz. */
+function readableOnChart(hex: string): string {
+  const base = toRgb(hex);
+  for (let step = 0; step <= 20; step++) {
+    const t = step / 20;
+    const mixed: [number, number, number] = [
+      base[0] + (255 - base[0]) * t,
+      base[1] + (255 - base[1]) * t,
+      base[2] + (255 - base[2]) * t,
+    ];
+    if (contrast(mixed, CHART_BG) >= 4.5) return toHex(mixed);
+  }
+  return "#ffffff";
+}
+
+/*
+ * As nove bandas estao a 0,5 sigma uma da outra: no ultimo dia isso deixa as
+ * legendas a ~14 unidades de distancia vertical, menos que a altura de uma
+ * linha de 20px. Elas vao para uma coluna de espacamento fixo na margem
+ * direita, ligadas a sua banda por uma linha-guia, em vez de empilhadas em
+ * cima umas das outras.
+ */
+const naturalY = BANDS.map((band) => y(bandPrice(fit, lastDay, band.sigma)));
+const naturalCentre =
+  naturalY.reduce((s, v) => s + v, 0) / Math.max(naturalY.length, 1);
+const blockTop = naturalCentre - ((BANDS.length - 1) / 2) * LABEL_GAP;
+const clampedTop = Math.min(
+  Math.max(blockTop, M.top + LABEL_FONT),
+  M.top + innerH - (BANDS.length - 1) * LABEL_GAP,
+);
+const bandLabels = BANDS.map((band, i) => ({
+  band,
+  color: readableOnChart(band.color),
+  // i cresce de baixo para cima no grafico, entao a coluna e invertida.
+  labelY: clampedTop + (BANDS.length - 1 - i) * LABEL_GAP,
+  bandY: naturalY[i] ?? 0,
+}));
+
 const money = (v: number) =>
   v >= 1000
     ? `$${Math.round(v / 1000).toLocaleString("en-US")}K`
@@ -118,27 +196,60 @@ const money = (v: number) =>
       overflow-x: auto;
     }
 
+    /* Regiao rolavel focavel: sem isto ninguem chega ao lado direito do
+       grafico so com o teclado (WCAG 2.1.1). */
+    .rainbow:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
     .rainbow svg {
       width: 100%;
       height: auto;
       display: block;
-      min-width: 640px;
+      /* Piso da largura renderizada: com viewBox 1120 isto fixa a pior escala
+         em 0,679, e e ela que define os tamanhos de fonte la em cima. */
+      min-width: 760px;
       font-family: var(--font);
     }
 
-    .rainbow text {
+    /*
+     * :not(.band-label) e o ponto todo: qualquer regra CSS vence um atributo
+     * de apresentacao, entao um `.rainbow text { fill: ... }` generico pintava
+     * as nove legendas de branco e apagava o mapa cor->faixa (WCAG 1.4.1).
+     */
+    .rainbow text:not(.band-label) {
       fill: var(--chart-ink);
-      font-size: 11px;
+      font-size: 18px;
     }
 
     .rainbow .band-label {
-      font-size: 11px;
+      font-size: 20px;
       font-weight: bold;
     }
 
     .verdict {
       font-weight: bold;
       font-size: var(--text-card);
+    }
+
+    /*
+     * A cor da banda vive num marcador nao textual (criterio 1.4.11, 3:1,
+     * garantido pela borda em --fg) e nao no nome da banda: como prosa sobre o
+     * fundo da pagina as cores do grafico chegavam a 2,38:1 no tema claro.
+     */
+    .band-swatch {
+      display: inline-block;
+      width: 0.8em;
+      height: 0.8em;
+      margin-right: 0.35em;
+      background: var(--band);
+      border: 1px solid var(--fg);
+      vertical-align: baseline;
+    }
+
+    .band-name {
+      color: var(--fg);
     }
 
     .fit-note {
@@ -158,12 +269,17 @@ const money = (v: number) =>
         point of the chart.
       </p>
       <p class="verdict">
-        Right now: <span style={`color: ${fit.todayBand.color}`}>{fit.todayBand.label}</span>
+        Right now: <span class="band-swatch" style={`--band: ${fit.todayBand.color}`} aria-hidden="true"></span><span class="band-name">{fit.todayBand.label}</span>
         &mdash; {fit.todaySigma.toFixed(2)} standard deviations from the fitted line.
       </p>
     </section>
 
-    <div class="rainbow">
+    <div
+      class="rainbow"
+      tabindex="0"
+      role="region"
+      aria-label="Rainbow chart, scrollable"
+    >
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
@@ -180,23 +296,33 @@ const money = (v: number) =>
               y1={y(price)} y2={y(price)}
               stroke="var(--chart-ink)" stroke-width="0.5" opacity="0.25"
             />
-            <text x={M.left - 8} y={y(price) + 4} text-anchor="end">{money(price)}</text>
+            <text x={M.left - 10} y={y(price) + 6} text-anchor="end">{money(price)}</text>
           </g>
         ))}
 
         {yearTicks.map(tick => (
-          <text x={x(tick.day)} y={M.top + innerH + 22} text-anchor="middle">{tick.year}</text>
+          <text x={x(tick.day)} y={M.top + innerH + 28} text-anchor="middle">{tick.year}</text>
         ))}
 
         <polyline points={priceLine} fill="none" stroke="var(--chart-ink)" stroke-width="1.6" />
 
-        {BANDS.map(band => (
-          <text
-            class="band-label"
-            x={M.left + innerW + 10}
-            y={y(bandPrice(fit, lastDay, band.sigma)) + 4}
-            fill={band.color}
-          >{band.label}</text>
+        {bandLabels.map(item => (
+          <g>
+            <line
+              x1={M.left + innerW}
+              y1={item.bandY}
+              x2={M.left + innerW + 10}
+              y2={item.labelY - LABEL_FONT * 0.35}
+              stroke={item.color}
+              stroke-width="1.5"
+            />
+            <text
+              class="band-label"
+              x={M.left + innerW + 14}
+              y={item.labelY}
+              fill={item.color}
+            >{item.band.label}</text>
+          </g>
         ))}
       </svg>
     </div>
