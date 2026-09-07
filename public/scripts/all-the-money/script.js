@@ -186,74 +186,16 @@ async function loadData() {
     }
   }
 
-  // 3. Carregar de APIs (se isLiveUpdatable for true) e sobrescrever
-  //    Esta parte pode ser executada em segundo plano ou após a renderização inicial.
-  //    O ideal é que ela não bloqueie a primeira exibição.
-  //    Vamos usar um setTimeout para não atrasar a primeira renderização.
-  setTimeout(async () => {
-    console.log("� Verificando atualizações de API...");
-    let apiUpdatesOccurred = false;
-    if (wealthData && wealthData.items) {
-      for (const item of wealthData.items) {
-        if (
-          item.isLiveUpdatable &&
-          item.dataSource &&
-          item.dataSource.apiEndpoint
-        ) {
-          try {
-            const apiResponse = await fetch(item.dataSource.apiEndpoint);
-            if (!apiResponse.ok) {
-              console.warn(
-                `API error for ${item.name}: HTTP status ${apiResponse.status}`,
-              );
-              continue;
-            }
-            const apiData = await apiResponse.json();
-            // Assumindo que a API retorna um objeto com 'valueBillions' e 'lastUpdated'
-            if (
-              apiData.valueBillions !== undefined &&
-              apiData.lastUpdated !== undefined
-            ) {
-              // Comparar para evitar atualização desnecessária
-              if (
-                item.valueBillions !== apiData.valueBillions ||
-                item.lastUpdated !== apiData.lastUpdated
-              ) {
-                item.valueBillions = apiData.valueBillions;
-                item.valueFormatted = `${apiData.valueBillions} billion`; // Reformatar
-                item.lastUpdated = apiData.lastUpdated;
-                console.log(
-                  `⬆️ Item "${item.name}" atualizado via API. Novo valor: ${item.valueBillions}`,
-                );
-                apiUpdatesOccurred = true;
-              }
-            }
-          } catch (e) {
-            console.warn(`⚠️ Erro ao buscar API para ${item.name}:`, e);
-          }
-        }
-      }
-    }
-
-    if (apiUpdatesOccurred) {
-      console.log("✨ Atualizações de API concluídas. Recriando visualização.");
-      // Re-ordenar após atualizações da API
-      wealthData.items.sort((a, b) => b.valueBillions - a.valueBillions);
-      localStorage.setItem(
-        "wealthData-cache",
-        JSON.stringify({
-          timestamp: Date.now(),
-          data: wealthData,
-        }),
-      );
-      createVisualization();
-    } else {
-      console.log("✅ Nenhuma atualização de API necessária ou encontrada.");
-    }
-
-    // Verificação final do status do cache após todas as operações
-    getCacheStatus(); // Atualiza o status de exibição do cache
-  }, 500); // Pequeno atraso para não bloquear o carregamento inicial
+  /*
+   * Aqui existia um loop que percorria os itens com `isLiveUpdatable` e buscava
+   * `dataSource.apiEndpoint`. Ele exigia que a resposta trouxesse
+   * `valueBillions` e `lastUpdated` no topo — formato que nenhuma das APIs
+   * configuradas devolve — entao nunca atualizou um unico valor, e mesmo assim
+   * disparava 13 requisicoes cross-origin em toda carga da pagina.
+   *
+   * O refresh agora e scripts/update-all-the-money.mjs, que aplica achados de
+   * busca web e so sobrescreve quando a fonte e mais nova que a armazenada.
+   */
 
   return success;
 }
@@ -886,53 +828,7 @@ async function fetchCountryGDP(countryCode) {
   }
 }
 
-// Alpha Vantage API for stock market caps (requires API key)
-async function fetchAlphaVantageMarketCap(symbol) {
-  try {
-    // Note: API_KEY would need to be replaced with actual key
-    const response = await fetch(
-      `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${symbol}&apikey=API_KEY`,
-    );
-    if (!response.ok) throw new Error("Network response was not ok");
-    const data = await response.json();
 
-    if (data["Error Message"] || data["Note"]) {
-      console.warn(`Alpha Vantage API limit or error for ${symbol}:`, data);
-      return null;
-    }
-
-    const marketCap = data.MarketCapitalization;
-    if (marketCap && marketCap !== "None") {
-      // Market cap comes as string like "3500000000000"
-      return Math.round(Number.parseFloat(marketCap) / 1e9); // Convert to billions
-    }
-    return null;
-  } catch (error) {
-    console.error(`Failed to fetch Alpha Vantage data for ${symbol}:`, error);
-    return null;
-  }
-}
-
-// Finnhub API for stock market caps (requires API key)
-async function fetchFinnhubMarketCap(symbol) {
-  try {
-    // Note: API_KEY would need to be replaced with actual key
-    const response = await fetch(
-      `https://finnhub.io/api/v1/stock/metric?symbol=${symbol}&metric=all&token=API_KEY`,
-    );
-    if (!response.ok) throw new Error("Network response was not ok");
-    const data = await response.json();
-
-    const marketCap = data.metric?.marketCapitalization;
-    if (marketCap && marketCap > 0) {
-      return Math.round(marketCap / 1e9); // Convert to billions
-    }
-    return null;
-  } catch (error) {
-    console.error(`Failed to fetch Finnhub data for ${symbol}:`, error);
-    return null;
-  }
-}
 
 // Generic API fetcher based on item configuration
 async function fetchLiveData(item) {
