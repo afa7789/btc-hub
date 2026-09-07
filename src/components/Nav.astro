@@ -17,29 +17,12 @@ const wordmarkColumns = Math.max(
 );
 
 /*
- * A divisao do nav em duas linhas e CONTEUDO, nao acaso de layout: a linha de
- * baixo sao as quatro paginas de grafico, a de cima os navegadores e as
- * calculadoras. Por isso ela e declarada aqui em vez de sair de um
- * `flex-wrap`, que quebra de forma gulosa e ja tinha deixado UM item sozinho
- * embaixo.
- *
- * O lugar certo disto e um campo (`group`) em src/data/routes.ts, junto do
- * resto dos metadados de rota — mover para la assim que o arquivo estiver
- * livre; hoje ele esta sendo editado em paralelo.
- *
- * `/satsukashii` e `/big-mac` sao a MESMA rota em dois momentos do rename;
- * aceitar as duas mantem o nav equilibrado antes e depois dele.
+ * O agrupamento vem do campo `group` em src/data/routes.ts: qual linha um item
+ * ocupa e conhecimento de rota, e duplicar conhecimento de rota foi o que fez
+ * nav, home e 404 divergirem antes de routes.ts existir.
  */
-const CHART_ROUTES = [
-  "/debase",
-  "/halving",
-  "/rainbow",
-  "/big-mac",
-  "/satsukashii",
-];
-
-const chartTools = tools.filter((item) => CHART_ROUTES.includes(item.href));
-const otherTools = tools.filter((item) => !CHART_ROUTES.includes(item.href));
+const chartTools = tools.filter((item) => item.group === "chart");
+const otherTools = tools.filter((item) => item.group !== "chart");
 const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
 ---
 

@@ -55,7 +55,7 @@ brutalist rendering, and the `import_from_*.js` fetchers. Marks the Bitcoin halv
 from `/datasets/halvings.txt` and shows inflation-adjusted ATHs.
 `daily_cpi_inflation.csv` is the denominator for everything on the page.
 
-### `/satsukashii` — BIG MAC INDEX
+### `/big-mac` — BIG MAC INDEX
 
 How many satoshis a Big Mac costs over time. Dual-axis D3 chart: the Big Mac price in
 USD on the left (linear, drawn with `curveStepAfter` because the price only moves in
@@ -132,6 +132,23 @@ serially, because the derived JSON needs both of its inputs to have landed first
 
 ### What is NOT automated
 
+#### Refreshing `all-the-money/data.json`
+
+Those figures come from annual reports, not APIs, so the refresh is a web search
+with a script guarding the write:
+
+```bash
+node scripts/update-all-the-money.mjs --dry-run              # lists every live figure + a search query
+node scripts/update-all-the-money.mjs --apply f.json --dry-run   # preview what would change
+node scripts/update-all-the-money.mjs --apply f.json          # write
+node scripts/update-all-the-money.mjs --fix-endpoints         # null out broken API endpoints
+```
+
+`--apply` takes `[{id, valueBillions, lastUpdated, sourceUrl}]` and writes an item
+**only** when `lastUpdated` is strictly newer than what is stored. When no newer
+source exists the old value is kept untouched — that is the rule, not a fallback.
+
+
 These are never touched by `scripts/update.sh`. The summary table still lists them, so
 they stay visible, but they are exempt from the freshness gate.
 
@@ -204,7 +221,7 @@ This runs daily at 6 AM UTC: updates datasets, rebuilds site, and deploys.
   HTML into `dist/`. There is no server runtime; `dist/` is what nginx serves.
 - **No UI framework.** Astro ships zero framework JS; each page carries its own vanilla
   script, either inlined with `is:inline` or served from `public/scripts/`.
-- **D3.js v7** (CDN) for the `/debase` and `/satsukashii` charts.
+- **D3.js v7** (CDN) for the `/debase`, `/halving` and `/big-mac` charts.
 - **IndexedDB** (via `idb`) for CSV and API caching on the heavier pages;
   `localStorage` for the ticker and the theme preference.
 - **`public/datasets/`** holds every CSV and JSON the pages read at runtime.

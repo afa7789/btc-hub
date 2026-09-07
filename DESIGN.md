@@ -84,7 +84,7 @@ funciona se ela não mudar de página para página.
 
 D3 aplica `stroke` como atributo de apresentação, onde `var()` não vale. Leia o
 token com `getComputedStyle` no momento do desenho, como fazem `/debase` e
-`/satsukashii` — nunca duplique o literal no JS.
+`/big-mac` — nunca duplique o literal no JS.
 
 ### 2.2 Canvas fixo escuro
 
@@ -109,7 +109,7 @@ Os gráficos do `/debase` desenham as séries acima sobre fundo preto **em
 qualquer tema** — no claro, prata e ouro sumiriam. Esses três tokens são
 deliberadamente ausentes do bloco `[data-theme="light"]`.
 
-O `/satsukashii` é o caso oposto: desenha sobre o fundo da página, então segue
+O `/big-mac` é o caso oposto: desenha sobre o fundo da página, então segue
 o tema e usa `--bg-primary` / `--fg-primary` / `--series-fiat`, que invertem.
 Ele redesenha no evento `themechange`.
 
@@ -248,7 +248,7 @@ sobre preto — nítido em 16px e 32px.
 - **Feito:** ambas as páginas já abrem com um cenário calculado em build time
   (`src/utils/prerender.ts`), então mostram números reais mesmo sem JavaScript.
 
-### `/debase` e `/satsukashii`
+### `/debase` e `/big-mac`
 - Cursor vertical sincronizado mostrando os dois eixos na mesma data
   (USD $X vs Y sats).
 - Anotações de eventos: halvings e ciclos de QE como linhas pontilhadas sutis.
@@ -261,7 +261,7 @@ do favicon.
 | Arte | Destino | Conteúdo |
 |---|---|---|
 | Favicon | `public/favicon.svg` | Glifo `₿` de alto contraste |
-| Big Mac Index | `/satsukashii` | Montagem do hambúrguer e decaimento log dos sats |
+| Big Mac Index | `/big-mac` | Montagem do hambúrguer e decaimento log dos sats |
 | Debase | `/debase` | Curva CPI-U vs linhas de halving |
 | All The Money | `/all-the-money` | Proporção dos blocos de $100B |
 | DCA Calculator | `/dca` | Pipeline de aportes acumulando sats |
