@@ -37,7 +37,12 @@ Thumbs.db
 # registro de por que um achado foi aceito ou reprovado, e valem versionamento.
 .ux-review/audits/*.json
 .ux-review/comparisons/
-.ux-review/harness/
+# Ignora o CONTEUDO da pasta, nao a pasta: git nao desce em diretorio
+# excluido, entao um '!' dentro de '.ux-review/harness/' nunca teria efeito.
+.ux-review/harness/*
+# Excecao: este nao e harness de captura descartavel, e o gate que prova que
+# os graficos ainda desenham. Precisa viajar com o repo.
+!.ux-review/harness/draw-check.mjs
 .ux-review/discovery.raw.md
 
 # dagRobin — estado por maquina, nao fonte
