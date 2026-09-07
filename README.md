@@ -61,8 +61,8 @@ How many satoshis a Big Mac costs over time. Dual-axis D3 chart: the Big Mac pri
 USD on the left (linear, drawn with `curveStepAfter` because the price only moves in
 discrete steps) and the cost in satoshis on the right (**log scale**, since it has
 fallen by orders of magnitude). Source is `/datasets/satsukashii/prices.json`, derived
-from The Economist's official Big Mac Index dataset. The standalone Go service in
-`../satsukashii/` is what generates that JSON.
+from The Economist's official Big Mac Index dataset by `scripts/compute-satsukashii.ts`,
+which pairs each Big Mac USD price with that day's bitcoin close.
 
 ### `/how-much-i-fucked-up` — HOW MUCH I FUCKED UP
 
@@ -96,27 +96,66 @@ bun run preview  # preview production build
 
 ## Updating Data
 
-Datasets are updated via scripts in `scripts/`:
+`bash scripts/update.sh` is the single entry point. It refreshes every dataset that
+*can* be refreshed automatically, then prints a summary table and fails loudly if
+anything came back stale.
 
 ```bash
-# Update all datasets (CPI, metals, crypto prices)
-bash scripts/update.sh
+bash scripts/update.sh                 # fetch everything, summarise, enforce freshness
+bash scripts/update.sh --summary-only  # read-only: print the table, touch nothing
+bash scripts/update.sh --no-fail-stale # report staleness without a non-zero exit
+bash scripts/update.sh --max-age-days 7  # tighten the gate for every dataset
 
-# Recompute satsukashii prices
-bun run scripts/compute-satsukashii.ts
-
-# Or do both + rebuild
-bash update-and-rebuild.sh
-
-# With deploy
-bash update-and-rebuild.sh --deploy
+bash update-and-rebuild.sh             # update + rebuild the site
+bash update-and-rebuild.sh --deploy    # update + rebuild + deploy
 ```
+
+Exit codes: `0` clean, `1` an updater failed, `2` a dataset is stale or missing,
+`3` both.
+
+### What updates what
+
+Every updater is TypeScript and runs under Bun (or `npx tsx` as a fallback). There is
+no Python and no Docker in the update path any more.
+
+| Dataset | Updated by | Used by |
+| --- | --- | --- |
+| `CPI_U.csv` | `update-cpi.ts` (BLS API) | `/debase` |
+| `daily_cpi_inflation.csv` | `update-cpi.ts`, which calls `generate-daily-cpi.ts` to interpolate the monthly CPI into a daily series | `/debase` |
+| `gold.csv`, `silver.csv` | `update-metals.ts` (Yahoo Finance) | `/debase`, `/dca` |
+| `bitcoin_*.csv`, `ethereum_*.csv`, `monero_*.csv` | `update-crypto.ts` (Kraken OHLC) | `/debase`, `/dca`, `/rainbow`, `/how-much-i-fucked-up` |
+| `satsukashii/big-mac-source-data-v2.csv` | `update-bigmac.ts` (The Economist's published Big Mac Index) | source for the next row |
+| `satsukashii/prices.json` | `compute-satsukashii.ts`, derived from the Big Mac CSV plus the bitcoin CSV | `/satsukashii` |
+
+`update.sh` runs the four fetchers in parallel and then runs `compute-satsukashii.ts`
+serially, because the derived JSON needs both of its inputs to have landed first.
+
+### What is NOT automated
+
+These are never touched by `scripts/update.sh`. The summary table still lists them, so
+they stay visible, but they are exempt from the freshness gate.
+
+| Dataset | Why | How to refresh |
+| --- | --- | --- |
+| `sem-melhores/blacklist.json` | Hand-curated judgement call — which coins count as stablecoins or staked derivatives. No upstream feed to pull. | Edit the JSON by hand. |
+| `all-the-money/data.json` | Curated aggregate of global wealth figures with hand-written `excludeFromTotal` rules; sources are reports, not APIs. | `bun run scripts/update-all-the-money.mjs`, then review the diff by hand. |
+| `M2SL.csv` | One-off FRED export; nothing in the repo fetches it. | Re-download the M2SL series from FRED. |
+| `halvings.txt` | Static — the halving schedule is fixed by the protocol. | Never. |
+
+### The freshness gate
+
+After the fetch, `update.sh` reads the newest date out of each dataset (the max date
+column for the CSVs, `biggest_date` / `metadata.lastUpdated` for the JSONs) and fails
+if an automated dataset is older than its allowed window. The default is 30 days;
+per-dataset windows account for the upstream release cadence — crypto and metals are
+held to a few days, monthly CPI to 45, and the Big Mac index publishes only twice a
+year. This exists because a silently failing updater used to look exactly like a
+successful run.
 
 ### Prerequisites for data updates
 
-- Docker (for CPI and metals updaters)
-- Python 3.12+
-- Bun (recommended) or Node.js 20+
+- Bun (recommended) or Node.js 20+ with `npx tsx`
+- Network access (BLS, Yahoo Finance, Kraken, The Economist's GitHub)
 
 ## Deploy to VPS
 
@@ -169,7 +208,7 @@ This runs daily at 6 AM UTC: updates datasets, rebuilds site, and deploys.
 - **IndexedDB** (via `idb`) for CSV and API caching on the heavier pages;
   `localStorage` for the ticker and the theme preference.
 - **`public/datasets/`** holds every CSV and JSON the pages read at runtime.
-- **Python** (Docker) for the data fetching scripts.
+- **TypeScript scripts** in `scripts/`, run with Bun, for all data fetching.
 - **Nginx** for serving.
 
 The standalone folders in the parent directory (`all_the_money_in_the_world/`,

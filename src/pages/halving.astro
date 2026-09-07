@@ -1,10 +1,69 @@
 ---
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const title = "Halving";
 const description =
   "Bitcoin halvings plotted against the price, with the 500-day window around each one.";
+
+/*
+ * A tabela e as tres datas sao conteudo derivado do dataset, entao saem prontas
+ * do build — a pagina diz a verdade sem JavaScript, so o grafico depende dele.
+ * Mesmo padrao de src/utils/prerender.ts: node:fs no frontmatter.
+ */
+const HALVINGS_FILE = join(process.cwd(), "public", "datasets", "halvings.txt");
+
+const halvingTimestamps = readFileSync(HALVINGS_FILE, "utf8")
+  .split("\n")
+  .map((line) => line.trim())
+  .filter((line) => line && !Number.isNaN(Number(line)))
+  .map(Number);
+
+const BLOCKS_PER_HALVING = 210_000;
+const INITIAL_SUBSIDY = 50;
+const DAY_MS = 24 * 3600 * 1000;
+const WINDOW_DAYS = 500;
+/* Media do protocolo: 210.000 blocos a 10 minutos ~ 4 anos julianos. */
+const HALVING_INTERVAL_MS = 4 * 365.25 * DAY_MS;
+
+/*
+ * Datas do dataset sao meia-noite UTC. Formatar no fuso do servidor de build
+ * jogaria cada uma um dia para tras em qualquer offset negativo, entao a
+ * formatacao e fixada em UTC.
+ */
+const longDate = (date: Date): string =>
+  date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+
+const pastHalvings = halvingTimestamps.map((timestamp, index) => ({
+  number: index + 1,
+  height: (index + 1) * BLOCKS_PER_HALVING,
+  date: longDate(new Date(timestamp * 1000)),
+  subsidy: INITIAL_SUBSIDY / 2 ** (index + 1),
+}));
+
+const lastHalving = new Date(
+  (halvingTimestamps[halvingTimestamps.length - 1] as number) * 1000,
+);
+const nextHalving = new Date(lastHalving.getTime() + HALVING_INTERVAL_MS);
+const windowOpens = new Date(nextHalving.getTime() - WINDOW_DAYS * DAY_MS);
+const windowCloses = new Date(nextHalving.getTime() + WINDOW_DAYS * DAY_MS);
+
+const nextHeight = (halvingTimestamps.length + 1) * BLOCKS_PER_HALVING;
+const nextSubsidy = INITIAL_SUBSIDY / 2 ** (halvingTimestamps.length + 1);
+
+const estimates = [
+  { label: "Next halving (estimated)", value: longDate(nextHalving) },
+  { label: "500-day window opens", value: longDate(windowOpens) },
+  { label: "500-day window closes", value: longDate(windowCloses) },
+];
 ---
+
 
 <BaseLayout title={title} description={description}>
   <style>
@@ -23,7 +82,7 @@ const description =
     .brutalist-chart {
       width: 100%;
       max-width: 900px;
-      margin: 20px 0;
+      margin: 20px auto;
       display: block;
       overflow: visible;
       box-sizing: border-box;
@@ -34,9 +93,58 @@ const description =
     }
 
     .next-halving {
-      margin-top: 2em;
+      margin: 1em 0;
       font-weight: bold;
       color: var(--status-warning);
+    }
+
+    .date-list {
+      margin: 0;
+    }
+
+    .date-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0 1ch;
+      padding: 0.25em 0;
+      border-bottom: var(--border-width) solid var(--border-subtle);
+    }
+
+    .date-row dt::after {
+      content: ":";
+    }
+
+    .date-row dd {
+      margin: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+
+    /* O seletor escopado compila para td[data-astro-cid-...] — (0,1,1), que
+       vence o .num global em (0,1,0). A regra precisa existir aqui. */
+    th,
+    td {
+      border: var(--border-width) solid var(--border);
+      padding: 0.5rem;
+      text-align: start;
+    }
+
+    th.num,
+    td.num {
+      text-align: right;
+    }
+
+    .note {
+      color: var(--fg-muted);
     }
 
     article :global(svg) {
@@ -95,29 +203,98 @@ const description =
     </header>
 
     <section class="section">
+      <h2>What a halving is</h2>
       <p>
-        Every 210,000 blocks the block subsidy is cut in half, so new supply
-        arrives at half the previous rate. The chart plots the price on a log
-        scale with each halving marked, and shades the 500 days before and after
-        it.
+        Every 210,000 blocks — roughly four years at ten minutes a block — the
+        block subsidy paid to miners is cut in half. It started at 50 BTC per
+        block in 2009 and is {nextSubsidy.toString()} BTC after the next one.
+        Nothing else changes: no vote, no announcement, no discretion. The rule
+        is in the code every node runs, so new supply arrives at half the
+        previous rate on schedule, and the issuance curve ends at 21 million.
+      </p>
+      <p>
+        The chart plots the price on a log scale with each halving marked, and
+        shades the 500 days before and after it.
       </p>
     </section>
 
     <section class="section">
+      <h2>Halvings so far</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Past halvings">
+        <table>
+          <caption class="sr-only">
+            Past Bitcoin halvings: block height, date, and the block subsidy
+            each one produced.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col" class="num">Block</th>
+              <th scope="col">Date</th>
+              <th scope="col" class="num">Subsidy after</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pastHalvings.map((halving) => (
+              <tr>
+                <td class="num">{halving.number}</td>
+                <td class="num">{halving.height.toLocaleString("en-US")}</td>
+                <td>{halving.date}</td>
+                <td class="num">{halving.subsidy} BTC</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note">
+        Four halvings. Four data points. Enough to describe what happened, not
+        enough to call it a pattern.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>The next one</h2>
+      <div id="next-halving" class="next-halving">
+        <dl class="date-list">
+          {estimates.map((estimate) => (
+            <div class="date-row">
+              <dt>{estimate.label}</dt>
+              <dd>{estimate.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <p>
+        The date is an estimate, not a fixed point on the calendar. What the
+        protocol fixes is a block height — {nextHeight.toLocaleString("en-US")}
+        — and blocks do not arrive on a clock. Difficulty retargets every 2,016
+        blocks to pull the average back toward ten minutes, but hash rate keeps
+        growing between retargets, so blocks tend to come in slightly fast and
+        the height arrives slightly early. The figures above assume a flat four
+        years from the last halving; the real date drifts by weeks.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Chart</h2>
       <div id="halving-chart" class="brutalist-chart"></div>
-      <div id="next-halving" class="next-halving"></div>
       <noscript>
         <p>
           This chart is drawn in the browser from a price dataset. Enable
-          JavaScript to see it.
+          JavaScript to see it. The dates and the table above are rendered at
+          build time and do not need it.
         </p>
       </noscript>
+      <h2>The 500-day window</h2>
       <p>
-        <strong>The 500-day window:</strong> the shaded bands cover the 500 days
-        leading up to each halving and the 500 days after it. The idea people
-        take from this is that buying into the run-up and holding through the
-        window has historically worked out — the chart shows the four times it
-        has happened, which is four data points, not a law.
+        The shaded bands cover the 500 days leading up to each halving and the
+        500 days after it — a little under three years around each event. The
+        claim people take from it is that buying into the run-up and holding
+        through the window has historically worked out. That is a reading of
+        four episodes, each with its own macro backdrop, market structure and
+        set of leveraged blowups. The supply cut is real and mechanical; the
+        price behaviour around it is four observations of a market that was a
+        different size every time.
       </p>
     </section>
   </article>
@@ -206,13 +383,39 @@ const description =
       const nextHalving = new Date(
         lastHalving.getTime() + 4 * 365.25 * 24 * 3600 * 1000,
       );
-      const windowStart = new Date(
+      const windowOpens = new Date(
         nextHalving.getTime() - 500 * 24 * 3600 * 1000,
       );
+      const windowCloses = new Date(
+        nextHalving.getTime() + 500 * 24 * 3600 * 1000,
+      );
 
-      document.getElementById("next-halving").innerHTML =
-        `Estimated next halving: ${nextHalving.toLocaleDateString()}<br>` +
-        `500-day window start: ${windowStart.toLocaleDateString()}`;
+      // O frontmatter ja imprimiu estas tres datas no HTML a partir do mesmo
+      // dataset e da mesma aritmetica; reescreve-las aqui mantem a pagina
+      // correta se o dataset mudar sem um rebuild. Os timestamps sao meia-noite
+      // UTC, entao a formatacao e fixada em UTC para nao pular um dia.
+      const longDate = (date) =>
+        date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          timeZone: "UTC",
+        });
+
+      const dates = [
+        ["Next halving (estimated)", nextHalving],
+        ["500-day window opens", windowOpens],
+        ["500-day window closes", windowCloses],
+      ];
+
+      // Reescreve so o texto: elementos criados por JS nao recebem o atributo
+      // data-astro-cid do CSS escopado, entao as linhas prerenderizadas ficam.
+      const rows = document.querySelectorAll("#next-halving .date-row");
+      rows.forEach((row, index) => {
+        const entry = dates[index];
+        const value = row.querySelector("dd");
+        if (entry && value) value.textContent = longDate(entry[1]);
+      });
 
       const btcData = { timestamp: [], price: [] };
       const info = csvManager.getDatasetInfo("BTC");

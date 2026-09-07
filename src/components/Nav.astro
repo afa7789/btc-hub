@@ -15,6 +15,32 @@ const wordmarkLines = wordmark.replace(/\n+$/, "").split("\n");
 const wordmarkColumns = Math.max(
   ...wordmarkLines.map((line: string) => line.length),
 );
+
+/*
+ * A divisao do nav em duas linhas e CONTEUDO, nao acaso de layout: a linha de
+ * baixo sao as quatro paginas de grafico, a de cima os navegadores e as
+ * calculadoras. Por isso ela e declarada aqui em vez de sair de um
+ * `flex-wrap`, que quebra de forma gulosa e ja tinha deixado UM item sozinho
+ * embaixo.
+ *
+ * O lugar certo disto e um campo (`group`) em src/data/routes.ts, junto do
+ * resto dos metadados de rota — mover para la assim que o arquivo estiver
+ * livre; hoje ele esta sendo editado em paralelo.
+ *
+ * `/satsukashii` e `/big-mac` sao a MESMA rota em dois momentos do rename;
+ * aceitar as duas mantem o nav equilibrado antes e depois dele.
+ */
+const CHART_ROUTES = [
+  "/debase",
+  "/halving",
+  "/rainbow",
+  "/big-mac",
+  "/satsukashii",
+];
+
+const chartTools = tools.filter((item) => CHART_ROUTES.includes(item.href));
+const otherTools = tools.filter((item) => !CHART_ROUTES.includes(item.href));
+const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
 ---
 
 <nav class="nav">
@@ -34,14 +60,18 @@ const wordmarkColumns = Math.max(
       aria-controls="nav-links"
     />
     <div class="nav__links" id="nav-links">
-      {tools.map(item => (
-        <a 
-          href={item.href}
-          class:list={['nav__link', { 'nav__link--active': current === item.href }]}
-          aria-current={current === item.href ? 'page' : undefined}
-        >
-          {item.label}
-        </a>
+      {navRows.map(row => (
+        <div class="nav__row">
+          {row.map(item => (
+            <a 
+              href={item.href}
+              class:list={['nav__link', { 'nav__link--active': current === item.href }]}
+              aria-current={current === item.href ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
       ))}
     </div>
     
@@ -108,17 +138,41 @@ const wordmarkColumns = Math.max(
     }
   }
   
+  /*
+   * Duas linhas declaradas, nao `flex-wrap` numa lista unica.
+   *
+   * Com uma lista so, a quebra e gulosa: a primeira linha engole tudo que
+   * couber e sobra o resto — com estes rotulos (de "DEBASE", 6 caracteres, a
+   * "ALL THE MONEY IN THE WORLD", 26) dava SETE em cima e UM sozinho embaixo,
+   * que le como bug. Aqui cada grupo e a sua propria linha, entao o corte e
+   * sempre 4/4 e nunca depende da largura.
+   *
+   * Cada linha e `nowrap` na pratica: gap e corpo encolhem com a viewport ate
+   * o grupo mais largo ("SEM MELHORES ... HOW MUCH I FUCKED UP", ja com a
+   * decoracao "> <" do item ativo) caber inteiro em 769px. O `wrap` fica so
+   * como valvula: numa fonte de fallback mais larga o nav quebra em vez de
+   * vazar na horizontal.
+   */
   .nav__links {
     display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
   }
   
+  .nav__row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0.25rem clamp(0.5rem, 1.1vw, 1.5rem);
+  }
+
   .nav__link {
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    white-space: nowrap;
     padding: 0.25rem 0;
     border-bottom: 2px solid transparent;
     transition: border-color 0.2s;
@@ -147,6 +201,18 @@ const wordmarkColumns = Math.max(
   
   .nav__link--active::after {
     content: " <";
+  }
+
+  /*
+   * Entre 769px e 1024px o corpo desce de 14.4px para 13px (--text-body, o
+   * corpo de texto do design system) para a linha de cima caber sem quebrar.
+   * Piso de 13px, acima do minimo de 12px renderizado; abaixo de 769px o nav
+   * ja e pilha vertical e nao precisa encolher nada.
+   */
+  @media (min-width: 769px) {
+    .nav__link {
+      font-size: clamp(0.8125rem, 0.549rem + 0.549vw, 0.9rem);
+    }
   }
   
   .nav__toggle-input {
@@ -179,10 +245,19 @@ const wordmarkColumns = Math.max(
     outline-offset: 2px;
   }
   
+  /* O disclosure sem JS continua igual: o nav__links some e so o :checked o
+     traz de volta — sem script nenhum no caminho. */
   @media (max-width: 768px) {
     .nav__links {
       display: none;
       width: 100%;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    /* No mobile os dois grupos viram uma pilha unica: a distincao grafico /
+       calculadora nao paga uma linha a mais numa lista vertical. */
+    .nav__row {
       flex-direction: column;
       gap: 0.5rem;
     }

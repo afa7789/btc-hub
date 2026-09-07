@@ -34,6 +34,7 @@ interface LanguageTexts {
   circulatingSupply: string;
   totalSupply: string;
   viewOnCoingecko: string;
+  closeModal: string;
   staleNotice: string;
   exampleNotice: string;
 }
@@ -86,6 +87,7 @@ const texts: Record<"pt" | "en", LanguageTexts> = {
     circulatingSupply: "Supply Circulante:",
     totalSupply: "Supply Total:",
     viewOnCoingecko: "Ver no CoinGecko",
+    closeModal: "Fechar",
     staleNotice:
       "A API do CoinGecko não respondeu. Mostrando os últimos dados salvos neste navegador — os preços podem estar desatualizados.",
     exampleNotice:
@@ -117,6 +119,7 @@ const texts: Record<"pt" | "en", LanguageTexts> = {
     circulatingSupply: "Circulating Supply:",
     totalSupply: "Total Supply:",
     viewOnCoingecko: "View on CoinGecko",
+    closeModal: "Close",
     staleNotice:
       "The CoinGecko API did not respond. Showing the last data saved in this browser — prices may be out of date.",
     exampleNotice:
@@ -147,7 +150,7 @@ let updateInterval: ReturnType<typeof setInterval> | undefined;
  * setupEventListeners e setupModalEvents reconsultam os nos, que sao novos a
  * cada troca; o que fica no document (o Escape do modal) e ligado uma so vez.
  */
-let modalEventsBound = false;
+let modalDocumentEventsBound = false;
 
 document.addEventListener("astro:page-load", async () => {
   if (!document.getElementById("cryptoList")) return; // outra pagina
@@ -157,9 +160,10 @@ document.addEventListener("astro:page-load", async () => {
   await fetchCryptoData();
   startPeriodicUpdate();
   setupEventListeners();
-  if (!modalEventsBound) {
-    setupModalEvents();
-    modalEventsBound = true;
+  setupModalEvents();
+  if (!modalDocumentEventsBound) {
+    setupModalDocumentEvents();
+    modalDocumentEventsBound = true;
   }
   updateLanguage();
 });
@@ -729,6 +733,12 @@ function updateLanguage() {
     languageToggle.textContent = texts[currentLanguage].flag;
   }
 
+  const modalCloseBtn =
+    document.querySelector<HTMLButtonElement>("#coinModal .close");
+  if (modalCloseBtn) {
+    modalCloseBtn.setAttribute("aria-label", texts[currentLanguage].closeModal);
+  }
+
   document.documentElement.lang = currentLanguage === "pt" ? "pt-BR" : "en";
 
   updateDataNotice();
@@ -743,14 +753,92 @@ window.addEventListener("beforeunload", () => {
 
 // === MODAL ===
 
+// Guarda quem abriu o modal para devolver o foco no fechamento (WCAG 2.4.3).
+let modalOpener: HTMLElement | null = null;
+
+function isModalOpen(modal: HTMLElement) {
+  return !modal.hidden;
+}
+
+// aria-modal so instrui leitores de tela; o inert e o que realmente retira o
+// resto da pagina da ordem de foco e da arvore de acessibilidade.
+function setSiblingsInert(modal: HTMLElement, inert: boolean) {
+  const page = modal.closest(".sem-melhores-page");
+  if (!page) return;
+  for (const sibling of Array.from(page.children)) {
+    if (sibling === modal) continue;
+    (sibling as HTMLElement).inert = inert;
+  }
+}
+
+function getModalFocusable(modal: HTMLElement): HTMLElement[] {
+  const selector =
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  return Array.from(modal.querySelectorAll<HTMLElement>(selector)).filter(
+    (el) => el.offsetParent !== null || el === document.activeElement,
+  );
+}
+
+function openModal(modal: HTMLElement) {
+  modalOpener = document.activeElement as HTMLElement | null;
+  modal.hidden = false;
+  setSiblingsInert(modal, true);
+
+  const closeBtn = modal.querySelector<HTMLButtonElement>(".close");
+  closeBtn?.focus();
+}
+
+function closeModal(modal: HTMLElement) {
+  if (!isModalOpen(modal)) return;
+  modal.hidden = true;
+  setSiblingsInert(modal, false);
+
+  // O inert precisa sair antes, senao o foco nao volta para um no inerte.
+  if (modalOpener?.isConnected) {
+    modalOpener.focus();
+  }
+  modalOpener = null;
+}
+
+// Ciclo de Tab dentro do dialogo: o inert cobre os irmaos, isto cobre o resto
+// do documento (cabecalho global, barra de URL do teclado nao, mas a pagina sim).
+function trapTab(modal: HTMLElement, e: KeyboardEvent) {
+  const focusable = getModalFocusable(modal);
+  if (focusable.length === 0) {
+    e.preventDefault();
+    return;
+  }
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  const active = document.activeElement as HTMLElement | null;
+
+  if (!active || !modal.contains(active)) {
+    e.preventDefault();
+    first.focus();
+    return;
+  }
+
+  if (e.shiftKey && active === first) {
+    e.preventDefault();
+    last.focus();
+    return;
+  }
+
+  if (!e.shiftKey && active === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
 async function showCoinModal(coinId: string) {
   const modal = document.getElementById("coinModal");
   const modalBody = document.getElementById("modalBody");
 
   if (!modal || !modalBody) return;
 
-  modal.style.display = "block";
-  modalBody.innerHTML = `<p>${texts[currentLanguage].loading}</p>`;
+  openModal(modal);
+  modalBody.innerHTML = `<p id="coinModalTitle">${texts[currentLanguage].loading}</p>`;
 
   try {
     const response = await fetch(
@@ -765,7 +853,7 @@ async function showCoinModal(coinId: string) {
     displayCoinData(data);
   } catch (error) {
     console.error("Error fetching coin data:", error);
-    modalBody.innerHTML = `<p>${texts[currentLanguage].errorLoading}</p>`;
+    modalBody.innerHTML = `<p id="coinModalTitle">${texts[currentLanguage].errorLoading}</p>`;
   }
 }
 
@@ -784,7 +872,7 @@ function displayCoinData(coin: any) {
   modalBody.innerHTML = `
     <div class="coin-detail-header">
       <img src="${coin.image?.large || ""}" alt="${coin.name}" class="coin-detail-image" />
-      <div class="coin-detail-name">${coin.symbol?.toUpperCase()} ${coin.name}</div>
+      <div class="coin-detail-name" id="coinModalTitle">${coin.symbol?.toUpperCase()} ${coin.name}</div>
     </div>
     
     <div class="coin-detail-data">
@@ -803,27 +891,35 @@ function displayCoinData(coin: any) {
   `;
 }
 
+// Os nos do modal sao recriados a cada navegacao do ClientRouter, entao estes
+// listeners sao religados em todo astro:page-load.
 function setupModalEvents() {
   const modal = document.getElementById("coinModal");
-  const closeBtn = document.querySelector(".close");
+  if (!modal) return;
 
-  if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
-      if (modal) modal.style.display = "none";
-    });
-  }
+  const closeBtn = modal.querySelector<HTMLButtonElement>(".close");
+  closeBtn?.addEventListener("click", () => closeModal(modal));
 
-  if (modal) {
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) {
-        modal.style.display = "none";
-      }
-    });
-  }
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      closeModal(modal);
+    }
+  });
+}
 
+// Fica no document, logo e ligado uma unica vez (guard em modalDocumentEventsBound).
+function setupModalDocumentEvents() {
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal && modal.style.display === "block") {
-      modal.style.display = "none";
+    const modal = document.getElementById("coinModal");
+    if (!modal || !isModalOpen(modal)) return;
+
+    if (e.key === "Escape") {
+      closeModal(modal);
+      return;
+    }
+
+    if (e.key === "Tab") {
+      trapTab(modal, e);
     }
   });
 }

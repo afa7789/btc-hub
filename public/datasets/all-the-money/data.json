@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "lastUpdated": "2025-07-04T12:00:00Z",
+    "lastUpdated": "2026-09-07T12:07:00Z",
     "dataVersion": "2.0",
     "currency": "USD",
     "baseUnit": "billions",
@@ -126,15 +126,15 @@
       "slug": "cryptocurrency-total-market-cap",
       "name": "Cryptocurrency (Market Cap)",
       "categoryId": "digital-assets",
-      "valueBillions": 2400,
-      "valueFormatted": "2.4 trillion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 2690,
+      "valueFormatted": "2.69 trillion",
+      "lastUpdated": "2026-09-07T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "CoinGecko",
         "url": "https://www.coingecko.com/",
         "apiEndpoint": "https://api.coingecko.com/api/v3/global",
-        "notes": "Real-time global cryptocurrency market cap"
+        "notes": "CoinGecko /api/v3/global total_market_cap.usd"
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -150,15 +150,15 @@
       "slug": "bitcoin-total-market-cap",
       "name": "Bitcoin (Market Cap)",
       "categoryId": "digital-assets",
-      "valueBillions": 1200,
-      "valueFormatted": "1.2 trillion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 1591,
+      "valueFormatted": "1.59 trillion",
+      "lastUpdated": "2026-09-07T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "CoinGecko",
         "url": "https://www.coingecko.com/en/coins/bitcoin",
         "apiEndpoint": "https://api.coingecko.com/api/v3/coins/bitcoin",
-        "notes": "Real-time Bitcoin market capitalization"
+        "notes": "59.13% BTC dominance of CoinGecko global total market cap"
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -179,15 +179,15 @@
       "slug": "ethereum-total-market-cap",
       "name": "Ethereum (Market Cap)",
       "categoryId": "digital-assets",
-      "valueBillions": 400,
-      "valueFormatted": "400 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 303,
+      "valueFormatted": "303 billion",
+      "lastUpdated": "2026-09-07T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "CoinGecko",
         "url": "https://www.coingecko.com/en/coins/ethereum",
         "apiEndpoint": "https://api.coingecko.com/api/v3/coins/ethereum",
-        "notes": "Real-time Ethereum market capitalization"
+        "notes": "11.27% ETH dominance of CoinGecko global total market cap"
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -230,15 +230,15 @@
       "slug": "ukraine-gross-domestic-product",
       "name": "Ukraine GDP",
       "categoryId": "national-economy",
-      "valueBillions": 170,
-      "valueFormatted": "170 billion",
-      "lastUpdated": "2023-12-31T00:00:00Z",
+      "valueBillions": 214.2,
+      "valueFormatted": "214.2 billion",
+      "lastUpdated": "2026-07-13T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "World Bank",
         "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=UA",
         "apiEndpoint": "https://api.worldbank.org/v2/country/UA/indicator/NY.GDP.MKTP.CD",
-        "notes": "Latest available GDP data"
+        "notes": "NY.GDP.MKTP.CD, 2025 estimate; WB database release 2026-07-13"
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -254,15 +254,15 @@
       "slug": "russia-gross-domestic-product",
       "name": "Russia GDP",
       "categoryId": "national-economy",
-      "valueBillions": 2240,
-      "valueFormatted": "2.24 trillion",
-      "lastUpdated": "2023-12-31T00:00:00Z",
+      "valueBillions": 2561.3,
+      "valueFormatted": "2.56 trillion",
+      "lastUpdated": "2026-07-13T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "World Bank",
         "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=RU",
         "apiEndpoint": "https://api.worldbank.org/v2/country/RU/indicator/NY.GDP.MKTP.CD",
-        "notes": "Latest available GDP data"
+        "notes": "NY.GDP.MKTP.CD, 2025 estimate; WB database release 2026-07-13"
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -375,17 +375,10 @@
         "type": "api",
         "provider": "Multiple Central Banks",
         "url": "https://fred.stlouisfed.org/",
-        "apiEndpoint": "https://api.stlouisfed.org/fred/series/observations",
+        "apiEndpoint": null,
         "notes": "Aggregate of major central bank balance sheets"
       },
-      "isLiveUpdatable": true,
-      "apiConfig": {
-        "endpoint": "https://api.stlouisfed.org/fred/series/observations?series_id=WALCL&api_key=API_KEY&file_type=json&limit=1&sort_order=desc",
-        "method": "GET",
-        "authRequired": true,
-        "dataPath": "observations[0].value",
-        "transform": "multiply_by_1000"
-      }
+      "isLiveUpdatable": true
     },
     {
       "id": "sp500-market-cap",
@@ -414,15 +407,15 @@
       "slug": "china-gross-domestic-product",
       "name": "China GDP",
       "categoryId": "national-economy",
-      "valueBillions": 17890,
-      "valueFormatted": "17.89 trillion",
-      "lastUpdated": "2023-12-31T00:00:00Z",
+      "valueBillions": 19498,
+      "valueFormatted": "19.5 trillion",
+      "lastUpdated": "2026-07-13T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "World Bank",
         "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=CN",
         "apiEndpoint": "https://api.worldbank.org/v2/country/CN/indicator/NY.GDP.MKTP.CD",
-        "notes": "Latest available GDP data"
+        "notes": "NY.GDP.MKTP.CD, 2025 estimate; WB database release 2026-07-13"
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -438,15 +431,15 @@
       "slug": "united-states-gross-domestic-product",
       "name": "U.S. GDP",
       "categoryId": "national-economy",
-      "valueBillions": 27000,
-      "valueFormatted": "27 trillion",
-      "lastUpdated": "2024-12-31T00:00:00Z",
+      "valueBillions": 30769.7,
+      "valueFormatted": "30.77 trillion",
+      "lastUpdated": "2026-07-13T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "World Bank / FRED",
+        "provider": "World Bank",
         "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=US",
         "apiEndpoint": "https://api.worldbank.org/v2/country/US/indicator/NY.GDP.MKTP.CD",
-        "notes": "Latest available GDP data"
+        "notes": "NY.GDP.MKTP.CD, 2025 estimate; WB database release 2026-07-13"
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -469,7 +462,7 @@
         "type": "api",
         "provider": "Multiple Central Banks",
         "url": "https://fred.stlouisfed.org/series/M1SL",
-        "apiEndpoint": "https://api.stlouisfed.org/fred/series/observations",
+        "apiEndpoint": null,
         "notes": "Aggregate M1 money supply for major economies"
       },
       "isLiveUpdatable": true,
@@ -491,7 +484,7 @@
         "type": "api",
         "provider": "Multiple Central Banks",
         "url": "https://fred.stlouisfed.org/series/M2SL",
-        "apiEndpoint": "https://api.stlouisfed.org/fred/series/observations",
+        "apiEndpoint": null,
         "notes": "Aggregate M2/M3 money supply for major economies"
       },
       "isLiveUpdatable": true
@@ -501,24 +494,17 @@
       "slug": "usd-money-supply-circulation",
       "name": "USD Money Supply (M2)",
       "categoryId": "money-supply",
-      "valueBillions": 21000,
-      "valueFormatted": "21 trillion",
-      "lastUpdated": "2024-12-31T00:00:00Z",
+      "valueBillions": 23218,
+      "valueFormatted": "23.22 trillion",
+      "lastUpdated": "2026-08-25T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "Federal Reserve (FRED)",
         "url": "https://fred.stlouisfed.org/series/M2SL",
-        "apiEndpoint": "https://api.stlouisfed.org/fred/series/observations",
-        "notes": "US M2 money supply"
+        "apiEndpoint": null,
+        "notes": "US M2 money supply, FRED M2SL, Jul 2026 observation (released 2026-08-25)"
       },
       "isLiveUpdatable": true,
-      "apiConfig": {
-        "endpoint": "https://api.stlouisfed.org/fred/series/observations?series_id=M2SL&api_key=API_KEY&file_type=json&limit=1&sort_order=desc",
-        "method": "GET",
-        "authRequired": true,
-        "dataPath": "observations[0].value",
-        "transform": "divide_by_1000"
-      },
       "totalCalculation": {
         "includeInTotal": false,
         "reason": "Included in 'Broad Money Supply' aggregate",
@@ -530,15 +516,15 @@
       "slug": "eur-money-supply-circulation",
       "name": "EUR Money Supply (M3)",
       "categoryId": "money-supply",
-      "valueBillions": 16500,
-      "valueFormatted": "16.5 trillion",
-      "lastUpdated": "2024-12-31T00:00:00Z",
+      "valueBillions": 20471,
+      "valueFormatted": "20.47 trillion",
+      "lastUpdated": "2026-09-07T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "European Central Bank",
-        "url": "https://sdw.ecb.europa.eu/",
+        "url": "https://data.ecb.europa.eu/data/datasets/BSI/BSI.M.U2.Y.V.M30.X.1.U2.2300.Z01.E",
         "apiEndpoint": "https://sdw-wsrest.ecb.europa.eu/service/data/BSI",
-        "notes": "Eurozone M3 money supply"
+        "notes": "Euro area M3, Jul 2026 = EUR 17,614.0bn, converted at ECB reference rate 1.1622 USD/EUR (2026-09-04)"
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -746,15 +732,15 @@
       "slug": "brazil-gross-domestic-product",
       "name": "Brazil GDP",
       "categoryId": "national-economy",
-      "valueBillions": 2320,
-      "valueFormatted": "2.32 trillion",
-      "lastUpdated": "2023-12-31T00:00:00Z",
+      "valueBillions": 2279.9,
+      "valueFormatted": "2.28 trillion",
+      "lastUpdated": "2026-07-13T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "World Bank",
         "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=BR",
         "apiEndpoint": "https://api.worldbank.org/v2/country/BR/indicator/NY.GDP.MKTP.CD",
-        "notes": "Latest available GDP data"
+        "notes": "NY.GDP.MKTP.CD, 2025 estimate; WB database release 2026-07-13"
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -770,15 +756,15 @@
       "slug": "nigeria-gross-domestic-product",
       "name": "Nigeria GDP",
       "categoryId": "national-economy",
-      "valueBillions": 440,
-      "valueFormatted": "440 billion",
-      "lastUpdated": "2023-12-31T00:00:00Z",
+      "valueBillions": 290.8,
+      "valueFormatted": "290.8 billion",
+      "lastUpdated": "2026-07-13T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "World Bank",
         "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=NG",
         "apiEndpoint": "https://api.worldbank.org/v2/country/NG/indicator/NY.GDP.MKTP.CD",
-        "notes": "Latest available GDP data"
+        "notes": "NY.GDP.MKTP.CD, 2025 estimate; USD drop vs prior vintage is naira devaluation, not real contraction"
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -794,15 +780,15 @@
       "slug": "australia-gross-domestic-product",
       "name": "Australia GDP",
       "categoryId": "national-economy",
-      "valueBillions": 1730,
-      "valueFormatted": "1.73 trillion",
-      "lastUpdated": "2023-12-31T00:00:00Z",
+      "valueBillions": 1798.5,
+      "valueFormatted": "1.8 trillion",
+      "lastUpdated": "2026-07-13T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "World Bank",
         "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=AU",
         "apiEndpoint": "https://api.worldbank.org/v2/country/AU/indicator/NY.GDP.MKTP.CD",
-        "notes": "Latest available GDP data"
+        "notes": "NY.GDP.MKTP.CD, 2025 estimate; WB database release 2026-07-13"
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -818,15 +804,15 @@
       "slug": "germany-gross-domestic-product",
       "name": "Germany GDP",
       "categoryId": "national-economy",
-      "valueBillions": 4730,
-      "valueFormatted": "4.73 trillion",
-      "lastUpdated": "2023-12-31T00:00:00Z",
+      "valueBillions": 5050.9,
+      "valueFormatted": "5.05 trillion",
+      "lastUpdated": "2026-07-13T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "World Bank",
         "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=DE",
         "apiEndpoint": "https://api.worldbank.org/v2/country/DE/indicator/NY.GDP.MKTP.CD",
-        "notes": "Latest available GDP data"
+        "notes": "NY.GDP.MKTP.CD, 2025 estimate; WB database release 2026-07-13"
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -849,7 +835,7 @@
         "type": "api",
         "provider": "Alpha Vantage",
         "url": "https://www.alphavantage.co/",
-        "apiEndpoint": "https://www.alphavantage.co/query",
+        "apiEndpoint": null,
         "notes": "Apple real-time market capitalization"
       },
       "isLiveUpdatable": false,
@@ -871,7 +857,7 @@
         "type": "api",
         "provider": "Alpha Vantage",
         "url": "https://www.alphavantage.co/",
-        "apiEndpoint": "https://www.alphavantage.co/query",
+        "apiEndpoint": null,
         "notes": "Microsoft real-time market capitalization"
       },
       "isLiveUpdatable": false,
@@ -893,7 +879,7 @@
         "type": "api",
         "provider": "Alpha Vantage",
         "url": "https://www.alphavantage.co/",
-        "apiEndpoint": "https://www.alphavantage.co/query",
+        "apiEndpoint": null,
         "notes": "NVIDIA real-time market capitalization"
       },
       "isLiveUpdatable": false,

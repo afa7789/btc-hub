@@ -386,6 +386,21 @@ p:not(:last-child) {
 }
 
 /*
+ * Coluna de conteudo centrada, texto alinhado a esquerda dentro dela.
+ *
+ * O container tem 1200px mas o elemento mais largo do conteudo e um grafico de
+ * 900px, entao ancorar tudo na borda esquerda do container deixava ~280px de
+ * vazio so a direita e a pagina lia como torta. Alinhar o grafico a esquerda
+ * junto foi a correcao errada: o problema nao era o grafico estar centrado, era
+ * a coluna nao estar.
+ */
+.main > article,
+.main > .landing {
+  max-width: 920px;
+  margin-inline: auto;
+}
+
+/*
  * Encolher a raiz e escala global, nao adaptacao: reduzia o corpo para 9.75px
  * e --text-micro para 8.25px justamente onde a legibilidade importa mais.
  */

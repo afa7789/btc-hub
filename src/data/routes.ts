@@ -57,7 +57,7 @@ export const tools: Tool[] = [
     status: "LIVE",
   },
   {
-    href: "/satsukashii",
+    href: "/big-mac",
     label: "BIG MAC INDEX",
     description: "Big Mac Index vs Bitcoin price history comparison",
     status: "LIVE",

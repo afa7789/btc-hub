@@ -37,3 +37,9 @@ Thumbs.db
 .ux-review/comparisons/
 .ux-review/harness/
 .ux-review/discovery.raw.md
+
+# dagRobin — estado por maquina, nao fonte
+.dagrobin/
+
+# builds paralelos dos workers do loop
+dist-*/

@@ -1,0 +1,415 @@
+---
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const title = "Big Mac Index";
+const description =
+  "Big Mac Index vs Bitcoin - How many satoshis to buy a Big Mac over time";
+
+/*
+ * O dataset e lido no build para que o "as of", o preco atual e a contagem de
+ * revisoes existam no HTML servido. Sem isto a pagina so diria a data depois
+ * que o D3 baixasse o JSON — e nunca, sem JavaScript.
+ * Mesmo padrao de /halving: node:fs no frontmatter.
+ */
+const PRICES_FILE = join(
+  process.cwd(),
+  "public",
+  "datasets",
+  "satsukashii",
+  "prices.json",
+);
+
+interface PricePoint {
+  date: string;
+  bigmac_usd: number;
+  bigmac_satoshi: number;
+}
+
+const dataset: { prices: PricePoint[] } = JSON.parse(
+  readFileSync(PRICES_FILE, "utf8"),
+);
+const points = dataset.prices;
+const latest = points[points.length - 1];
+const first = points[0];
+
+// O preco em USD so muda quando o Economist republica: 21 valores distintos em
+// 5.736 dias. A data em que o valor atual passou a valer e mais informativa do
+// que a ultima linha do arquivo, que so avanca porque o preco do BTC avanca.
+const distinctUsd = new Set(points.map((p) => p.bigmac_usd)).size;
+const usdEffectiveSince =
+  points.find((p) => p.bigmac_usd === latest?.bigmac_usd)?.date ?? "";
+
+const usd = (n: number) => `$${n.toFixed(2)}`;
+const sats = (n: number) => Math.round(n).toLocaleString("en-US");
+const longDate = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+---
+
+<BaseLayout title={title} description={description}>
+  <style>
+    .page-header {
+      margin-bottom: 2em;
+    }
+
+    .page-header h1 {
+      margin: 0;
+      border: none;
+      padding-bottom: 0;
+    }
+
+    .chart-container {
+      width: 100%;
+      max-width: 960px;
+      margin: 20px auto;
+    }
+
+    /*
+     * O tamanho vive aqui, nao no D3: um .style() inline vencia a media query
+     * abaixo, e com o viewBox de 960 reduzido a 362px num viewport de 390 o
+     * rotulo de 11px renderizava a 4.15px.
+     */
+    .chart-container :global(svg text) {
+      /* Renderizado a 11px no desktop (escala 1) — abaixo do piso de 12px. */
+      font-size: 13px;
+    }
+
+    /* The SVG is appended by D3 at runtime and has no Astro scope attribute. */
+    .chart-container :global(svg) {
+      width: 100%;
+      height: auto;
+      display: block;
+      font-family: var(--font, monospace);
+    }
+
+    .section {
+      margin-bottom: 2em;
+    }
+
+    .source-note {
+      color: var(--fg-secondary);
+    }
+
+    .stats {
+      margin-top: 1.5em;
+    }
+
+    .stats p {
+      margin: 0.3em 0;
+    }
+
+    @media (max-width: 600px) {
+      /* Compensa a reducao do viewBox: em 390px a escala e 0.371, entao
+         33px rendem ~12.2px reais. */
+      .chart-container :global(svg text) {
+        font-size: 33px;
+      }
+    }
+  </style>
+
+  <article>
+    <header class="page-header">
+      <h1>Big Mac Index</h1>
+    </header>
+
+    <section class="section">
+      <p>
+        As Bitcoin's price increases, the number of satoshis needed to buy a Big
+        Mac decreases. This chart overlays the USD price of a Big Mac (left axis,
+        linear) with its cost in satoshis (right axis, log scale) to show that
+        relationship over time.
+      </p>
+      <p>
+        <a
+          href="https://github.com/afa7789/satsukashii"
+          target="_blank"
+          rel="noopener">View the satsukashii source on GitHub</a
+        >
+      </p>
+    </section>
+
+    <section class="section">
+      <div id="bigmac-chart" class="chart-container"></div>
+      <div class="stats">
+        <p>
+          <strong>Latest Big Mac Price:</strong>
+          <span id="bigmac-price">{latest ? usd(latest.bigmac_usd) : "n/a"}</span>
+        </p>
+        <p>
+          <strong>Satoshis per Big Mac:</strong>
+          <span id="satoshi-price">{latest ? sats(latest.bigmac_satoshi) : "n/a"}</span>
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>What The Index Is</h2>
+      <p>
+        The Economist invented the Big Mac index in 1986 as an informal way to
+        compare purchasing power between countries through purchasing power
+        parity (PPP). The trick is the product: a Big Mac is close to identical
+        everywhere &mdash; same ingredients, same size &mdash; and it is made
+        locally, at local cost. That makes it a basket of one item that still
+        prices labour, rent, beef, wheat and energy in a single number.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Why It Is On A Bitcoin Site</h2>
+      <p>
+        Pricing the same hamburger in satoshis shows purchasing power without
+        routing it through a fiat currency. The left axis is the price in USD, on
+        a linear scale, and it moves in steps because the number only changes
+        when The Economist republishes the survey. The right axis is the cost in
+        satoshis, on a logarithmic scale, because it has fallen by orders of
+        magnitude &mdash; from {first ? sats(first.bigmac_satoshi) : "n/a"} sats
+        on {first ? longDate(first.date) : "n/a"} to
+        {latest ? ` ${sats(latest.bigmac_satoshi)}` : " n/a"} sats on
+        {latest ? ` ${longDate(latest.date)}` : " n/a"}. A linear axis would
+        flatten almost six orders of magnitude into the floor.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Where The Data Comes From</h2>
+      <p class="source-note">
+        The series is <code>public/datasets/satsukashii/prices.json</code>,
+        derived from The Economist's published
+        <code>big-mac-source-data-v2.csv</code> dataset and generated by the Go
+        service in <code>../satsukashii/</code>.
+      </p>
+      <p class="source-note">
+        As of <strong>{latest ? longDate(latest.date) : "n/a"}</strong>:
+        {points.length.toLocaleString("en-US")} daily rows starting
+        {first ? ` ${longDate(first.date)}` : " n/a"}. The satoshi column moves
+        every day because the Bitcoin price does; the USD column carries only
+        {` ${distinctUsd}`} distinct values over that whole span, and the current
+        one ({latest ? usd(latest.bigmac_usd) : "n/a"}) has stood since
+        {usdEffectiveSince ? ` ${longDate(usdEffectiveSince)}` : " n/a"}.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>What It Is Not</h2>
+      <p>
+        The Big Mac index is a serious joke. The Economist built it as a
+        light-hearted illustration of PPP, not as an economic instrument, and it
+        ignores differences in margin, tax, local labour cost and the chain's own
+        market power in each country. It is not a measure of inflation, and the
+        USD line here is one country's menu price, not a price level.
+      </p>
+    </section>
+  </article>
+
+  <script is:inline src="https://d3js.org/d3.v7.min.js"></script>
+
+  <script is:inline>
+    async function drawChart() {
+      // O listener e global e sobrevive a navegacao — sem este guard o chart
+      // tentaria desenhar (e fazer fetch) em toda pagina do site.
+      if (!document.getElementById('bigmac-chart')) return;
+
+      try {
+        const response = await fetch('/datasets/satsukashii/prices.json');
+        const data = await response.json();
+
+        const parsed = data.prices.map(d => ({
+          date: new Date(d.date),
+          bigmac_usd: d.bigmac_usd,
+          bigmac_satoshi: d.bigmac_satoshi,
+        }));
+
+        const container = document.getElementById('bigmac-chart');
+        if (!container) return;
+
+        // This chart is drawn on the page background, so unlike /debase it
+        // follows the theme. Colours come from the tokens for that reason.
+        const styles = getComputedStyle(document.documentElement);
+        const token = (name, fallback) =>
+          styles.getPropertyValue(name).trim() || fallback;
+
+        const bgColor = token('--bg-primary', '#0a0a0a');
+        const fgColor = token('--fg-primary', '#e0e0e0');
+        const borderColor = token('--border-strong', '#444');
+
+        // Green is the fiat side (Big Mac in USD), orange the Bitcoin side.
+        const GREEN = token('--series-fiat', '#22c55e');
+        const ORANGE = token('--accent-btc', '#f97316');
+
+        const width = 960;
+        const height = 420;
+        const margin = { top: 20, right: 70, bottom: 60, left: 60 };
+        const innerW = width - margin.left - margin.right;
+        const innerH = height - margin.top - margin.bottom;
+
+        d3.select(container).selectAll('*').remove();
+
+        const svg = d3.select(container).append('svg')
+          .attr('viewBox', `0 0 ${width} ${height}`)
+          .attr('preserveAspectRatio', 'xMidYMid meet');
+
+        // Background
+        svg.append('rect')
+          .attr('width', width)
+          .attr('height', height)
+          .attr('fill', bgColor);
+
+        const g = svg.append('g')
+          .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Scales
+        const x = d3.scaleTime()
+          .domain(d3.extent(parsed, d => d.date))
+          .range([0, innerW]);
+
+        const yLeft = d3.scaleLinear()
+          .domain([0, 6.5])
+          .range([innerH, 0]);
+
+        const satMin = d3.min(parsed, d => d.bigmac_satoshi);
+        const satMax = d3.max(parsed, d => d.bigmac_satoshi);
+        const logTicks = [1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10].filter(v => v >= satMin * 0.3 && v <= satMax * 3);
+
+        const yRight = d3.scaleLog()
+          .domain([Math.max(satMin * 0.5, 1000), satMax * 2])
+          .range([innerH, 0])
+          .clamp(true);
+
+        // Grid lines (horizontal, from left axis)
+        g.append('g')
+          .selectAll('line')
+          .data(yLeft.ticks(6))
+          .join('line')
+          .attr('x1', 0)
+          .attr('x2', innerW)
+          .attr('y1', d => yLeft(d))
+          .attr('y2', d => yLeft(d))
+          .attr('stroke', borderColor)
+          .attr('stroke-width', 0.5)
+          .attr('stroke-dasharray', '4,3')
+          .attr('opacity', 0.5);
+
+        // X axis
+        const xAxis = g.append('g')
+          .attr('transform', `translate(0,${innerH})`)
+          .call(d3.axisBottom(x).ticks(d3.timeYear.every(2)).tickFormat(d3.timeFormat('%Y')));
+        xAxis.selectAll('text').attr('fill', fgColor).style('font-family', 'inherit');
+        xAxis.selectAll('line').attr('stroke', fgColor);
+        xAxis.select('.domain').attr('stroke', fgColor);
+
+        // Left Y axis (USD)
+        const leftAxis = g.append('g')
+          .call(d3.axisLeft(yLeft).ticks(6).tickFormat(d => `$${d}`));
+        leftAxis.selectAll('text').attr('fill', GREEN).style('font-family', 'inherit');
+        leftAxis.selectAll('line').attr('stroke', GREEN).attr('opacity', 0.5);
+        leftAxis.select('.domain').attr('stroke', GREEN);
+
+        // Right Y axis (Satoshis, log)
+        function formatSat(d) {
+          if (d >= 1e9) return (d / 1e9) + 'B';
+          if (d >= 1e6) return (d / 1e6) + 'M';
+          if (d >= 1e3) return (d / 1e3) + 'K';
+          return d;
+        }
+
+        const rightAxis = g.append('g')
+          .attr('transform', `translate(${innerW},0)`)
+          .call(d3.axisRight(yRight).tickValues(logTicks).tickFormat(formatSat));
+        rightAxis.selectAll('text').attr('fill', ORANGE).style('font-family', 'inherit');
+        rightAxis.selectAll('line').attr('stroke', ORANGE).attr('opacity', 0.5);
+        rightAxis.select('.domain').attr('stroke', ORANGE);
+
+        // Clip path
+        svg.append('defs').append('clipPath').attr('id', 'chart-clip')
+          .append('rect').attr('width', innerW).attr('height', innerH);
+
+        const plotArea = g.append('g').attr('clip-path', 'url(#chart-clip)');
+
+        // Big Mac USD line (stepped/staircase)
+        const usdLine = d3.line()
+          .x(d => x(d.date))
+          .y(d => yLeft(d.bigmac_usd))
+          .curve(d3.curveStepAfter);
+
+        plotArea.append('path')
+          .datum(parsed)
+          .attr('d', usdLine)
+          .attr('fill', 'none')
+          .attr('stroke', GREEN)
+          .attr('stroke-width', 2);
+
+        // Satoshi line (jagged, linear interpolation)
+        const satLine = d3.line()
+          .x(d => x(d.date))
+          .y(d => yRight(d.bigmac_satoshi));
+
+        plotArea.append('path')
+          .datum(parsed)
+          .attr('d', satLine)
+          .attr('fill', 'none')
+          .attr('stroke', ORANGE)
+          .attr('stroke-width', 1.5);
+
+        // Axis labels
+        g.append('text')
+          .attr('x', -innerH / 2)
+          .attr('y', -45)
+          .attr('transform', 'rotate(-90)')
+          .attr('text-anchor', 'middle')
+          .attr('fill', GREEN)
+          .style('font-family', 'inherit')
+          
+          .text('Big Mac Price (USD)');
+
+        g.append('text')
+          .attr('x', innerW + 45)
+          .attr('y', innerH / 2)
+          .attr('transform', `rotate(90, ${innerW + 45}, ${innerH / 2})`)
+          .attr('text-anchor', 'middle')
+          .attr('fill', ORANGE)
+          .style('font-family', 'inherit')
+          
+          .text('Satoshis per Big Mac (log)');
+
+        // Legend
+        const legendY = height - 18;
+        const legendG = svg.append('g')
+          .attr('transform', `translate(${width / 2 - 140}, ${legendY})`);
+
+        // USD legend
+        legendG.append('rect').attr('x', 0).attr('y', -10).attr('width', 14).attr('height', 14).attr('fill', GREEN);
+        legendG.append('text').attr('x', 20).attr('y', 2).attr('fill', fgColor).style('font-family', 'inherit').text('Big Mac USD');
+
+        // Satoshi legend
+        legendG.append('rect').attr('x', 140).attr('y', -10).attr('width', 14).attr('height', 14).attr('fill', ORANGE);
+        legendG.append('text').attr('x', 160).attr('y', 2).attr('fill', fgColor).style('font-family', 'inherit').text('Satoshis per Big Mac');
+
+        // Stats
+        if (parsed.length > 0) {
+          const latest = data.prices[data.prices.length - 1];
+          document.getElementById('bigmac-price').textContent = '$' + latest.bigmac_usd.toFixed(2);
+          document.getElementById('satoshi-price').textContent = latest.bigmac_satoshi.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        }
+
+      } catch (error) {
+        console.error('Error loading chart data:', error);
+      }
+    }
+
+    // ClientRouter: o documento nao recarrega e este script inline so executa
+    // uma vez por sessao, entao DOMContentLoaded so pegaria a primeira carga.
+    // astro:page-load dispara na primeira carga e apos cada navegacao;
+    // drawChart limpa o container antes de desenhar, entao repetir e seguro.
+    document.addEventListener('astro:page-load', drawChart);
+
+    // Colours are read from the tokens at draw time, so a theme switch needs a
+    // repaint to take effect.
+    document.addEventListener('themechange', drawChart);
+  </script>
+</BaseLayout>
