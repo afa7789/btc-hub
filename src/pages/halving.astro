@@ -2,6 +2,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { withBase } from "../utils/base";
+import { closestPrice, loadPrices, usd } from "../utils/prerender";
 
 const title = "Halving";
 const description =
@@ -62,6 +64,186 @@ const estimates = [
   { label: "500-day window opens", value: longDate(windowOpens) },
   { label: "500-day window closes", value: longDate(windowCloses) },
 ];
+
+/*
+ * ---------------------------------------------------------------------------
+ * Tese de compra, tese de venda e contra-argumento: todo numero abaixo sai de
+ * halvings.txt (as quatro datas) e do CSV de preco, no build. Nada digitado a
+ * mao, nada copiado de fora.
+ * ---------------------------------------------------------------------------
+ */
+const priceByDate = loadPrices("bitcoin");
+/* Series ordenada por data para varrer intervalos (o Map vem na ordem do CSV,
+   que e do mais recente para o mais antigo). */
+const priceSeries = [...priceByDate.entries()].sort((a, b) =>
+  a[0] < b[0] ? -1 : 1,
+);
+const lastPriceDate = priceSeries[priceSeries.length - 1]?.[0] as string;
+const lastPriceMs = Date.parse(lastPriceDate);
+
+const isoDay = (ms: number): string =>
+  new Date(ms).toISOString().slice(0, 10) as string;
+
+const money = (value: number): string =>
+  value < 100 ? usd(value, 2) : usd(value, 0);
+
+/* Retorno de um trecho, com sinal explicito. Acima de 100% a casa decimal so
+   suja a coluna, entao ela some. */
+const pct = (from: number, to: number): string => {
+  const value = (to / from - 1) * 100;
+  const decimals = Math.abs(value) >= 100 ? 0 : 1;
+  const body = Math.abs(value).toLocaleString("en-US", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+  return `${value >= 0 ? "+" : "-"}${body}%`;
+};
+
+interface Point {
+  date: string;
+  price: number;
+}
+
+const pointAt = (ms: number): Point => ({
+  date: isoDay(ms),
+  price: closestPrice(priceByDate, isoDay(ms)) as number,
+});
+
+/* Maior fechamento diario dentro de [fromMs, toMs]. Fechamento, nao maxima
+   intradiaria: o CSV traz High, mas o resto da pagina fala em Close e misturar
+   as duas coisas numa tabela so inventa um topo que ninguem podia ter pego. */
+const highestClose = (fromMs: number, toMs: number): Point | null => {
+  let best: Point | null = null;
+  for (const [date, price] of priceSeries) {
+    const ms = Date.parse(date);
+    if (ms < fromMs) continue;
+    if (ms > toMs) break;
+    if (!best || price > best.price) best = { date, price };
+  }
+  return best;
+};
+
+const TWO_YEARS_DAYS = 730;
+
+const cycles = halvingTimestamps.map((timestamp, index) => {
+  const halvingMs = timestamp * 1000;
+  const opensMs = halvingMs - WINDOW_DAYS * DAY_MS;
+  const closesMs = halvingMs + WINDOW_DAYS * DAY_MS;
+  const complete = lastPriceMs >= closesMs;
+
+  const opens = pointAt(opensMs);
+  const halving = pointAt(halvingMs);
+  const peak = highestClose(halvingMs, Math.min(closesMs, lastPriceMs));
+  const closes = complete ? pointAt(closesMs) : null;
+
+  /* Onde o ciclo realmente virou: maior fechamento nos dois anos seguintes ao
+     halving. Dois anos e um horizonte fixo — usar "ate o proximo halving"
+     deixaria a alta que antecede o halving seguinte contaminar o topo do ciclo
+     anterior (foi o que aconteceu com 2020: o maximo do intervalo cai em marco
+     de 2024, quase quatro anos depois). */
+  const horizonMs = halvingMs + TWO_YEARS_DAYS * DAY_MS;
+  const horizonComplete = lastPriceMs >= horizonMs;
+  const top = highestClose(halvingMs, Math.min(horizonMs, lastPriceMs));
+  const trough =
+    top === null
+      ? null
+      : priceSeries.reduce<Point | null>((worst, [date, price]) => {
+          const ms = Date.parse(date);
+          if (
+            ms < Date.parse(top.date) ||
+            ms > Math.min(horizonMs, lastPriceMs)
+          )
+            return worst;
+          return !worst || price < worst.price ? { date, price } : worst;
+        }, null);
+
+  return {
+    number: index + 1,
+    year: new Date(halvingMs).getUTCFullYear(),
+    complete,
+    horizonComplete,
+    opens,
+    halving,
+    peak,
+    closes,
+    top,
+    trough,
+    /* Comparacoes ficam aqui: `<=` dentro de uma expressao no template e lido
+       como abertura de tag pelo compilador do Astro. */
+    topInsideWindow:
+      top === null
+        ? null
+        : Math.round((Date.parse(top.date) - halvingMs) / DAY_MS) <=
+          WINDOW_DAYS,
+    runUpPositive: halving.price > opens.price,
+    daysTopAfterHalving:
+      top === null
+        ? null
+        : Math.round((Date.parse(top.date) - halvingMs) / DAY_MS),
+  };
+});
+
+/*
+ * Peso do corte na emissao, ciclo a ciclo.
+ *
+ * No halving n ja foram minerados n x 210.000 blocos, entao a oferta existente
+ * e 210.000 x 50 x (2 - 2^(1-n)):
+ *   n=1 -> 10.500.000    n=2 -> 15.750.000
+ *   n=3 -> 18.375.000    n=4 -> 19.687.500
+ * A emissao anual e 144 blocos/dia x 365 dias x subsidio = 52.560 x subsidio.
+ *
+ * 2012: 52.560 x 50  = 2.628.000 BTC/ano sobre 10.500.000 = 25,03% ao ano,
+ *       que vira 12,51%. O corte tirou 12,51 pontos percentuais.
+ * 2024: 52.560 x 6,25 =  328.500 BTC/ano sobre 19.687.500 =  1,67% ao ano,
+ *       que vira 0,83%. O corte tirou 0,83 ponto percentual.
+ * Ou seja ~15x menos peso que em 2012 — a ordem de grandeza que o texto cita
+ * sai desta conta, calculada aqui, nao de um numero decorado.
+ */
+const BLOCKS_PER_YEAR = 144 * 365;
+
+const issuance = Array.from(
+  { length: halvingTimestamps.length + 1 },
+  (_unused, index) => {
+    const n = index + 1;
+    const subsidyBefore = INITIAL_SUBSIDY / 2 ** (n - 1);
+    const supply = BLOCKS_PER_HALVING * INITIAL_SUBSIDY * (2 - 2 ** (1 - n));
+    const before = ((BLOCKS_PER_YEAR * subsidyBefore) / supply) * 100;
+    return {
+      label:
+        n <= halvingTimestamps.length
+          ? String(
+              new Date(
+                (halvingTimestamps[index] as number) * 1000,
+              ).getUTCFullYear(),
+            )
+          : "Next",
+      subsidyBefore,
+      subsidyAfter: subsidyBefore / 2,
+      before,
+      after: before / 2,
+      cut: before / 2,
+    };
+  },
+);
+
+const firstCut = issuance[0];
+const latestCut = issuance[halvingTimestamps.length - 1];
+const nextCut = issuance[halvingTimestamps.length];
+
+const rate = (value: number): string => `${value.toFixed(2)}%`;
+
+/* Datas da janela por ciclo, para a prosa nao repetir a tabela em texto. */
+const completeCycles = cycles.filter((cycle) => cycle.complete);
+const topsInsideWindow = cycles.filter(
+  (cycle) => cycle.topInsideWindow === true,
+).length;
+const runUps = cycles.filter((cycle) => cycle.runUpPositive).length;
+const measuredTops = cycles.filter((cycle) => cycle.top !== null).length;
+/* De quantos dias cada topo passou do fechamento da janela. */
+const lateTops = cycles
+  .map((cycle) => cycle.daysTopAfterHalving)
+  .filter((days): days is number => days !== null && days > WINDOW_DAYS)
+  .map((days) => days - WINDOW_DAYS);
 ---
 
 
@@ -145,6 +327,15 @@ const estimates = [
 
     .note {
       color: var(--fg-muted);
+    }
+
+    /* Data da observacao sob o numero: a coluna continua alinhada a direita e
+       tabular, e a data nao disputa peso com o preco. */
+    .cell-date {
+      display: block;
+      color: var(--fg-muted);
+      font-size: 0.85em;
+      white-space: nowrap;
     }
 
     article :global(svg) {
@@ -297,12 +488,259 @@ const estimates = [
         different size every time.
       </p>
     </section>
+
+    <section class="section">
+      <h2>The Buy Thesis</h2>
+      <p>
+        The argument for accumulating in the 500 days before a halving is a
+        supply argument. The cut is scheduled, mechanical and public: on a known
+        block height the subsidy halves, and the number of new coins reaching
+        the market each day halves with it. Nobody has to agree to it. The claim
+        is that flow matters — that if demand does not fall at the same instant,
+        the same buying meets half the new supply, and the price is what gives.
+      </p>
+      <p>
+        The second half of the claim is that the market does not price the cut
+        in advance, even though the date is on everyone's calendar. What people
+        point at is the run-up itself: measured from the day the window opened
+        to the day of the halving, the price rose in
+        {runUps}
+        of the {cycles.length} cycles — {cycles
+          .map((cycle) => `${cycle.year} ${pct(cycle.opens.price, cycle.halving.price)}`)
+          .join(", ")}. That is the whole evidence base, and it is four numbers
+        wide.
+      </p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Price at each point of the 500-day window">
+        <table>
+          <caption class="sr-only">
+            For each halving: the closing price when the 500-day window opened,
+            on the halving itself, at the highest close inside the window, and
+            when the window closed — with the return of each leg.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Cycle</th>
+              <th scope="col" class="num">Window opens</th>
+              <th scope="col" class="num">At halving</th>
+              <th scope="col" class="num">Highest close in window</th>
+              <th scope="col" class="num">Window closes</th>
+              <th scope="col" class="num">Open -&gt; halving</th>
+              <th scope="col" class="num">Halving -&gt; high</th>
+              <th scope="col" class="num">High -&gt; close</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cycles.map((cycle) => (
+              <tr>
+                <th scope="row">{cycle.year}</th>
+                <td class="num">
+                  {money(cycle.opens.price)}
+                  <span class="cell-date">{cycle.opens.date}</span>
+                </td>
+                <td class="num">
+                  {money(cycle.halving.price)}
+                  <span class="cell-date">{cycle.halving.date}</span>
+                </td>
+                <td class="num">
+                  {cycle.peak ? money(cycle.peak.price) : "no data"}
+                  <span class="cell-date">
+                    {cycle.peak
+                      ? cycle.complete
+                        ? cycle.peak.date
+                        : `${cycle.peak.date}, window still open`
+                      : "-"}
+                  </span>
+                </td>
+                <td class="num">
+                  {cycle.closes ? money(cycle.closes.price) : "no data yet"}
+                  <span class="cell-date">
+                    {cycle.closes ? cycle.closes.date : `dataset ends ${lastPriceDate}`}
+                  </span>
+                </td>
+                <td class="num">{pct(cycle.opens.price, cycle.halving.price)}</td>
+                <td class="num">
+                  {cycle.peak ? pct(cycle.halving.price, cycle.peak.price) : "-"}
+                </td>
+                <td class="num">
+                  {cycle.peak && cycle.closes
+                    ? pct(cycle.peak.price, cycle.closes.price)
+                    : "-"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note">
+        Daily closes from the same price dataset the chart uses, read at build
+        time. Where the window opens or closes on a day the dataset does not
+        cover, the nearest available close is used. A cycle whose window has not
+        closed yet says so in the row instead of showing a number.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>The Sell Thesis</h2>
+      <p>
+        The mirror argument is about getting out. Each cycle has put in a high
+        and then given most of it back, so the thesis is to hold through the
+        halving and realise somewhere in the 500 days after it, treating the
+        close of the window as a deadline rather than a target.
+      </p>
+      <p>
+        The deadline is the part the data does not support. Taking the highest
+        daily close in the two years after each halving, the high landed
+        {" "}{cycles
+          .map((cycle) => `${cycle.year} day ${cycle.daysTopAfterHalving}`)
+          .join(", ")} — inside the 500-day window in {topsInsideWindow} of the
+        {" "}{measuredTops} cycles. The other {measuredTops - topsInsideWindow}
+        {" "}topped after the window had already closed, by
+        {" "}{Math.min(...lateTops)} to {Math.max(...lateTops)} days. What did
+        hold is the second
+        half: every one of those highs was followed by a drawdown of half or
+        more within the same two years.
+      </p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Where each cycle high landed">
+        <table>
+          <caption class="sr-only">
+            For each halving: the highest daily close in the two years that
+            followed, how many days after the halving it came, whether that was
+            inside the 500-day window, and the lowest close between that high
+            and the end of the two years.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Cycle</th>
+              <th scope="col" class="num">High within two years</th>
+              <th scope="col" class="num">Days after halving</th>
+              <th scope="col">Inside the window</th>
+              <th scope="col" class="num">Lowest close after it</th>
+              <th scope="col" class="num">Drawdown</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cycles.map((cycle) => (
+              <tr>
+                <th scope="row">{cycle.year}</th>
+                <td class="num">
+                  {cycle.top ? money(cycle.top.price) : "no data"}
+                  <span class="cell-date">{cycle.top ? cycle.top.date : "-"}</span>
+                </td>
+                <td class="num">{cycle.daysTopAfterHalving ?? "-"}</td>
+                <td>
+                  {cycle.topInsideWindow === null
+                    ? "-"
+                    : cycle.topInsideWindow
+                      ? "yes"
+                      : "no"}
+                  {cycle.horizonComplete ? "" : " (two years not elapsed)"}
+                </td>
+                <td class="num">
+                  {cycle.trough ? money(cycle.trough.price) : "-"}
+                  <span class="cell-date">{cycle.trough ? cycle.trough.date : "-"}</span>
+                </td>
+                <td class="num">
+                  {cycle.top && cycle.trough
+                    ? pct(cycle.top.price, cycle.trough.price)
+                    : "-"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note">
+        Two years after the halving is a fixed horizon, chosen so the run-up
+        into the next halving cannot be counted as the previous cycle's high.
+        Measured to the next halving instead, the 2020 cycle's highest close
+        falls in March 2024, four years later.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>What Argues Against Both</h2>
+      <p>
+        There are four halvings. Four events is not a sample; it is an anecdote
+        with dates. Every one of them happened in a market of a different size,
+        under different regulation, with different instruments available and a
+        different set of leveraged failures on the way down. Both theses above
+        are read off the same four lines.
+      </p>
+      <p>
+        The efficient-market objection is harder to wave off than the sample
+        size. The halving is the most telegraphed supply event in any market:
+        the block height is fixed in code, the date is estimated years out, and
+        every participant can see it. A cut that everyone knows is coming should
+        already be in the price. Nothing about the schedule stops that from
+        being true.
+      </p>
+      <p>
+        The 2024 halving also landed in a different regime. Spot ETFs began
+        trading in January of that year, three months before the halving, which
+        changed who was buying and through what. Whatever the previous three
+        cycles measured, they measured a market without that.
+      </p>
+      <p>
+        And the cut itself is getting smaller. What the halving removes is a
+        share of new supply, and new supply keeps shrinking against the coins
+        already in existence. In {firstCut?.label} the subsidy fell from
+        {" "}{firstCut?.subsidyBefore} to {firstCut?.subsidyAfter} BTC, which
+        took annual issuance from {rate(firstCut?.before ?? 0)} of the coins
+        then in existence to {rate(firstCut?.after ?? 0)} — a cut of
+        {" "}{rate(firstCut?.cut ?? 0)} of circulating supply per year. In
+        {" "}{latestCut?.label} the same halving of the subsidy removed
+        {" "}{rate(latestCut?.cut ?? 0)}, about
+        {" "}{Math.round((firstCut?.cut ?? 0) / (latestCut?.cut ?? 1))} times
+        less. The next one removes {rate(nextCut?.cut ?? 0)}.
+      </p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Issuance removed by each halving">
+        <table>
+          <caption class="sr-only">
+            For each halving: the subsidy before and after, annual issuance as a
+            share of the coins in existence at that block height before and
+            after, and the difference.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Halving</th>
+              <th scope="col" class="num">Subsidy</th>
+              <th scope="col" class="num">New supply/yr before</th>
+              <th scope="col" class="num">After</th>
+              <th scope="col" class="num">Removed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {issuance.map((row) => (
+              <tr>
+                <th scope="row">{row.label}</th>
+                <td class="num">{row.subsidyBefore} -&gt; {row.subsidyAfter} BTC</td>
+                <td class="num">{rate(row.before)}</td>
+                <td class="num">{rate(row.after)}</td>
+                <td class="num">{rate(row.cut)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note">
+        Issuance is {BLOCKS_PER_YEAR.toLocaleString("en-US")} blocks a year — 144
+        a day at ten minutes each — times the subsidy, over the coins already
+        mined at that block height. Coins that are lost are still counted; there
+        is no way to measure them.
+      </p>
+      <p>
+        None of this says what the window is worth. It says what it is: a
+        scheduled, shrinking supply cut, with {cycles.length} price histories
+        around it, {measuredTops - topsInsideWindow} of which put their high
+        after the window had closed.
+      </p>
+    </section>
   </article>
 
   <script is:inline src="https://d3js.org/d3.v7.min.js"></script>
   <script is:inline src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
-  <script is:inline src="/scripts/debase/chart_draw.js"></script>
-  <script is:inline src="/scripts/debase/dataset_manager.js"></script>
+  <script is:inline src={withBase("/scripts/debase/chart_draw.js")}></script>
+  <script is:inline src={withBase("/scripts/debase/dataset_manager.js")}></script>
 
   <script is:inline>
     /*
@@ -363,12 +801,12 @@ const estimates = [
       await csvManager.initAllDatasets([
         {
           name: "BTC",
-          csvPath: "/datasets/bitcoin_2010-07-17_2025-07-25.csv",
+          csvPath: window.withBase("/datasets/bitcoin_2010-07-17_2025-07-25.csv"),
           fetchFunction: null,
         },
       ]);
 
-      const halvingTimestamps = await fetch("/datasets/halvings.txt")
+      const halvingTimestamps = await fetch(window.withBase("/datasets/halvings.txt"))
         .then((response) => response.text())
         .then((text) =>
           text
