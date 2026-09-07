@@ -4,9 +4,13 @@ A collection of Bitcoin-related data visualization tools built with Astro.
 
 ## Tools
 
-Seven static pages. The shell (nav, layout, copy) is prerendered HTML; all data and
-charts are client-side vanilla JS, so every tool needs JavaScript enabled to show
-anything beyond its frame.
+Nine static pages, live at **https://afa7789.github.io/btc-hub/**.
+
+The shell (nav, layout, copy) is prerendered HTML. Most charts are client-side vanilla
+JS and need JavaScript enabled, with three deliberate exceptions: `/dca` and
+`/how-much-i-fucked-up` compute a default scenario at build time so they show real
+numbers with JS off, and `/rainbow` is inline SVG that never needs JS at all. A banner
+tells the visitor when a page is showing its prerendered default.
 
 ### `/` — Home
 
@@ -54,6 +58,28 @@ CSVs and **caches them in IndexedDB** through `idb`, exposing `iterateRange` /
 brutalist rendering, and the `import_from_*.js` fetchers. Marks the Bitcoin halvings
 from `/datasets/halvings.txt` and shows inflation-adjusted ATHs.
 `daily_cpi_inflation.csv` is the denominator for everything on the page.
+
+### `/halving` — HALVING
+
+The supply schedule on its own page, split out of `/debase` because it answers a
+different question: not "what did money do" but "where are we in the cycle". Plots
+every halving from `/datasets/halvings.txt` against price, and states the current
+500-day window with its open and close dates. The copy argues both sides — why the
+schedule is read as a reason to buy, and why that reading can fail — instead of
+presenting the cycle as a forecast.
+
+### `/rainbow` — RAINBOW
+
+Logarithmic regression on the full daily BTC series with bands at multiples of the
+residual standard deviation. The fit is computed at build time in `src/utils/rainbow.ts`
+against our own dataset rather than copied from the usual chart: a = 1.4733,
+b = -8.0566, sigma = 0.4618, R^2 = 0.9099 over 5889 closes. The plot is inline SVG, so
+it is the only chart that works with JavaScript disabled. Band labels carry their own
+colour and the "right now" verdict puts the band colour in a swatch rather than in the
+text, so the colour-to-band mapping survives both themes.
+
+The scale bounds come from observed prices, not from the fitted curve — the curve is
+~1e-9 on day 1, and using it would squash fifteen decades into the panel.
 
 ### `/big-mac` — BIG MAC INDEX
 
@@ -228,22 +254,17 @@ GitHub Pages runs the artifact through Jekyll, which silently drops directories
 whose name starts with an underscore — and `build.assets` is `_assets/`, so the
 whole site would load without CSS or JS.
 
-### What the repository owner still has to do by hand
+### First-deploy setup (already done)
 
-The workflow cannot turn Pages on for the repository; that is a settings change
-only the owner can make. Once, before the first deploy:
+Pages is enabled with **Source: GitHub Actions**, the first run is green, and the
+site answers 200 on every route. Nothing here needs repeating — later pushes to
+`main` deploy on their own, with no DNS, `CNAME` or personal access token.
 
-1. Push this branch to `main` on `github.com/afa7789/btc-hub`.
-2. Open **https://github.com/afa7789/btc-hub/settings/pages**.
-3. Under **Build and deployment → Source**, select **GitHub Actions**
-   (not "Deploy from a branch"). Nothing to save — it applies immediately.
-4. If the repository is private, Pages needs GitHub Pro or the repository has to
-   be public; otherwise the deploy job fails with a permissions error.
-5. Go to the **Actions** tab and confirm the `Deploy to GitHub Pages` run is
-   green. The deploy job prints the final URL.
-
-Nothing else is required — no DNS, no `CNAME` file, no personal access token.
-Later pushes to `main` deploy on their own.
+Recorded because the failure is silent and confusing if it ever recurs: the first
+deploy did not happen simply because the workflow file had never been pushed. The
+Actions tab showed no runs at all, which reads like a broken workflow but actually
+means the remote had no workflow to run. If Pages ever looks stuck again, check
+`git rev-list --count origin/main..HEAD` before debugging the YAML.
 
 ## Architecture
 
@@ -252,7 +273,8 @@ Later pushes to `main` deploy on their own.
   published as-is by GitHub Pages.
 - **No UI framework.** Astro ships zero framework JS; each page carries its own vanilla
   script, either inlined with `is:inline` or served from `public/scripts/`.
-- **D3.js v7** (CDN) for the `/debase`, `/halving` and `/big-mac` charts.
+- **D3.js v7** (CDN) for the `/debase`, `/halving` and `/big-mac` charts. `/rainbow`
+  uses no charting library — its SVG is generated at build time.
 - **IndexedDB** (via `idb`) for CSV and API caching on the heavier pages;
   `localStorage` for the ticker and the theme preference.
 - **`public/datasets/`** holds every CSV and JSON the pages read at runtime.
