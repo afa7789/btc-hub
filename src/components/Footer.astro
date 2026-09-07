@@ -1,4 +1,6 @@
 ---
+import { withBase } from "../utils/base";
+
 const currentYear = new Date().getFullYear();
 ---
 
@@ -9,7 +11,7 @@ const currentYear = new Date().getFullYear();
         © {currentYear} BTC_THINGS — All tools are open source and free to use
       </p>
       <div class="footer__links">
-        <a href="/" class="footer__link">HOME</a>
+        <a href={withBase("/")} class="footer__link">HOME</a>
         <span class="footer__separator">|</span>
         <a href="https://github.com/afa7789/btc-hub" class="footer__link" target="_blank" rel="noopener">
           GITHUB

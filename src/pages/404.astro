@@ -1,5 +1,6 @@
 ---
 import { tools } from "../data/routes";
+import { withBase } from "../utils/base";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 /**
@@ -24,7 +25,7 @@ const routes = tools;
 
     <ul class="not-found__routes">
       {routes.map(route => (
-        <li><a href={route.href}>{route.label}</a></li>
+        <li><a href={withBase(route.href)}>{route.label}</a></li>
       ))}
     </ul>
   </article>

@@ -1,10 +1,15 @@
 ---
 import wordmark from "../assets/wordmark.txt?raw";
 import { tools } from "../data/routes";
+import { stripBase, withBase } from "../utils/base";
 
 // Built pages are served as /dca/, so the raw pathname never matched the
 // hrefs below and the active state was dead. Compare without trailing slashes.
-const current = Astro.url.pathname.replace(/\/+$/, "") || "/";
+//
+// E o site vai para GitHub Pages sob "/btc-hub", entao o pathname real e
+// "/btc-hub/dca/": stripBase tira o prefixo antes da comparacao, senao o
+// estado ativo morre de novo em producao e so em producao.
+const current = stripBase(Astro.url.pathname);
 
 /*
  * Gerado por scripts/render-ascii-banner.mjs rasterizando a propria fonte
@@ -28,7 +33,7 @@ const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
 
 <nav class="nav">
   <div class="nav__container">
-    <a href="/" class="nav__logo" style={`--wordmark-cols: ${wordmarkColumns}`}>
+    <a href={withBase("/")} class="nav__logo" style={`--wordmark-cols: ${wordmarkColumns}`}>
       <span class="sr-only">BTC_THINGS</span>
       <pre class="nav__logo-art" aria-hidden="true">{wordmarkLines.join("\n")}</pre>
       <span class="nav__logo-text" aria-hidden="true">BTC_THINGS</span>
@@ -47,7 +52,7 @@ const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
         <div class="nav__row">
           {row.map(item => (
             <a 
-              href={item.href}
+              href={withBase(item.href)}
               class:list={['nav__link', { 'nav__link--active': current === item.href }]}
               aria-current={current === item.href ? 'page' : undefined}
             >

@@ -174,7 +174,86 @@ successful run.
 - Bun (recommended) or Node.js 20+ with `npx tsx`
 - Network access (BLS, Yahoo Finance, Kraken, The Economist's GitHub)
 
+## Deploy to GitHub Pages
+
+Live URL: **https://afa7789.github.io/btc-hub/**
+
+Pushing to `main` runs `.github/workflows/deploy.yml`, which builds with bun and
+publishes `dist/` through `actions/deploy-pages`. Nothing is committed to a
+`gh-pages` branch.
+
+### The base path — read this before changing any URL
+
+The site is a *project* Pages site, so it is served from `/btc-hub/`, not from
+the root of the domain. `astro.config.mjs` therefore sets `base: "/btc-hub"`,
+and **every absolute path in the codebase has to be prefixed with it**. A single
+missed path is a 404 in production and a chart that never draws.
+
+The prefix comes from two places, depending on whether the file passes through
+the bundler:
+
+| Where the code lives | How to build a URL |
+| --- | --- |
+| `.astro`, `.ts` (bundled) | `withBase("/datasets/gold.csv")` from `src/utils/base.ts` |
+| `public/scripts/*.js` (served literally) | `window.__BASE__` / `window.withBase(...)`, published by `BaseLayout.astro` in `<head>` |
+
+`public/` files never see `import.meta.env.BASE_URL` — they are copied byte for
+byte into `dist/`. That is why `BaseLayout.astro` writes the prefix onto
+`window` before any page script runs.
+
+`src/components/Nav.astro` runs the same idea backwards: `stripBase()` removes
+the prefix from `Astro.url.pathname` before comparing it with the hrefs in
+`src/data/routes.ts`, otherwise the active nav item goes dead in production and
+only in production.
+
+### Verifying the base path locally
+
+`bun run preview` already serves under `/btc-hub/`, but the closest reproduction
+of the real deploy is to stage the build under the prefix by hand:
+
+```bash
+bun run build
+rm -rf dist-pages && mkdir -p dist-pages && cp -R dist dist-pages/btc-hub
+python3 -m http.server 8110 --directory dist-pages
+# then open http://127.0.0.1:8110/btc-hub/
+```
+
+Walk every route with the devtools network tab open. **Zero 404 responses** is
+the acceptance criterion — that is the number that catches a forgotten dataset
+path.
+
+### `.nojekyll`
+
+`public/.nojekyll` is copied to `dist/.nojekyll` on every build. Without it,
+GitHub Pages runs the artifact through Jekyll, which silently drops directories
+whose name starts with an underscore — and `build.assets` is `_assets/`, so the
+whole site would load without CSS or JS.
+
+### What the repository owner still has to do by hand
+
+The workflow cannot turn Pages on for the repository; that is a settings change
+only the owner can make. Once, before the first deploy:
+
+1. Push this branch to `main` on `github.com/afa7789/btc-hub`.
+2. Open **https://github.com/afa7789/btc-hub/settings/pages**.
+3. Under **Build and deployment → Source**, select **GitHub Actions**
+   (not "Deploy from a branch"). Nothing to save — it applies immediately.
+4. If the repository is private, Pages needs GitHub Pro or the repository has to
+   be public; otherwise the deploy job fails with a permissions error.
+5. Go to the **Actions** tab and confirm the `Deploy to GitHub Pages` run is
+   green. The deploy job prints the final URL.
+
+Nothing else is required — no DNS, no `CNAME` file, no personal access token.
+Later pushes to `main` deploy on their own.
+
 ## Deploy to VPS
+
+> **The base path applies here too.** `astro.config.mjs` sets `base: "/btc-hub"`
+> for GitHub Pages, so the built site expects to live under `/btc-hub/` on any
+> host. To serve it from the root of a domain instead, either set `base: "/"`
+> before building, or have nginx serve `dist/` at the `/btc-hub/` location. The
+> nav's active state and every dataset fetch follow the configured base, so the
+> two cannot disagree.
 
 ### First-time setup
 

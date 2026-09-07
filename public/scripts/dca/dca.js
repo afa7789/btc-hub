@@ -1,31 +1,41 @@
+/*
+ * Este arquivo vive em public/ — e servido literalmente, sem passar pelo
+ * bundler, entao `import.meta.env.BASE_URL` nao existe aqui. O prefixo de
+ * deploy ("/btc-hub" no GitHub Pages, "" na raiz) vem de window.__BASE__,
+ * publicado pelo BaseLayout no <head> antes deste script carregar.
+ */
+const assetPath = (path) =>
+  (typeof window !== "undefined" && window.__BASE__ ? window.__BASE__ : "") +
+  path;
+
 // Asset configuration
 const ASSETS = {
   bitcoin: {
-    file: "/datasets/bitcoin_2010-07-17_2025-07-25.csv",
+    file: assetPath("/datasets/bitcoin_2010-07-17_2025-07-25.csv"),
     format: "crypto", // Start,End,Open,High,Low,Close
     symbol: "BTC",
     decimals: 8,
   },
   ethereum: {
-    file: "/datasets/ethereum_2015-08-07_2025-07-25.csv",
+    file: assetPath("/datasets/ethereum_2015-08-07_2025-07-25.csv"),
     format: "crypto",
     symbol: "ETH",
     decimals: 6,
   },
   monero: {
-    file: "/datasets/monero_2014-05-21_2025-07-25.csv",
+    file: assetPath("/datasets/monero_2014-05-21_2025-07-25.csv"),
     format: "crypto",
     symbol: "XMR",
     decimals: 6,
   },
   gold: {
-    file: "/datasets/gold.csv",
+    file: assetPath("/datasets/gold.csv"),
     format: "commodity", // Price,Close,High,Low,Open,Volume
     symbol: "oz",
     decimals: 4,
   },
   silver: {
-    file: "/datasets/silver.csv",
+    file: assetPath("/datasets/silver.csv"),
     format: "commodity",
     symbol: "oz",
     decimals: 4,

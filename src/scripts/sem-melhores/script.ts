@@ -1,3 +1,5 @@
+import { withBase } from "../../utils/base";
+
 interface CoinData {
   id: string;
   symbol: string;
@@ -172,7 +174,9 @@ document.addEventListener("astro:page-load", async () => {
 
 async function loadBlacklist() {
   try {
-    const response = await fetch("/datasets/sem-melhores/blacklist.json");
+    const response = await fetch(
+      withBase("/datasets/sem-melhores/blacklist.json"),
+    );
     if (response.ok) {
       const blacklistArray: string[] = await response.json();
       blacklistSet = new Set(blacklistArray.map((item) => item.toLowerCase()));

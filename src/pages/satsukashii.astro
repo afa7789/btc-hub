@@ -9,7 +9,11 @@
  * <link rel="canonical"> passa o sinal para buscadores, e o link visivel e o
  * fallback para quem tem meta refresh bloqueado.
  */
-const target = "/big-mac";
+import { withBase } from "../utils/base";
+
+// Sob GitHub Pages o alvo e "/btc-hub/big-mac" — um "/big-mac" cru levaria
+// para fora do site.
+const target = withBase("/big-mac");
 ---
 
 <!doctype html>

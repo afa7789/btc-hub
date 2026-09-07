@@ -1,4 +1,5 @@
 ---
+import { withBase } from "../utils/base";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const title = "Debase";
@@ -348,7 +349,7 @@ const description =
       <p>
         Bitcoin's halvings are a supply-schedule question rather than a
         purchasing-power one, so they have their own page:
-        <a href="/halving">the halvings and the 500-day window</a>.
+        <a href={withBase("/halving")}>the halvings and the 500-day window</a>.
       </p>
     </section>
   </article>
@@ -424,10 +425,10 @@ const description =
     console.log('IndexedDB wrapper functions loaded');
   </script>
 
-  <script is:inline src="/scripts/debase/chart_draw.js"></script>
-  <script is:inline src="/scripts/debase/dataset_manager.js"></script>
-  <script is:inline src="/scripts/debase/import_from_kraken.js"></script>
-  <script is:inline src="/scripts/debase/import_from_cpi.js"></script>
+  <script is:inline src={withBase("/scripts/debase/chart_draw.js")}></script>
+  <script is:inline src={withBase("/scripts/debase/dataset_manager.js")}></script>
+  <script is:inline src={withBase("/scripts/debase/import_from_kraken.js")}></script>
+  <script is:inline src={withBase("/scripts/debase/import_from_cpi.js")}></script>
 
   <script is:inline>
     // d3 sets stroke as a presentation attribute, where var() is not allowed,
@@ -708,12 +709,12 @@ const description =
       const SILVER = "SILVER";
 
       const datasetConfigs = [
-        { name: CPI_U, csvPath: '/datasets/daily_cpi_inflation.csv', fetchFunction: fetchCpiUData },
-        { name: GOLD, csvPath: '/datasets/gold.csv', fetchFunction: fetchGoldData },
-        { name: SILVER, csvPath: '/datasets/silver.csv', fetchFunction: null },
-        { name: XMR, csvPath: '/datasets/monero_2014-05-21_2025-07-25.csv', fetchFunction: fetchXmrData },
-        { name: ETH, csvPath: '/datasets/ethereum_2015-08-07_2025-07-25.csv', fetchFunction: fetchEthData },
-        { name: BTC, csvPath: '/datasets/bitcoin_2010-07-17_2025-07-25.csv', fetchFunction: fetchBtcData },
+        { name: CPI_U, csvPath: window.withBase('/datasets/daily_cpi_inflation.csv'), fetchFunction: fetchCpiUData },
+        { name: GOLD, csvPath: window.withBase('/datasets/gold.csv'), fetchFunction: fetchGoldData },
+        { name: SILVER, csvPath: window.withBase('/datasets/silver.csv'), fetchFunction: null },
+        { name: XMR, csvPath: window.withBase('/datasets/monero_2014-05-21_2025-07-25.csv'), fetchFunction: fetchXmrData },
+        { name: ETH, csvPath: window.withBase('/datasets/ethereum_2015-08-07_2025-07-25.csv'), fetchFunction: fetchEthData },
+        { name: BTC, csvPath: window.withBase('/datasets/bitcoin_2010-07-17_2025-07-25.csv'), fetchFunction: fetchBtcData },
       ];
 
       await csvManager.initAllDatasets(datasetConfigs);

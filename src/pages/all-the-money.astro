@@ -1,4 +1,5 @@
 ---
+import { withBase } from "../utils/base";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const title = "All the Money in the World";
@@ -588,5 +589,5 @@ const description =
     <a href="https://www.visualcapitalist.com/all-of-the-worlds-money-and-markets-in-one-visualization-2022/" target="_blank" rel="noopener" style="color: var(--data-cyan); text-decoration: underline;">See also: Visual Capitalist – All of the World’s Money and Markets in One Visualization (2022)</a>
   </footer>
 
-  <script is:inline src="/scripts/all-the-money/script.js"></script>
+  <script is:inline src={withBase("/scripts/all-the-money/script.js")}></script>
 </BaseLayout>

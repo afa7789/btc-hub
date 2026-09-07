@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from "astro:transitions";
+import { withBase } from "../utils/base";
 import "../styles/global.css";
 import Footer from "../components/Footer.astro";
 import Nav from "../components/Nav.astro";
@@ -31,7 +32,7 @@ const canonicalURL = new URL(
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href={withBase("/favicon.svg")} />
     <title>{title} | BTC_THINGS</title>
     
     <!-- Open Graph / Facebook -->
@@ -62,6 +63,19 @@ const canonicalURL = new URL(
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Pirata+One&display=swap"
     />
+
+    <!-- O prefixo de deploy, publicado para o JS que NAO passa pelo bundler.
+         Os arquivos de public/scripts/ sao servidos literalmente, entao
+         `import.meta.env.BASE_URL` nao existe la dentro; sem isto todo
+         fetch("/datasets/...") deles bate na raiz do dominio e da 404 no
+         GitHub Pages. Fica no <head>, antes de qualquer script de pagina. -->
+    <script is:inline define:vars={{ basePrefix: withBase("/").replace(/\/+$/, "") }}>
+      window.__BASE__ = basePrefix;
+      window.withBase = (path) =>
+        typeof path === "string" && path.startsWith("/")
+          ? basePrefix + path
+          : path;
+    </script>
 
     <script is:inline>
       // Applied in <head>, before first paint, so a light-theme visitor never
