@@ -690,7 +690,7 @@ function createDataSources() {
                 <div class="item-api">Source: ${dataSource.provider || 'Unknown'}</div>
                 <div class="item-api">Updated: ${lastUpdated}</div>
                 <div class="item-api">Slug: <code>${item.slug}</code></div>
-                ${dataSource.url ? `<div class="item-api"><a href="${dataSource.url}" target="_blank">${dataSource.url}</a></div>` : ''}
+                ${dataSource.url ? `<div class="item-api"><a href="${dataSource.url}" target="_blank" rel="noopener">${dataSource.url}</a></div>` : ''}
             `;
             
             categorySection.appendChild(itemDiv);
