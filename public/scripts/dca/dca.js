@@ -104,7 +104,25 @@ function getClosestPrice(prices, date) {
   return closestDate ? prices[closestDate] : null;
 }
 
+/*
+ * Erro inline em vez de alert(): o modal nativo rouba o foco, some ao ser
+ * fechado sem deixar o que corrigir na tela, e nao diz qual entrada esta
+ * errada — "a valid amount" cabe em zero, negativo e vazio.
+ */
+function showError(message) {
+  const box = document.getElementById("dca-error");
+  if (!box) return;
+  box.textContent = message;
+  box.hidden = false;
+}
+
+function clearError() {
+  const box = document.getElementById("dca-error");
+  if (box) box.hidden = true;
+}
+
 async function calculateDCA() {
+  clearError();
   const assetKey = document.getElementById("asset").value;
   const asset = ASSETS[assetKey];
   const amount = Number.parseFloat(document.getElementById("amount").value);
@@ -113,18 +131,22 @@ async function calculateDCA() {
   const endDate = new Date(document.getElementById("end-date").value);
 
   if (!amount || amount <= 0) {
-    alert("Please enter a valid amount to invest.");
+    showError("Enter an amount of $1 or more to invest at each interval.");
     return;
   }
 
   if (startDate >= endDate) {
-    alert("Start date must be before end date.");
+    showError(
+      "The start date must come before the end date. Swap them, or pick an earlier start.",
+    );
     return;
   }
 
   const prices = await loadAssetData(assetKey);
   if (!prices || Object.keys(prices).length === 0) {
-    alert("Failed to load price data for this asset.");
+    showError(
+      "Could not load the price history for this asset. Reload the page, or pick a different asset.",
+    );
     return;
   }
 
@@ -159,7 +181,9 @@ async function calculateDCA() {
   }
 
   if (transactions.length === 0) {
-    alert("No valid price data found for the selected date range.");
+    showError(
+      `No price data exists in that range for this asset. ${asset.symbol} data runs from ${Object.keys(prices).sort()[0]}. Pick a later start date.`,
+    );
     return;
   }
 

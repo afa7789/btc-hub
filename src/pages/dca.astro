@@ -98,6 +98,14 @@ const chartLabel =
       margin: 1em 0;
     }
     
+    .dca-error {
+      margin-top: 1em;
+      padding: 0.75rem 1rem;
+      max-width: 68ch;
+      color: var(--status-negative);
+      border: var(--border-width) solid var(--status-negative);
+    }
+    
     #results {
       margin-top: 2em;
     }
@@ -229,6 +237,10 @@ const chartLabel =
         <input type="date" id="end-date" value={DEFAULTS.endDate}>
       </div>
       
+      <!-- role=alert: o erro precisa ser anunciado, e um alert() nativo tira o
+           foco, quebra a estetica de terminal e nao diz o que corrigir. -->
+      <p id="dca-error" class="dca-error" role="alert" hidden></p>
+
       <div class="button-group">
         <button type="button" id="calculate-btn" class="btn-primary">Calculate</button>
         <button type="button" id="clear-btn" class="btn-secondary">Clear</button>
