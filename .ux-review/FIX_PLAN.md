@@ -46,6 +46,42 @@ D3 `role="img"` + a describing `aria-label` on every chart.
 
 ---
 
+## Estado depois do loop multi-agente (2026-09-07)
+
+Fechado nesta rodada, com medição em navegador:
+
+| item | evidência |
+|---|---|
+| `/all-the-money`: blocos como `<button>`, um tab stop por item | 25.346 botões, 52 focáveis para 52 itens, tooltip no foco |
+| `/all-the-money`: `<style is:global>` vazando para a chrome | bundle da página sem regra `button{}` / `h1{}` sem escopo; diff visual 0,042% |
+| `/sem-melhores`: semântica de diálogo, trap e restauração de foco | Tab ×8 sem sair, Escape devolve ao elemento que abriu |
+| `/debase`: estrutura de cabeçalhos | 10 `h2`, sem pular nível |
+| `role="img"` + nome nos gráficos | 10 no `/debase`, 1 em `/halving`, `/big-mac`, `/dca` |
+| 8 literais de cor em `chart_draw.js` | migradas; três estavam abaixo de 3:1 contra o canvas |
+| 5 `<h1>` dentro de link externo | desembrulhados; link de fonte nomeia o destino |
+| 52 links `_blank` sem `rel="noopener"` | 52 → 0 |
+| Links de prosa distinguidos só por cor | sublinhados globalmente |
+| Ticker fora de landmark | dentro de `<header>` |
+| Badges `LIVE` idênticos em todos os cards | viraram procedência, tipada em `routes.ts` |
+| `/sem-melhores` sem estado vazio | placeholder no HTML servido |
+| Lista de rotas duplicada em três arquivos | fonte única em `src/data/routes.ts` |
+
+Reprovado com prova, não corrigido: o `color-contrast` que o axe reporta nos
+títulos de eixo do `/debase`, `/halving` e `/rainbow` no tema claro. Ver
+`.claude/FALSE_POSITIVES.md`.
+
+Ainda aberto e conhecido:
+
+- `public/scripts/all-the-money/script.js` dispara 13 requisições cross-origin
+  que nunca podem atualizar nada — o loop exige que a resposta traga
+  `valueBillions` e `lastUpdated` no topo, e nenhuma daquelas APIs devolve isso.
+  Duas funções ainda carregam a string `API_KEY`; não são chamadas.
+- `public/scripts/dca/dca.js` procura os rótulos de eixo em `y="60"` e `y="150"`,
+  mas o `dca.astro` os renderiza em `y="65"` e `y="155"` — os dois ramos nunca
+  disparam e o eixo Y não atualiza no recálculo.
+- Os quatro `alert()` do `/dca` continuam sendo o caminho de erro.
+- Toda a camada de copy que o revisor de conteúdo escreveu pronta para colar.
+
 ## Filed, not attempted this pass
 
 **Needs a product decision:** `/sem-melhores` Portuguese-first default and the flag-as-language-toggle · binding `--text-body` to `body` (changes density everywhere; DESIGN.md §3 has never matched the code) · `/all-the-money`'s SHA-256 colour palette (magenta gold, no L bound, `Math.random()` fallback) · whether `/satsukashii` should own the `/big-mac-index` route · whether the `all-the-money` live-API integration ships or its "Live APIs" tile stops claiming freshness.
