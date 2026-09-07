@@ -4,7 +4,7 @@ Generated 2026-09-06. Source of truth: `src/pages/*.astro` (Astro file-based
 routing, `output: "static"`). Every screen below is a real built page in
 `dist/`; there are no dynamic segments, no auth roles and no guards.
 
-Coverage: **8 screens, 21 states, 2 unresolved.** See `UNRESOLVED_SCREENS.md`.
+Coverage: **10 screens, 25 states, 2 unresolved.** See `UNRESOLVED_SCREENS.md`.
 
 Every screen inherits three global states from `BaseLayout.astro`:
 `theme=dark` (default), `theme=light`, and `no-js` (the `[JS_DISABLED]` banner
@@ -17,7 +17,9 @@ plus whatever the page prerendered).
 | `all-the-money` | `/all-the-money` | `all-the-money.astro` | high | `src/pages/all-the-money.astro:1` | default, loading, comparison-mode, data-sources-open |
 | `dca` | `/dca` | `dca.astro` | high | `src/pages/dca.astro:1` | prerendered-default, recalculated |
 | `debase` | `/debase` | `debase.astro` | high | `src/pages/debase.astro:1` | loading, default |
-| `satsukashii` | `/satsukashii` | `satsukashii.astro` | high | `src/pages/satsukashii.astro:1` | loading, default |
+| `halving` | `/halving` | `halving.astro` | high | `src/pages/halving.astro:1` | loading, default; the dates and the past-halvings table are prerendered |
+| `rainbow` | `/rainbow` | `rainbow.astro` | high | `src/pages/rainbow.astro:1` | default only — the chart is an inline SVG built at build time, so it has no loading state |
+| `big-mac` | `/big-mac` | `big-mac.astro` | high | `src/pages/big-mac.astro:1` | loading, default; renamed from `/satsukashii`, which is now a redirect stub |
 | `how-much-i-fucked-up` | `/how-much-i-fucked-up` | `how-much-i-fucked-up.astro` | high | `src/pages/how-much-i-fucked-up.astro:1` | prerendered-default, calculating, error, recalculated |
 | `not-found` | `/404` | `404.astro` | high | `src/pages/404.astro:1` | default |
 

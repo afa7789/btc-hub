@@ -39,12 +39,26 @@ screens:
     confidence: high
     evidence: [src/pages/debase.astro:1]
     states: [default, no-js]
-  - id: satsukashii
-    route: /satsukashii
-    component: satsukashii.astro
+  - id: halving
+    route: /halving
+    component: halving.astro
     role: public
     confidence: high
-    evidence: [src/pages/satsukashii.astro:1]
+    evidence: [src/pages/halving.astro:1]
+    states: [default, no-js]
+  - id: rainbow
+    route: /rainbow
+    component: rainbow.astro
+    role: public
+    confidence: high
+    evidence: [src/pages/rainbow.astro:1]
+    states: [default, no-js]
+  - id: big-mac
+    route: /big-mac
+    component: big-mac.astro
+    role: public
+    confidence: high
+    evidence: [src/pages/big-mac.astro:1]
     states: [default, no-js]
   - id: how-much-i-fucked-up
     route: /how-much-i-fucked-up
