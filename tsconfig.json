@@ -4,5 +4,14 @@
     "strictNullChecks": true,
     "allowJs": true,
     "skipLibCheck": true
-  }
+  },
+  "include": [
+    ".astro/types.d.ts",
+    "**/*"
+  ],
+  "exclude": [
+    "dist",
+    "dist-*",
+    ".ux-review"
+  ]
 }
