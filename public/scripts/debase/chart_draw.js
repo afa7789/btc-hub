@@ -23,9 +23,8 @@
  */
 function chartColor(token, fallback) {
   return (
-    getComputedStyle(document.documentElement)
-      .getPropertyValue(token)
-      .trim() || fallback
+    getComputedStyle(document.documentElement).getPropertyValue(token).trim() ||
+    fallback
   );
 }
 
@@ -35,8 +34,7 @@ function chartColor(token, fallback) {
 // com role="img", que impede a leitura solta dos <text> internos.
 function chartMoney(value) {
   if (!Number.isFinite(value)) return "?";
-  if (Math.abs(value) >= 1000)
-    return `$${d3.format(",.0f")(value)}`;
+  if (Math.abs(value) >= 1000) return `$${d3.format(",.0f")(value)}`;
   if (Math.abs(value) >= 1) return `$${value.toFixed(2)}`;
   return `$${value.toPrecision(2)}`;
 }
@@ -143,10 +141,7 @@ function halvingDraw({
         d3.min(filteredData, (d) => d.price),
       );
       let maxPrice = d3.max(filteredData, (d) => d.price);
-      priceExtent = [
-        d3.min(filteredData, (d) => d.price),
-        maxPrice,
-      ];
+      priceExtent = [d3.min(filteredData, (d) => d.price), maxPrice];
       maxPrice = maxPrice * 2.0;
       const btcY = d3
         .scaleLog()

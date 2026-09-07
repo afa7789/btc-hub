@@ -20,7 +20,12 @@ export interface Tool {
   /** Used verbatim in the nav, the hub card, the 404 list and the page title. */
   label: string;
   description: string;
-  status: string;
+  /**
+   * Where the numbers come from. Every card used to read "LIVE", which carries
+   * no information when it never varies — and reads as a lie on the pages that
+   * only ever plot a bundled dataset.
+   */
+  status: "LIVE PRICES" | "DATASET" | "DATASET + LIVE";
 }
 
 export const tools: Tool[] = [
@@ -29,7 +34,7 @@ export const tools: Tool[] = [
     group: "tool",
     label: "SEM MELHORES",
     description: "Top 100 cryptocurrency browser powered by CoinGecko API",
-    status: "LIVE",
+    status: "LIVE PRICES",
   },
   {
     href: "/all-the-money",
@@ -37,7 +42,7 @@ export const tools: Tool[] = [
     label: "ALL THE MONEY IN THE WORLD",
     description:
       "Global wealth block visualization - see all the money in the world",
-    status: "LIVE",
+    status: "DATASET",
   },
   {
     href: "/dca",
@@ -45,14 +50,14 @@ export const tools: Tool[] = [
     label: "DCA CALCULATOR",
     description:
       "Dollar Cost Averaging calculator with Bitcoin historical data",
-    status: "LIVE",
+    status: "DATASET",
   },
   {
     href: "/debase",
     group: "chart",
     label: "DEBASE",
     description: "Inflation-adjusted asset charts with D3.js visualizations",
-    status: "LIVE",
+    status: "DATASET",
   },
   {
     href: "/halving",
@@ -60,7 +65,7 @@ export const tools: Tool[] = [
     label: "HALVING",
     description:
       "Bitcoin halvings against the price, with the 500-day window around each one",
-    status: "LIVE",
+    status: "DATASET",
   },
   {
     href: "/rainbow",
@@ -68,14 +73,14 @@ export const tools: Tool[] = [
     label: "RAINBOW",
     description:
       "Bitcoin against a log regression fitted to our own data, with bands at multiples of the residual",
-    status: "LIVE",
+    status: "DATASET",
   },
   {
     href: "/big-mac",
     group: "chart",
     label: "BIG MAC INDEX",
     description: "Big Mac Index vs Bitcoin price history comparison",
-    status: "LIVE",
+    status: "DATASET",
   },
   {
     href: "/how-much-i-fucked-up",
@@ -83,6 +88,6 @@ export const tools: Tool[] = [
     label: "HOW MUCH I FUCKED UP",
     description:
       '"What if I invested X on date Y?" calculator with historical data',
-    status: "LIVE",
+    status: "DATASET + LIVE",
   },
 ];

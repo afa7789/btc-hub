@@ -26,7 +26,16 @@ import "../styles/sem-melhores.css";
     
     <p id="dataNotice" class="data-notice" role="status" hidden></p>
 
-    <div id="cryptoList"></div>
+    <div id="cryptoList">
+      <!-- Estado inicial no HTML servido: com a API fora, a pagina mostrava um
+           vazio sem explicacao entre a busca e o rodape. renderCryptoList()
+           substitui isto assim que a lista chega. -->
+      <p class="empty-state" id="cryptoListEmpty">
+        Carregando moedas da CoinGecko&hellip; a tabela aparece assim que ela
+        responder. Se nada aparecer, a API caiu ou limitou a taxa &mdash;
+        recarregue em um minuto.
+      </p>
+    </div>
 
     <div
       id="coinModal"
@@ -53,6 +62,12 @@ import "../styles/sem-melhores.css";
 <script src="../scripts/sem-melhores/script.ts"></script>
 
 <style>
+  .empty-state {
+    padding: 2rem 0;
+    color: var(--fg-secondary);
+    max-width: 60ch;
+  }
+  
   .search-label {
     display: block;
     margin-bottom: 0.25rem;

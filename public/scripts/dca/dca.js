@@ -65,7 +65,9 @@ async function loadAssetData(assetKey) {
       }
     }
 
-    console.log(`${assetKey} prices loaded: ${Object.keys(prices).length} records`);
+    console.log(
+      `${assetKey} prices loaded: ${Object.keys(prices).length} records`,
+    );
   } catch (error) {
     console.error(`Error loading ${assetKey} data:`, error);
   }
@@ -151,10 +153,14 @@ async function calculateDCA() {
     return;
   }
 
-  const currentPrice = getClosestPrice(prices, endDate.toISOString().split("T")[0]);
+  const currentPrice = getClosestPrice(
+    prices,
+    endDate.toISOString().split("T")[0],
+  );
   const currentValue = totalUnits * currentPrice;
   const profitLoss = currentValue - totalInvested;
-  const profitLossPercentage = ((currentValue - totalInvested) / totalInvested) * 100;
+  const profitLossPercentage =
+    ((currentValue - totalInvested) / totalInvested) * 100;
   const averagePrice = totalInvested / totalUnits;
 
   // Display results
@@ -168,7 +174,8 @@ async function calculateDCA() {
   const profitLossElement = document.getElementById("profit-loss");
   const profitLossText = `$${profitLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${profitLoss >= 0 ? "+" : ""}${profitLossPercentage.toFixed(1)}%)`;
   profitLossElement.textContent = profitLossText;
-  profitLossElement.className = profitLoss >= 0 ? "profit-positive" : "profit-negative";
+  profitLossElement.className =
+    profitLoss >= 0 ? "profit-positive" : "profit-negative";
 
   document.getElementById("average-price").textContent =
     `$${averagePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -196,7 +203,8 @@ async function calculateDCA() {
     const row = tbody.insertRow();
     row.insertCell(0).textContent = tx.date;
     row.insertCell(1).textContent = `$${tx.amount.toFixed(2)}`;
-    row.insertCell(2).textContent = `$${tx.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    row.insertCell(2).textContent =
+      `$${tx.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     row.insertCell(3).textContent = tx.btcBought.toFixed(asset.decimals);
     row.insertCell(4).textContent = tx.totalBtc.toFixed(asset.decimals);
   });
@@ -251,12 +259,15 @@ function advanceDate(date, frequency) {
 
 function saveCalculation(inputData, results, transactions) {
   try {
-    localStorage.setItem("lastDCACalculation", JSON.stringify({
-      timestamp: new Date().toISOString(),
-      inputs: inputData,
-      results: results,
-      transactions: transactions,
-    }));
+    localStorage.setItem(
+      "lastDCACalculation",
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        inputs: inputData,
+        results: results,
+        transactions: transactions,
+      }),
+    );
   } catch (error) {
     console.error("Error saving calculation:", error);
   }
@@ -274,21 +285,28 @@ function loadLastCalculation() {
       document.getElementById("asset").value = calculationData.inputs.asset;
     }
     document.getElementById("amount").value = calculationData.inputs.amount;
-    document.getElementById("frequency").value = calculationData.inputs.frequency;
-    document.getElementById("start-date").value = calculationData.inputs.startDate;
+    document.getElementById("frequency").value =
+      calculationData.inputs.frequency;
+    document.getElementById("start-date").value =
+      calculationData.inputs.startDate;
     document.getElementById("end-date").value = calculationData.inputs.endDate;
 
     // Restore results
-    document.getElementById("total-invested").textContent = calculationData.results.totalInvested;
-    document.getElementById("bitcoin-acquired").textContent = calculationData.results.bitcoinAcquired;
-    document.getElementById("current-value").textContent = calculationData.results.currentValue;
+    document.getElementById("total-invested").textContent =
+      calculationData.results.totalInvested;
+    document.getElementById("bitcoin-acquired").textContent =
+      calculationData.results.bitcoinAcquired;
+    document.getElementById("current-value").textContent =
+      calculationData.results.currentValue;
 
     const profitLossElement = document.getElementById("profit-loss");
     profitLossElement.textContent = calculationData.results.profitLoss;
     profitLossElement.className = calculationData.results.profitLossClass;
 
-    document.getElementById("average-price").textContent = calculationData.results.averagePrice;
-    document.getElementById("purchase-count").textContent = calculationData.results.purchaseCount;
+    document.getElementById("average-price").textContent =
+      calculationData.results.averagePrice;
+    document.getElementById("purchase-count").textContent =
+      calculationData.results.purchaseCount;
 
     document.getElementById("results").style.display = "block";
 
@@ -305,17 +323,23 @@ function loadLastCalculation() {
 
 function drawChart(transactions) {
   const svg = document.getElementById("dca-chart");
-  const existingPaths = svg.querySelectorAll(".chart-line, .chart-dot, .chart-label");
+  const existingPaths = svg.querySelectorAll(
+    ".chart-line, .chart-dot, .chart-label",
+  );
   existingPaths.forEach((el) => el.remove());
 
   if (transactions.length === 0) return;
 
-  const isLightTheme = document.documentElement.getAttribute("data-theme") === "light";
+  const isLightTheme =
+    document.documentElement.getAttribute("data-theme") === "light";
   const textColor = isLightTheme ? "black" : "white";
   const lineColor = isLightTheme ? "black" : "white";
 
   const frequency = document.getElementById("frequency").value;
-  const sampledTransactions = sampleTransactionsByFrequency(transactions, frequency);
+  const sampledTransactions = sampleTransactionsByFrequency(
+    transactions,
+    frequency,
+  );
 
   const investedData = [];
   const valueData = [];
@@ -334,7 +358,8 @@ function drawChart(transactions) {
   const chartX = 50;
   const chartY = 50;
 
-  const scaleX = (index) => chartX + (index / Math.max(sampledTransactions.length - 1, 1)) * chartWidth;
+  const scaleX = (index) =>
+    chartX + (index / Math.max(sampledTransactions.length - 1, 1)) * chartWidth;
   const scaleY = (value) => chartY + chartHeight - (value / maxY) * chartHeight;
 
   let investedPoints = "";
@@ -349,7 +374,10 @@ function drawChart(transactions) {
     valuePoints += `${scaleX(point.x)},${scaleY(point.y)}`;
   });
 
-  const investedLine = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+  const investedLine = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "polyline",
+  );
   investedLine.setAttribute("points", investedPoints);
   investedLine.setAttribute("stroke", lineColor);
   investedLine.setAttribute("stroke-width", "2");
@@ -358,7 +386,10 @@ function drawChart(transactions) {
   investedLine.setAttribute("class", "chart-line");
   svg.appendChild(investedLine);
 
-  const valueLine = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+  const valueLine = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "polyline",
+  );
   valueLine.setAttribute("points", valuePoints);
   valueLine.setAttribute("stroke", lineColor);
   valueLine.setAttribute("stroke-width", "3");
@@ -366,9 +397,13 @@ function drawChart(transactions) {
   valueLine.setAttribute("class", "chart-line");
   svg.appendChild(valueLine);
 
-  const formatVal = (v) => v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v.toFixed(0)}`;
+  const formatVal = (v) =>
+    v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v.toFixed(0)}`;
 
-  const legendInvested = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  const legendInvested = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "text",
+  );
   legendInvested.setAttribute("x", "280");
   legendInvested.setAttribute("y", "30");
   legendInvested.setAttribute("font-family", "monospace");
@@ -378,7 +413,10 @@ function drawChart(transactions) {
   legendInvested.textContent = `--- Total Invested (${formatVal(maxInvested)})`;
   svg.appendChild(legendInvested);
 
-  const legendValue = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  const legendValue = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "text",
+  );
   legendValue.setAttribute("x", "280");
   legendValue.setAttribute("y", "50");
   legendValue.setAttribute("font-family", "monospace");
@@ -413,7 +451,10 @@ function drawChart(transactions) {
 
   const chartElements = svg.querySelectorAll("text, line");
   chartElements.forEach((element) => {
-    if (element.tagName === "text" && !element.classList.contains("chart-label")) {
+    if (
+      element.tagName === "text" &&
+      !element.classList.contains("chart-label")
+    ) {
       element.setAttribute("fill", textColor);
     } else if (element.tagName === "line") {
       element.setAttribute("stroke", lineColor);
@@ -430,7 +471,9 @@ function sampleTransactionsByFrequency(transactions, frequency) {
   const yearsDiff = (endDate - startDate) / (1000 * 60 * 60 * 24 * 365.25);
 
   const expectedPointsPerYear = { daily: 365, weekly: 52, monthly: 12 };
-  const expectedTotalPoints = Math.round(yearsDiff * expectedPointsPerYear[frequency]);
+  const expectedTotalPoints = Math.round(
+    yearsDiff * expectedPointsPerYear[frequency],
+  );
 
   if (totalTransactions <= expectedTotalPoints * 1.2) return transactions;
 
@@ -472,7 +515,9 @@ async function initDcaPage() {
   await loadAssetData("bitcoin");
 
   calculateBtn.addEventListener("click", calculateDCA);
-  document.getElementById("clear-btn").addEventListener("click", clearCalculation);
+  document
+    .getElementById("clear-btn")
+    .addEventListener("click", clearCalculation);
   initializeDateInputs();
   loadLastCalculation();
 }
@@ -482,7 +527,11 @@ document.addEventListener("astro:page-load", initDcaPage);
 function initializeDateInputs() {
   document.querySelectorAll('input[type="date"]').forEach((input) => {
     input.addEventListener("click", function () {
-      try { this.showPicker?.(); } catch (err) { this.focus(); }
+      try {
+        this.showPicker?.();
+      } catch (err) {
+        this.focus();
+      }
     });
   });
 }
