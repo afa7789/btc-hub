@@ -20,8 +20,6 @@ bun run build
 
 echo "=== Update & Rebuild complete ==="
 
-# 4. Optionally deploy
-if [ "${1:-}" = "--deploy" ]; then
-    echo "Deploying..."
-    bash deploy.sh
-fi
+# O site e estatico e publicado pelo GitHub Pages no push para main
+# (.github/workflows/deploy.yml). Nao ha etapa de deploy aqui: commite os
+# datasets atualizados e o push publica.

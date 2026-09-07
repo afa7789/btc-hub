@@ -436,13 +436,16 @@ function drawChart(transactions) {
   legendValue.textContent = `— Portfolio Value (${formatVal(maxValue)})`;
   svg.appendChild(legendValue);
 
-  const topLabel = svg.querySelector('text[x="10"][y="60"]');
+  // O markup em dca.astro renderiza estes rotulos em y=65 e y=155; procurar em
+  // 60 e 150 fazia os dois ramos nunca dispararem, entao o eixo Y ficava com a
+  // escala do primeiro calculo depois de qualquer recalculo.
+  const topLabel = svg.querySelector('text[x="10"][y="65"]');
   if (topLabel) {
     topLabel.textContent = formatVal(maxY);
     topLabel.setAttribute("fill", textColor);
   }
 
-  const midLabel = svg.querySelector('text[x="10"][y="150"]');
+  const midLabel = svg.querySelector('text[x="10"][y="155"]');
   if (midLabel) {
     midLabel.textContent = formatVal(maxY / 2);
     midLabel.setAttribute("fill", textColor);

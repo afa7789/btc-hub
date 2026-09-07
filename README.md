@@ -148,7 +148,6 @@ node scripts/update-all-the-money.mjs --fix-endpoints         # null out broken 
 **only** when `lastUpdated` is strictly newer than what is stored. When no newer
 source exists the old value is kept untouched — that is the rule, not a fallback.
 
-
 These are never touched by `scripts/update.sh`. The summary table still lists them, so
 they stay visible, but they are exempt from the freshness gate.
 
@@ -246,58 +245,11 @@ only the owner can make. Once, before the first deploy:
 Nothing else is required — no DNS, no `CNAME` file, no personal access token.
 Later pushes to `main` deploy on their own.
 
-## Deploy to VPS
-
-> **The base path applies here too.** `astro.config.mjs` sets `base: "/btc-hub"`
-> for GitHub Pages, so the built site expects to live under `/btc-hub/` on any
-> host. To serve it from the root of a domain instead, either set `base: "/"`
-> before building, or have nginx serve `dist/` at the `/btc-hub/` location. The
-> nav's active state and every dataset fetch follow the configured base, so the
-> two cannot disagree.
-
-### First-time setup
-
-1. Copy `nginx.conf.example` to your nginx sites-available
-2. Set environment variables:
-
-```bash
-export SSH_KEY_PATH=~/.ssh/id_rsa
-export VPS_USER=deploy
-export VPS_HOST=your-server.com
-export VPS_PATH=/var/www/btc-things
-```
-
-3. Build and deploy:
-
-```bash
-bun run build
-bash deploy.sh
-```
-
-### Using Docker for builds
-
-With Node:
-```bash
-docker build -f Dockerfile.build -o type=local,dest=./dist .
-```
-
-With Bun:
-```bash
-docker build -f Dockerfile.bun -o type=local,dest=./dist .
-```
-
-### Daily auto-updates via cron
-
-```bash
-bash cron.sh install
-```
-
-This runs daily at 6 AM UTC: updates datasets, rebuilds site, and deploys.
-
 ## Architecture
 
 - **Astro 5** static site generator, `output: "static"` — `bun run build` emits plain
-  HTML into `dist/`. There is no server runtime; `dist/` is what nginx serves.
+  HTML into `dist/`. There is no server runtime; `dist/` is the whole site,
+  published as-is by GitHub Pages.
 - **No UI framework.** Astro ships zero framework JS; each page carries its own vanilla
   script, either inlined with `is:inline` or served from `public/scripts/`.
 - **D3.js v7** (CDN) for the `/debase`, `/halving` and `/big-mac` charts.
@@ -305,7 +257,7 @@ This runs daily at 6 AM UTC: updates datasets, rebuilds site, and deploys.
   `localStorage` for the ticker and the theme preference.
 - **`public/datasets/`** holds every CSV and JSON the pages read at runtime.
 - **TypeScript scripts** in `scripts/`, run with Bun, for all data fetching.
-- **Nginx** for serving.
+- **GitHub Pages** for serving, from `.github/workflows/deploy.yml` on push to `main`.
 
 The standalone folders in the parent directory (`all_the_money_in_the_world/`,
 `SemMelhores/`, `debase/`, `dca_btc_brutalist/`, `satsukashii/`) are the original
