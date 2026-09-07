@@ -1,6 +1,13 @@
 #!/usr/bin/env npx tsx
 import { execSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -21,8 +28,8 @@ const MONTH_COLS = [
   "Dec",
 ] as const;
 const CSV_COLUMNS = ["Year", ...MONTH_COLS, "HALF1", "HALF2"] as const;
+const VALUE_COLS = [...MONTH_COLS, "HALF1", "HALF2"] as const;
 type MonthCol = (typeof MONTH_COLS)[number];
-type CsvCol = (typeof CSV_COLUMNS)[number];
 
 const MONTH_NUM_TO_COL: Record<number, MonthCol> = {
   1: "Jan",
@@ -89,6 +96,12 @@ interface MonthlyPoint {
   value: string;
 }
 
+function regenerateDailyCpi(): void {
+  console.log("[cpi] regenerating daily CPI via generate-daily-cpi.ts");
+  const script = resolve(__dirname, "generate-daily-cpi.ts");
+  execSync(`npx tsx ${JSON.stringify(script)}`, { stdio: "inherit" });
+}
+
 function utcYear(): number {
   return new Date().getUTCFullYear();
 }
@@ -101,9 +114,6 @@ function resolvePath(defaultRelative: string): string {
   if (existsSync(direct)) return direct;
 
   try {
-    const { readdirSync, statSync } = require("node:fs") as typeof import(
-      "node:fs",
-    );
     const children = readdirSync(cwd);
     for (const child of children) {
       const childPath = resolve(cwd, child);
@@ -135,7 +145,7 @@ function parseCsv(content: string): CpiTableRow[] {
       if (col === "Year") {
         row.Year = Number.parseInt(obj.Year ?? "0", 10);
       } else {
-        (row as Record<string, string>)[col] = obj[col] ?? "";
+        row[col] = obj[col] ?? "";
       }
     }
     return row;
@@ -147,7 +157,7 @@ function serializeCsv(rows: CpiTableRow[]): string {
   const lines = rows.map((row) => {
     return CSV_COLUMNS.map((col) => {
       if (col === "Year") return String(row.Year);
-      return (row as Record<string, string>)[col] ?? "";
+      return row[col] ?? "";
     }).join(",");
   });
   return `${[header, ...lines].join("\n")}\n`;
@@ -179,7 +189,7 @@ function findLastFilledMonth(rows: CpiTableRow[]): {
   for (const row of sorted) {
     for (let m = 12; m >= 1; m--) {
       const col = MONTH_NUM_TO_COL[m];
-      const v = parseNumeric((row as Record<string, string>)[col] ?? "");
+      const v = parseNumeric(row[col] ?? "");
       if (v !== null) return { year: row.Year, month: m };
     }
   }
@@ -190,7 +200,7 @@ function yearsWithMissingMonths(rows: CpiTableRow[]): Set<number> {
   const missing = new Set<number>();
   for (const row of rows) {
     for (const col of MONTH_COLS) {
-      const v = parseNumeric((row as Record<string, string>)[col] ?? "");
+      const v = parseNumeric(row[col] ?? "");
       if (v === null) {
         missing.add(row.Year);
         break;
@@ -204,10 +214,10 @@ function ensureYearRow(rows: CpiTableRow[], year: number): CpiTableRow[] {
   if (rows.some((r) => r.Year === year)) return rows;
   const newRow = { Year: year } as CpiTableRow;
   for (const col of MONTH_COLS) {
-    (newRow as Record<string, string>)[col] = "";
+    newRow[col] = "";
   }
-  (newRow as Record<string, string>).HALF1 = "";
-  (newRow as Record<string, string>).HALF2 = "";
+  newRow.HALF1 = "";
+  newRow.HALF2 = "";
   const updated = [...rows, newRow];
   updated.sort((a, b) => a.Year - b.Year);
   return updated;
@@ -220,17 +230,16 @@ function recalcHalvesForYear(rows: CpiTableRow[], year: number): void {
   const half1Cols: MonthCol[] = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
   const half2Cols: MonthCol[] = ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-  function avgIfFull(cols: MonthCol[]): string {
-    const vals = cols.map((c) =>
-      parseNumeric((row as Record<string, string>)[c] ?? ""),
-    );
-    if (vals.some((v) => v === null)) return "";
-    const sum = (vals as number[]).reduce((a, b) => a + b, 0);
-    return (sum / vals.length).toFixed(3);
-  }
+  const avgIfFull = (cols: MonthCol[]): string => {
+    const vals = cols.map((c) => parseNumeric(row[c] ?? ""));
+    const nums = vals.filter((v): v is number => v !== null);
+    if (nums.length !== vals.length) return "";
+    const sum = nums.reduce((a, b) => a + b, 0);
+    return (sum / nums.length).toFixed(3);
+  };
 
-  (row as Record<string, string>).HALF1 = avgIfFull(half1Cols);
-  (row as Record<string, string>).HALF2 = avgIfFull(half2Cols);
+  row.HALF1 = avgIfFull(half1Cols);
+  row.HALF2 = avgIfFull(half2Cols);
 }
 
 async function blsFetchSeries(
@@ -333,11 +342,11 @@ async function updateCpi(
 
   // Normalize: remove non-numeric placeholders like "-"
   let cleanedAny = false;
-  for (const col of [...MONTH_COLS, "HALF1", "HALF2"] as CsvCol[]) {
+  for (const col of VALUE_COLS) {
     for (const row of rows) {
-      const v = (row as Record<string, string>)[col] ?? "";
+      const v = row[col] ?? "";
       if (v.trim() !== "" && parseNumeric(v) === null) {
-        (row as Record<string, string>)[col] = "";
+        row[col] = "";
         cleanedAny = true;
       }
     }
@@ -399,8 +408,7 @@ async function updateCpi(
       mkdirSync(dir, { recursive: true });
       writeFileSync(cfg.cpiCsv, serializeCsv(rows), "utf-8");
       console.log(`[cpi] wrote ${cfg.cpiCsv} (normalized placeholders)`);
-      console.log("[cpi] regenerating daily CPI");
-      execSync("npx tsx scripts/generate-daily-cpi.ts", { stdio: "inherit" });
+      regenerateDailyCpi();
       return;
     }
     console.log("[cpi] no new monthly points returned (nothing to update)");
@@ -415,7 +423,7 @@ async function updateCpi(
     const col = MONTH_NUM_TO_COL[month];
     const row = rows.find((r) => r.Year === year);
     if (!row) continue;
-    const cur = ((row as Record<string, string>)[col] ?? "").trim();
+    const cur = (row[col] ?? "").trim();
     const curNum = parseNumeric(cur);
     const newNum = parseNumeric(value);
 
@@ -429,7 +437,7 @@ async function updateCpi(
     }
 
     if (shouldWrite) {
-      (row as Record<string, string>)[col] = value;
+      row[col] = value;
       touchedYears.add(year);
       changedCells++;
     }
@@ -462,8 +470,7 @@ async function updateCpi(
   writeFileSync(cfg.cpiCsv, serializeCsv(rows), "utf-8");
   console.log(`[cpi] wrote ${cfg.cpiCsv}`);
 
-  console.log("[cpi] regenerating daily CPI via generate-daily-cpi.ts");
-  execSync("npx tsx scripts/generate-daily-cpi.ts", { stdio: "inherit" });
+  regenerateDailyCpi();
 }
 
 interface CliArgs {

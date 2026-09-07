@@ -35,8 +35,8 @@ interface CsvRow {
 }
 
 interface KrakenResult {
-  [key: string]: unknown[][];
-  last: unknown;
+  // OHLC rows are keyed by pair; the "last" key holds a cursor timestamp.
+  [key: string]: unknown[][] | number;
 }
 
 interface KrakenResponse {
@@ -206,7 +206,11 @@ async function fetchKrakenOhlc(
       if (!resultPair)
         throw new Error("No result pair found in Kraken response");
 
-      const ohlcData = result[resultPair] as unknown[][];
+      const ohlcData = result[resultPair];
+      if (!Array.isArray(ohlcData))
+        throw new Error(
+          `Unexpected Kraken OHLC payload for pair "${resultPair}"`,
+        );
 
       return ohlcData.map((row) => ({
         timestamp: Number(row[0]),
