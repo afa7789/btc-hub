@@ -1,13 +1,17 @@
 // IndexedDB/Cache wrapper utilities for DEBASE
 
-declare const idb: any;
+import type { openDB } from "idb";
+
+// `idb` is loaded as a UMD global (window.idb), not bundled; the shape is the
+// package's own `openDB`.
+declare const idb: { openDB: typeof openDB };
 
 const STORAGE_KEY_PREFIX = "csv_data_";
 
 /**
  * Get data from IndexedDB with localStorage fallback
  */
-export async function cacheGet(key: string): Promise<any> {
+export async function cacheGet(key: string): Promise<unknown> {
   try {
     if (typeof idb === "undefined") {
       throw new Error("idb library not loaded");
@@ -32,7 +36,7 @@ export async function cacheGet(key: string): Promise<any> {
 /**
  * Set data in IndexedDB with localStorage fallback
  */
-export async function cacheSet(key: string, value: any): Promise<void> {
+export async function cacheSet(key: string, value: unknown): Promise<void> {
   try {
     if (typeof idb === "undefined") {
       throw new Error("idb library not loaded");

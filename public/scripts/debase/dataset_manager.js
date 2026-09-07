@@ -242,11 +242,11 @@ const lookForNewInformation = async (datasetName) => {
 
     console.log(`📥 Received ${newRows.length} new rows for ${datasetName}.`);
 
-    newRows.forEach((row) => {
+    for (const row of newRows) {
       if (row[0] > lastDate) {
         insertNew(datasetName, row);
       }
-    });
+    }
 
     dataset.lastUpdated = new Date().toISOString();
     saveToStorage(datasetName);

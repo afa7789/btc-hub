@@ -1,6 +1,22 @@
 // D3 chart drawing utilities for DEBASE
 
+// d3 v7 is loaded from a CDN as a global (see the <script is:inline> tags in
+// the pages); @types/d3 is not a dependency, so there is no declaration to
+// point at here.
+// biome-ignore lint/suspicious/noExplicitAny: untyped CDN global, no @types/d3
 declare const d3: any;
+
+/** Point of a price series parsed from ChartData. */
+interface DatePricePoint {
+  date: Date;
+  price: number;
+}
+
+/** Point of a value series parsed from ChartData. */
+interface DateValuePoint {
+  date: Date;
+  value: number;
+}
 
 export interface ChartData {
   timestamp: string[];
@@ -10,6 +26,8 @@ export interface ChartData {
 
 export interface DataSetConfig {
   data: ChartData;
+  /** Filled in by the draw functions from `data`. */
+  parsedData?: DatePricePoint[];
   label: string;
   color: string;
   cssClass: string;
@@ -58,7 +76,7 @@ export function halvingDraw(config: HalvingConfig): void {
     .attr("height", height);
 
   // Draw shaded areas
-  allHalvings.forEach((halving: Date) => {
+  for (const halving of allHalvings) {
     const beforeStart = new Date(halving.getTime() - 500 * 24 * 3600 * 1000);
     const afterEnd = new Date(halving.getTime() + 500 * 24 * 3600 * 1000);
 
@@ -85,7 +103,7 @@ export function halvingDraw(config: HalvingConfig): void {
       .attr("height", height - margin.top - margin.bottom)
       .attr("fill", "#ffe0b2")
       .attr("opacity", 0.15);
-  });
+  }
 
   // Draw BTC price line
   if (btcData?.timestamp && btcData.price && btcData.timestamp.length > 0) {
@@ -99,9 +117,9 @@ export function halvingDraw(config: HalvingConfig): void {
     if (filteredData.length > 0) {
       const minPrice = Math.max(
         0.01,
-        d3.min(filteredData, (d: any) => d.price),
+        d3.min(filteredData, (d: DatePricePoint) => d.price),
       );
-      let maxPrice = d3.max(filteredData, (d: any) => d.price);
+      let maxPrice = d3.max(filteredData, (d: DatePricePoint) => d.price);
       maxPrice = maxPrice * 2.0;
 
       const btcY = d3
@@ -111,8 +129,8 @@ export function halvingDraw(config: HalvingConfig): void {
 
       const btcLine = d3
         .line()
-        .x((d: any) => x(d.date))
-        .y((d: any) => btcY(d.price))
+        .x((d: DatePricePoint) => x(d.date))
+        .y((d: DatePricePoint) => btcY(d.price))
         .curve(d3.curveMonotoneX);
 
       svg
@@ -123,12 +141,12 @@ export function halvingDraw(config: HalvingConfig): void {
         .attr("stroke-width", 2)
         .attr("d", btcLine);
 
-      halvings.forEach((halving: Date) => {
+      for (const halving of halvings) {
         const beforeStart = new Date(
           halving.getTime() - 500 * 24 * 3600 * 1000,
         );
         const beforeData = filteredData.filter(
-          (d: any) => d.date >= beforeStart && d.date <= halving,
+          (d) => d.date >= beforeStart && d.date <= halving,
         );
         if (beforeData.length > 1) {
           svg
@@ -142,7 +160,7 @@ export function halvingDraw(config: HalvingConfig): void {
 
         const afterEnd = new Date(halving.getTime() + 500 * 24 * 3600 * 1000);
         const afterData = filteredData.filter(
-          (d: any) => d.date >= halving && d.date <= afterEnd,
+          (d) => d.date >= halving && d.date <= afterEnd,
         );
         if (afterData.length > 1) {
           svg
@@ -153,7 +171,7 @@ export function halvingDraw(config: HalvingConfig): void {
             .attr("stroke-width", 3)
             .attr("d", btcLine);
         }
-      });
+      }
 
       svg
         .append("g")
@@ -178,7 +196,7 @@ export function halvingDraw(config: HalvingConfig): void {
   }
 
   // Draw halving vertical lines
-  halvings.forEach((halving: Date, i: number) => {
+  for (const [i, halving] of halvings.entries()) {
     svg
       .append("line")
       .attr("x1", x(halving))
@@ -196,7 +214,7 @@ export function halvingDraw(config: HalvingConfig): void {
       .attr("fill", "#d32f2f")
       .style("font-size", "0.8em")
       .text(`Halving ${i + 1}`);
-  });
+  }
 
   if (nextHalving) {
     svg
@@ -272,20 +290,17 @@ export function drawCombinedChart(
   let allDates: Date[] = [];
   let allPrices: number[] = [];
 
-  dataSets.forEach((dataSet) => {
-    (dataSet as any).parsedData = (dataSet.data.timestamp as string[]).map(
+  for (const dataSet of dataSets) {
+    const parsedData = (dataSet.data.timestamp as string[]).map(
       (d: string, i: number) => ({
         date: new Date(d),
         price: (dataSet.data.price as number[])[i],
       }),
     );
-    allDates = allDates.concat(
-      (dataSet as any).parsedData.map((d: any) => d.date),
-    );
-    allPrices = allPrices.concat(
-      (dataSet as any).parsedData.map((d: any) => d.price),
-    );
-  });
+    dataSet.parsedData = parsedData;
+    allDates = allDates.concat(parsedData.map((d) => d.date));
+    allPrices = allPrices.concat(parsedData.map((d) => d.price));
+  }
 
   const svg = d3
     .select(`#${divId}`)
@@ -364,19 +379,19 @@ export function drawCombinedChart(
 
   const line = d3
     .line()
-    .x((d: any) => x(d.date))
-    .y((d: any) => y(d.price))
+    .x((d: DatePricePoint) => x(d.date))
+    .y((d: DatePricePoint) => y(d.price))
     .curve(d3.curveLinear);
 
-  dataSets.forEach((dataSet) => {
+  for (const dataSet of dataSets) {
     svg
       .append("path")
-      .datum((dataSet as any).parsedData)
+      .datum(dataSet.parsedData)
       .attr("class", `line ${dataSet.cssClass}`)
       .attr("fill", "none")
       .attr("stroke", dataSet.color)
       .attr("d", line);
-  });
+  }
 
   svg
     .append("text")
@@ -396,7 +411,7 @@ export function drawCombinedChart(
       `translate(${margin.left}, ${internalHeight - margin.bottom + 40})`,
     );
 
-  dataSets.forEach((d, i) => {
+  for (const [i, d] of dataSets.entries()) {
     const legendRow = legend
       .append("g")
       .attr("transform", `translate(0, ${i * 20})`);
@@ -412,7 +427,7 @@ export function drawCombinedChart(
       .attr("text-anchor", "start")
       .style("font-size", "0.8em")
       .text(d.label);
-  });
+  }
 }
 
 /**
@@ -485,12 +500,15 @@ export function drawDollarPurchasingPowerChart(purchasingPowerData: {
 
   const x = d3
     .scaleTime()
-    .domain(d3.extent(data, (d: any) => d.date))
+    .domain(d3.extent(data, (d: DateValuePoint) => d.date))
     .range([margin.left, internalWidth - margin.right]);
 
   const y = d3
     .scaleLog()
-    .domain([Math.max(d3.min(data, (d: any) => d.value) * 0.8, 0.01), 1.05])
+    .domain([
+      Math.max(d3.min(data, (d: DateValuePoint) => d.value) * 0.8, 0.01),
+      1.05,
+    ])
     .range([internalHeight - margin.bottom, margin.top])
     .clamp(true);
 
@@ -554,8 +572,8 @@ export function drawDollarPurchasingPowerChart(purchasingPowerData: {
 
   const line = d3
     .line()
-    .x((d: any) => x(d.date))
-    .y((d: any) => y(d.value))
+    .x((d: DateValuePoint) => x(d.date))
+    .y((d: DateValuePoint) => y(d.value))
     .curve(d3.curveLinear);
 
   svg
@@ -621,29 +639,26 @@ export function drawRelativeGrowthChart(
   let allPrices: number[] = [];
   const validDataSets: DataSetConfig[] = [];
 
-  dataSets.forEach((dataSet) => {
+  for (const dataSet of dataSets) {
     const validPrices = (dataSet.data.price as number[]).filter(
       (p) => !Number.isNaN(p) && p > 0,
     );
-    if (validPrices.length > 0) {
-      (dataSet as any).parsedData = (dataSet.data.timestamp as string[])
-        .map((d: string, i: number) => ({
-          date: new Date(d),
-          price: (dataSet.data.price as number[])[i],
-        }))
-        .filter((d: any) => !Number.isNaN(d.price) && d.price > 0);
+    if (validPrices.length === 0) continue;
 
-      if ((dataSet as any).parsedData.length > 0) {
-        validDataSets.push(dataSet);
-        allDates = allDates.concat(
-          (dataSet as any).parsedData.map((d: any) => d.date),
-        );
-        allPrices = allPrices.concat(
-          (dataSet as any).parsedData.map((d: any) => d.price),
-        );
-      }
+    const parsedData = (dataSet.data.timestamp as string[])
+      .map((d: string, i: number) => ({
+        date: new Date(d),
+        price: (dataSet.data.price as number[])[i],
+      }))
+      .filter((d) => !Number.isNaN(d.price) && d.price > 0);
+    dataSet.parsedData = parsedData;
+
+    if (parsedData.length > 0) {
+      validDataSets.push(dataSet);
+      allDates = allDates.concat(parsedData.map((d) => d.date));
+      allPrices = allPrices.concat(parsedData.map((d) => d.price));
     }
-  });
+  }
 
   if (validDataSets.length === 0) {
     console.error("No valid data to display in relative growth chart");
@@ -665,7 +680,8 @@ export function drawRelativeGrowthChart(
   const minPrice = d3.min(allPrices.filter((p) => p > 0));
   const useLogScale = maxPrice / minPrice > 100;
 
-  let y: any;
+  // d3 scale: only ever called as y(value) and handed to d3.axisLeft.
+  let y: (value: number) => number;
   if (useLogScale) {
     y = d3
       .scaleLog()
@@ -776,21 +792,21 @@ export function drawRelativeGrowthChart(
 
   const line = d3
     .line()
-    .x((d: any) => x(d.date))
-    .y((d: any) => y(d.price))
+    .x((d: DatePricePoint) => x(d.date))
+    .y((d: DatePricePoint) => y(d.price))
     .curve(d3.curveLinear)
-    .defined((d: any) => !Number.isNaN(d.price) && d.price > 0);
+    .defined((d: DatePricePoint) => !Number.isNaN(d.price) && d.price > 0);
 
-  validDataSets.forEach((dataSet) => {
+  for (const dataSet of validDataSets) {
     svg
       .append("path")
-      .datum((dataSet as any).parsedData)
+      .datum(dataSet.parsedData)
       .attr("class", `line ${dataSet.cssClass}`)
       .attr("fill", "none")
       .attr("stroke", dataSet.color)
       .attr("stroke-width", 2)
       .attr("d", line);
-  });
+  }
 
   svg
     .append("text")
@@ -811,7 +827,7 @@ export function drawRelativeGrowthChart(
       `translate(${margin.left}, ${internalHeight - margin.bottom + 40})`,
     );
 
-  validDataSets.forEach((d, i) => {
+  for (const [i, d] of validDataSets.entries()) {
     const legendRow = legend
       .append("g")
       .attr("transform", `translate(0, ${i * 20})`);
@@ -827,7 +843,7 @@ export function drawRelativeGrowthChart(
       .attr("text-anchor", "start")
       .style("font-size", "0.8em")
       .text(d.label);
-  });
+  }
 
   svg
     .append("line")

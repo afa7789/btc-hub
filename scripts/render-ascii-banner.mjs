@@ -10,8 +10,8 @@
  * Run manually when the wordmark changes; the output is committed:
  *   node scripts/render-ascii-banner.mjs
  */
-import { chromium } from "playwright";
 import { writeFileSync } from "node:fs";
+import { chromium } from "playwright";
 
 const TEXT = process.argv[2] ?? "BTC_THINGS";
 const COLUMNS = Number(process.argv[3] ?? 110);
@@ -71,8 +71,16 @@ const grid = await page.evaluate(
       for (let c = 0; c < columns; c++) {
         let sum = 0;
         let n = 0;
-        for (let y = Math.floor(r * cellH); y < Math.floor((r + 1) * cellH); y++) {
-          for (let x = Math.floor(c * cellW); x < Math.floor((c + 1) * cellW); x++) {
+        for (
+          let y = Math.floor(r * cellH);
+          y < Math.floor((r + 1) * cellH);
+          y++
+        ) {
+          for (
+            let x = Math.floor(c * cellW);
+            x < Math.floor((c + 1) * cellW);
+            x++
+          ) {
             if (y >= canvas.height || x >= canvas.width) continue;
             sum += data[(y * canvas.width + x) * 4];
             n++;
@@ -98,5 +106,7 @@ while (lines.length && !lines[0].trim()) lines.shift();
 while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
 
 writeFileSync(OUT, `${lines.join("\n")}\n`);
-console.log(`${OUT}: ${Math.max(...lines.map((l) => l.length))} cols x ${lines.length} rows`);
+console.log(
+  `${OUT}: ${Math.max(...lines.map((l) => l.length))} cols x ${lines.length} rows`,
+);
 console.log(lines.join("\n"));

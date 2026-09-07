@@ -330,14 +330,14 @@ function drawCombinedChart(
   let allDates = [];
   let allPrices = [];
 
-  dataSets.forEach((dataSet) => {
+  for (const dataSet of dataSets) {
     dataSet.parsedData = dataSet.data.timestamp.map((d, i) => ({
       date: new Date(d),
       price: dataSet.data.price[i],
     }));
     allDates = allDates.concat(dataSet.parsedData.map((d) => d.date));
     allPrices = allPrices.concat(dataSet.parsedData.map((d) => d.price));
-  });
+  }
 
   const svg = d3
     .select(`#${divId}`)
@@ -423,7 +423,7 @@ function drawCombinedChart(
     .y((d) => y(d.price))
     .curve(d3.curveLinear);
 
-  dataSets.forEach((dataSet) => {
+  for (const dataSet of dataSets) {
     svg
       .append("path")
       .datum(dataSet.parsedData)
@@ -431,7 +431,7 @@ function drawCombinedChart(
       .attr("fill", "none")
       .attr("stroke", dataSet.color)
       .attr("d", line);
-  });
+  }
 
   svg
     .append("text")
@@ -707,7 +707,7 @@ function drawRelativeGrowthChart(
   let allPrices = [];
   const validDataSets = [];
 
-  dataSets.forEach((dataSet) => {
+  for (const dataSet of dataSets) {
     const validPrices = dataSet.data.price.filter(
       (p) => !Number.isNaN(p) && p > 0,
     );
@@ -725,7 +725,7 @@ function drawRelativeGrowthChart(
         allPrices = allPrices.concat(dataSet.parsedData.map((d) => d.price));
       }
     }
-  });
+  }
 
   if (validDataSets.length === 0) {
     console.error("No valid data to display in relative growth chart");
@@ -865,7 +865,7 @@ function drawRelativeGrowthChart(
     .curve(d3.curveLinear)
     .defined((d) => !Number.isNaN(d.price) && d.price > 0);
 
-  validDataSets.forEach((dataSet) => {
+  for (const dataSet of validDataSets) {
     svg
       .append("path")
       .datum(dataSet.parsedData)
@@ -874,7 +874,7 @@ function drawRelativeGrowthChart(
       .attr("stroke", dataSet.color)
       .attr("stroke-width", 2)
       .attr("d", line);
-  });
+  }
 
   svg
     .append("text")

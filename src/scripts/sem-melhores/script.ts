@@ -12,6 +12,26 @@ interface CoinData {
   price_change_percentage_24h?: number;
 }
 
+/**
+ * Subset of the CoinGecko /coins/{id} response read by the detail modal
+ * (a different shape from CoinData, which comes from /coins/markets).
+ */
+interface CoinDetail {
+  id: string;
+  symbol?: string;
+  name: string;
+  image?: { large?: string };
+  market_cap_rank?: number;
+  market_data?: {
+    current_price?: { usd?: number };
+    market_cap?: { usd?: number };
+    total_volume?: { usd?: number };
+    price_change_percentage_24h?: number;
+    circulating_supply?: number;
+    total_supply?: number;
+  };
+}
+
 interface LanguageTexts {
   searchPlaceholder: string;
   subtitle: string;
@@ -277,9 +297,9 @@ function cacheData(data: CoinData[]) {
 function loadDataFromCache() {
   if (!cachedData) return;
   cryptoData.clear();
-  cachedData.forEach((coin) => {
+  for (const coin of cachedData) {
     cryptoData.set(coin.symbol.toLowerCase(), coin);
-  });
+  }
   renderCryptoList();
 }
 
@@ -367,9 +387,9 @@ function loadExampleData() {
   ];
 
   console.log("Loading example data...");
-  exampleData.forEach((coin) => {
+  for (const coin of exampleData) {
     cryptoData.set(coin.symbol.toLowerCase(), coin);
-  });
+  }
   renderCryptoList();
 }
 
@@ -659,9 +679,9 @@ function activateAdminMode() {
   isAdminMode = true;
 
   checkedItems.clear();
-  blacklistSet.forEach((symbol) => {
+  for (const symbol of blacklistSet) {
     checkedItems.add(symbol);
-  });
+  }
 
   const searchInput = document.getElementById(
     "searchInput",
@@ -861,7 +881,7 @@ async function showCoinModal(coinId: string) {
   }
 }
 
-function displayCoinData(coin: any) {
+function displayCoinData(coin: CoinDetail) {
   const modalBody = document.getElementById("modalBody");
   if (!modalBody) return;
 

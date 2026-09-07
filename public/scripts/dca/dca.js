@@ -61,7 +61,8 @@ async function loadAssetData(assetKey) {
       if (!line) continue;
       const values = line.split(",");
 
-      let date, close;
+      let date;
+      let close;
       if (asset.format === "crypto") {
         date = values[1]; // End column
         close = Number.parseFloat(values[5]); // Close column
@@ -233,7 +234,7 @@ async function calculateDCA() {
     }
   }
 
-  transactionsToShow.forEach((tx) => {
+  for (const tx of transactionsToShow) {
     const row = tbody.insertRow();
     row.insertCell(0).textContent = tx.date;
     row.insertCell(1).textContent = `$${tx.amount.toFixed(2)}`;
@@ -241,7 +242,7 @@ async function calculateDCA() {
       `$${tx.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     row.insertCell(3).textContent = tx.btcBought.toFixed(asset.decimals);
     row.insertCell(4).textContent = tx.totalBtc.toFixed(asset.decimals);
-  });
+  }
 
   if (transactions.length > 50) {
     const noteRow = tbody.insertRow(0);
@@ -360,7 +361,7 @@ function drawChart(transactions) {
   const existingPaths = svg.querySelectorAll(
     ".chart-line, .chart-dot, .chart-label",
   );
-  existingPaths.forEach((el) => el.remove());
+  for (const el of existingPaths) el.remove();
 
   if (transactions.length === 0) return;
 
@@ -489,7 +490,7 @@ function drawChart(transactions) {
   );
 
   const chartElements = svg.querySelectorAll("text, line");
-  chartElements.forEach((element) => {
+  for (const element of chartElements) {
     if (
       element.tagName === "text" &&
       !element.classList.contains("chart-label")
@@ -498,7 +499,7 @@ function drawChart(transactions) {
     } else if (element.tagName === "line") {
       element.setAttribute("stroke", lineColor);
     }
-  });
+  }
 
   svg.style.display = "block";
 }
@@ -564,7 +565,7 @@ async function initDcaPage() {
 document.addEventListener("astro:page-load", initDcaPage);
 
 function initializeDateInputs() {
-  document.querySelectorAll('input[type="date"]').forEach((input) => {
+  for (const input of document.querySelectorAll('input[type="date"]')) {
     input.addEventListener("click", function () {
       try {
         this.showPicker?.();
@@ -572,7 +573,7 @@ function initializeDateInputs() {
         this.focus();
       }
     });
-  });
+  }
 }
 
 document.addEventListener("themechange", () => {

@@ -46,9 +46,9 @@ async function generateCrazyColor(slug) {
   const min = Math.min(r, g, b);
   const boost = 1.5; // Saturation boost
 
-  let newR = r,
-    newG = g,
-    newB = b;
+  let newR = r;
+  let newG = g;
+  let newB = b;
 
   if (max > 0) {
     newR = min + (r - min) * boost;
@@ -145,12 +145,12 @@ async function loadData() {
     } else {
       // Merge: Adicionar itens do JSON que não estão no cache
       const cachedItemIds = new Set(wealthData.items.map((item) => item.id));
-      jsonData.items.forEach((jsonItem) => {
+      for (const jsonItem of jsonData.items) {
         if (!cachedItemIds.has(jsonItem.id)) {
           wealthData.items.push(jsonItem);
           console.log(`➕ Item "${jsonItem.name}" adicionado do data.json.`);
         }
-      });
+      }
       // O metadata do JSON é o mais "estático", então pode sobrescrever ou ser a base
       wealthData.metadata = jsonData.metadata;
       console.log("🔄 Cache complementado com data.json.");
@@ -235,7 +235,7 @@ async function fetchFreshDataInBackground() {
 
       // Show update notification
       showUpdateNotification(
-        "Data updated to version " + freshData.metadata.dataVersion,
+        `Data updated to version ${freshData.metadata.dataVersion}`,
       );
     } else {
       console.log("✅ Data is current");
@@ -254,7 +254,7 @@ async function generateColorsForData(data) {
       console.log(`🎨 Generated color for ${category.name}: ${category.color}`);
     } catch (error) {
       console.error(`Failed to generate color for ${category.name}:`, error);
-      category.color = "#" + Math.floor(Math.random() * 16777215).toString(16); // Fallback random color
+      category.color = `#${Math.floor(Math.random() * 16777215).toString(16)}`; // Fallback random color
     }
   }
 
@@ -264,7 +264,7 @@ async function generateColorsForData(data) {
       item.color = await generateCrazyColor(item.slug);
     } catch (error) {
       console.error(`Failed to generate color for ${item.name}:`, error);
-      item.color = "#" + Math.floor(Math.random() * 16777215).toString(16); // Fallback random color
+      item.color = `#${Math.floor(Math.random() * 16777215).toString(16)}`; // Fallback random color
     }
   }
 }
@@ -384,8 +384,6 @@ function parseValue(item) {
 
   if (valueStr.includes("trillion")) {
     return num * 1000;
-  } else if (valueStr.includes("billion")) {
-    return num;
   }
   return num;
 }
@@ -524,7 +522,6 @@ function createVisualization() {
         return a.name.localeCompare(b.name);
       case "category":
         return a.categoryId.localeCompare(b.categoryId);
-      case "value":
       default:
         return parseValue(a) - parseValue(b); // Ascending order
     }
@@ -560,7 +557,7 @@ function createVisualization() {
 
   let blockIndex = 0;
 
-  items.forEach((item) => {
+  for (const item of items) {
     const itemValue = parseValue(item);
     // Use item's own color instead of category color
     const itemColor = item.color || "#999999";
@@ -621,7 +618,7 @@ function createVisualization() {
         blockIndex++;
       }
     }
-  });
+  }
 
   updateStatistics();
   updatePageTitle();
@@ -664,11 +661,11 @@ function updateStatistics() {
 function formatLargeNumber(billions) {
   if (billions >= 1000000) {
     return `$${(billions / 1000000).toFixed(1)}Q`; // Quadrillion
-  } else if (billions >= 1000) {
-    return `$${(billions / 1000).toFixed(1)}T`; // Trillion
-  } else {
-    return `$${billions.toFixed(0)}B`; // Billion
   }
+  if (billions >= 1000) {
+    return `$${(billions / 1000).toFixed(1)}T`; // Trillion
+  }
+  return `$${billions.toFixed(0)}B`; // Billion
 }
 
 // Update page title with current filter info
@@ -738,16 +735,16 @@ function createDataSources() {
 
   // Group by category
   const groupedByCategory = {};
-  wealthData.items.forEach((item) => {
+  for (const item of wealthData.items) {
     const category = getCategoryById(item.categoryId);
     const categoryName = category ? category.name : "Unknown";
     if (!groupedByCategory[categoryName]) {
       groupedByCategory[categoryName] = [];
     }
     groupedByCategory[categoryName].push(item);
-  });
+  }
 
-  Object.entries(groupedByCategory).forEach(([categoryName, items]) => {
+  for (const [categoryName, items] of Object.entries(groupedByCategory)) {
     const categorySection = document.createElement("div");
     categorySection.className = "category-section";
 
@@ -756,7 +753,7 @@ function createDataSources() {
     categoryTitle.textContent = categoryName;
     categorySection.appendChild(categoryTitle);
 
-    items.forEach((item) => {
+    for (const item of items) {
       const category = getCategoryById(item.categoryId);
       const itemDiv = document.createElement("div");
       itemDiv.className = "item";
@@ -775,10 +772,10 @@ function createDataSources() {
             `;
 
       categorySection.appendChild(itemDiv);
-    });
+    }
 
     dataSources.appendChild(categorySection);
-  });
+  }
 }
 
 // Intelligently merge cached data with JSON data
@@ -796,7 +793,7 @@ function mergeDataIntelligently(cachedData, jsonData) {
   const jsonItemsMap = new Map(jsonData.items.map((item) => [item.id, item]));
 
   // Start with all JSON items as base
-  jsonData.items.forEach((jsonItem) => {
+  for (const jsonItem of jsonData.items) {
     const cachedItem = cachedItemsMap.get(jsonItem.id);
 
     if (cachedItem) {
@@ -817,15 +814,15 @@ function mergeDataIntelligently(cachedData, jsonData) {
       merged.items.push(jsonItem);
       console.log(`🆕 Added new item from JSON: ${jsonItem.name}`);
     }
-  });
+  }
 
   // Add any cached items that aren't in JSON (rare case)
-  cachedData.items.forEach((cachedItem) => {
+  for (const cachedItem of cachedData.items) {
     if (!jsonItemsMap.has(cachedItem.id)) {
       merged.items.push(cachedItem);
       console.log(`💾 Kept cache-only item: ${cachedItem.name}`);
     }
-  });
+  }
 
   console.log(`✅ Merged data: ${merged.items.length} items total`);
   return merged;
@@ -862,7 +859,7 @@ function updateComparisonView() {
     (a, b) => parseValue(b) - parseValue(a),
   );
 
-  sortedComparison.forEach((item) => {
+  for (const item of sortedComparison) {
     const category = getCategoryById(item.categoryId);
     const blocks = Math.ceil(parseValue(item) / currentScale);
     const ratio = parseValue(item) / parseValue(sortedComparison[0]);
@@ -878,7 +875,7 @@ function updateComparisonView() {
             <button onclick="removeFromComparison('${item.id}')">Remove</button>
         `;
     comparisonContainer.appendChild(itemDiv);
-  });
+  }
 }
 
 function removeFromComparison(itemId) {
@@ -895,18 +892,18 @@ function clearComparison() {
 
 function highlightComparisonBlocks() {
   // Remove existing highlights
-  document.querySelectorAll(".block.highlight").forEach((block) => {
+  for (const block of document.querySelectorAll(".block.highlight")) {
     block.classList.remove("highlight");
-  });
+  }
 
   // Add highlights for comparison items
-  comparisonItems.forEach((item) => {
-    document
-      .querySelectorAll(`[data-item-id="${item.id}"]`)
-      .forEach((block) => {
-        block.classList.add("highlight");
-      });
-  });
+  for (const item of comparisonItems) {
+    for (const block of document.querySelectorAll(
+      `[data-item-id="${item.id}"]`,
+    )) {
+      block.classList.add("highlight");
+    }
+  }
 }
 
 // Search and filter functionality
@@ -1040,10 +1037,9 @@ function getCacheStatus() {
 
     if (ageMinutes < 60) {
       return `✅ Cached (${ageMinutes}m ago)`;
-    } else {
-      const ageHours = Math.round(ageMinutes / 60);
-      return `✅ Cached (${ageHours}h ago)`;
     }
+    const ageHours = Math.round(ageMinutes / 60);
+    return `✅ Cached (${ageHours}h ago)`;
   } catch (error) {
     return "❌ Cache error";
   }
@@ -1124,15 +1120,15 @@ function getCredibilityIndicator(item) {
 
   if (item.isLiveUpdatable && daysSinceUpdate <= 1) {
     return { icon: "🟢", level: "high", text: "Live data (updated today)" };
-  } else if (item.isLiveUpdatable && daysSinceUpdate <= 7) {
+  }
+  if (item.isLiveUpdatable && daysSinceUpdate <= 7) {
     return {
       icon: "🟡",
       level: "medium",
       text: `Updated ${daysSinceUpdate} days ago`,
     };
-  } else {
-    return { icon: "🔴", level: "low", text: "Data may be outdated" };
   }
+  return { icon: "🔴", level: "low", text: "Data may be outdated" };
 }
 
 function createEnhancedTooltip(item) {

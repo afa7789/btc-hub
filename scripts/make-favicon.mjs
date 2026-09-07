@@ -5,8 +5,8 @@
  * because a favicon renders outside the page and cannot reach a web font.
  * Run manually when the wordmark or display face changes.
  */
-import opentype from "opentype.js";
 import { readFileSync, writeFileSync } from "node:fs";
+import opentype from "opentype.js";
 
 const FONT = process.argv[2] ?? "/tmp/fonts/pirata.ttf";
 const GLYPH = process.argv[3] ?? "B";
@@ -35,4 +35,6 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${SIZE} ${SIZE
 </svg>
 `;
 writeFileSync("public/favicon.svg", svg);
-console.log(`public/favicon.svg — glyph "${GLYPH}", ${glyphW.toFixed(0)}x${glyphH.toFixed(0)} em units, scale ${scale.toFixed(3)}`);
+console.log(
+  `public/favicon.svg — glyph "${GLYPH}", ${glyphW.toFixed(0)}x${glyphH.toFixed(0)} em units, scale ${scale.toFixed(3)}`,
+);
