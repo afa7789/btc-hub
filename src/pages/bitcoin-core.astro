@@ -151,6 +151,141 @@ gpg --export-secret-key -a "Your Name" > private_key.asc
 # 2. Store the private_key.asc and public_key.asc files securely.
 # 3. Use these keys to encrypt backups or communicate securely.`,
 };
+
+const mnemonicGenBlock: CodeBlock = {
+  label: "Terminal commands: generating a BIP-39 mnemonic outside Bitcoin Core",
+  code: `# There is no bitcoin-cli command here. Bitcoin Core does not generate,
+# store or read BIP-39 mnemonics. It works with descriptors and with its own
+# HD seed. The phrase has to come from somewhere else, generated offline.
+# This one is mine, a BIP-39 implementation in C:
+git clone https://github.com/afa7789/mnmncs
+cd mnmncs
+
+# macOS
+gcc -w mnemonics.c -I$(brew --prefix openssl)/include -L$(brew --prefix openssl)/lib -lssl -lcrypto -o out
+gcc -w bip32.c -lssl -lcrypto -o bip32
+
+# Linux
+# gcc -w mnemonics.c -lssl -lcrypto -o out
+# gcc -w bip32.c -lssl -lcrypto -o bip32
+
+# 256 bits of entropy -> 24 words, plus the BIP-39 seed (PBKDF2 over the phrase)
+./out 256 1
+
+# Feed the hex seed into BIP-32 derivation. This prints the xprv and the WIF.
+./bip32 <the_hex_seed_from_the_previous_step>`,
+};
+
+const descriptorChecksumBlock: CodeBlock = {
+  label:
+    "Terminal commands: turning an xprv into a checksummed descriptor with getdescriptorinfo",
+  code: `# A descriptor is a script template plus a key plus a derivation path.
+# wpkh() is pay-to-witness-pubkey-hash: native segwit, bc1... addresses.
+# The path is BIP-84: 84h / 0h (mainnet) / 0h (account) / chain / index,
+# where chain 0 is receiving addresses and chain 1 is change.
+# The trailing /* is what makes it ranged: one descriptor, many addresses.
+
+# importdescriptors REFUSES a descriptor without a checksum.
+# getdescriptorinfo computes it:
+./src/bitcoin-cli getdescriptorinfo "wpkh(xprv.../84h/0h/0h/0/*)"
+
+# It answers with, among other fields:
+# {
+#   "descriptor": "wpkh(xpub.../84h/0h/0h/0/*)#abcdefgh",
+#   "checksum": "abcdefgh",
+#   "isrange": true,
+#   "issolvable": true,
+#   "hasprivatekeys": true
+# }
+
+# Read the echoed "descriptor" carefully: it is the canonical form WITHOUT
+# private keys — the xprv came back as an xpub. Import that string and you
+# get a watch-only wallet that cannot sign. Take only the 8-character
+# "checksum" and append it to your own string, the one that still has the
+# xprv:  wpkh(xprv.../84h/0h/0h/0/*)#abcdefgh
+
+# Repeat for the change chain:
+./src/bitcoin-cli getdescriptorinfo "wpkh(xprv.../84h/0h/0h/1/*)"`,
+};
+
+const importDescriptorsBlock: CodeBlock = {
+  label: "Terminal commands: importing the descriptors into a blank wallet",
+  code: `# A blank wallet has no keys and no HD seed of its own — nothing to collide
+# with what you are about to import.
+./src/bitcoin-cli -named createwallet wallet_name="mnemonic_wallet" blank=true
+
+# Both chains in one call. Read the timestamp warning below before running it.
+./src/bitcoin-cli -rpcwallet=mnemonic_wallet importdescriptors '[
+  {
+    "desc": "wpkh(xprv.../84h/0h/0h/0/*)#checksum_of_the_first",
+    "active": true,
+    "internal": false,
+    "range": [0, 999],
+    "timestamp": 0
+  },
+  {
+    "desc": "wpkh(xprv.../84h/0h/0h/1/*)#checksum_of_the_second",
+    "active": true,
+    "internal": true,
+    "range": [0, 999],
+    "timestamp": 0
+  }
+]'
+
+# Success is [{"success":true},{"success":true}]. Anything else, read the
+# "error" field — it names the offending field, it does not guess for you.
+./src/bitcoin-cli -rpcwallet=mnemonic_wallet getwalletinfo
+./src/bitcoin-cli -rpcwallet=mnemonic_wallet listdescriptors
+./src/bitcoin-cli -rpcwallet=mnemonic_wallet getnewaddress`,
+};
+
+const electrumRestoreBlock: CodeBlock = {
+  label: "Electrum restore steps and the BIP39 option",
+  code: `# In the Electrum wizard: "I already have a seed" -> paste the 24 words ->
+# click OPTIONS and tick "BIP39 seed" BEFORE continuing.
+#
+# Skip that tick and Electrum reads the phrase in its own seed format, which
+# is not BIP-39, and derives a different wallet. It will open, it will be
+# empty, and it will look exactly like you lost the coins.
+
+# Then pick the derivation path matching what you imported into Core:
+m/84'/0'/0'   # native segwit, bc1...  <- what the descriptor above uses
+m/49'/0'/0'   # wrapped segwit, 3...
+m/44'/0'/0'   # legacy, 1...
+
+# If Electrum offers "Detect Existing Accounts", use it: it scans the common
+# paths instead of making you guess which one holds the money.`,
+};
+
+const electrumSweepBlock: CodeBlock = {
+  label: "Electrum commands: sweeping a WIF private key versus importing it",
+  code: `# Sweep: spend everything the key controls into an address your existing
+# Electrum wallet already owns. The key does not become part of the wallet,
+# so your current seed still backs up the funds afterwards.
+electrum sweep <the_WIF_private_key> <a_destination_address_of_your_wallet>
+# It returns a signed transaction and does NOT broadcast it. That is on you.
+
+# Import is the other thing entirely: the key joins a wallet that has no
+# seed at all. Nothing regenerates it. The wallet file is the only backup
+# that exists, and losing it loses the coins.`,
+};
+
+const electrumServerBlock: CodeBlock = {
+  label: "Electrum commands: pointing the client at your own indexer",
+  code: `# Bitcoin Core does not speak the Electrum protocol. An indexer sits in
+# between — ElectrumX or Fulcrum — reading your node and answering Electrum's
+# address queries. Both need every block, so the pruned node configured
+# earlier on this page cannot back one: that is a full chain on disk.
+
+# One session:
+electrum --oneserver --server 127.0.0.1:50002:s
+# Trailing :s is TLS, :t is plaintext. --oneserver means connect to that
+# server and nothing else, which is only safe because it is yours.
+
+# Persisted:
+electrum setconfig oneserver true
+electrum setconfig server 127.0.0.1:50002:s`,
+};
 ---
 
 <BaseLayout title={title} description={description}>
@@ -250,14 +385,6 @@ gpg --export-secret-key -a "Your Name" > private_key.asc
 
     .note {
       color: var(--fg-muted);
-    }
-
-    .todo-list {
-      margin: 0 0 1em 1.25rem;
-    }
-
-    .todo-list li {
-      margin-bottom: 0.35em;
     }
   </style>
 
@@ -434,16 +561,139 @@ gpg --export-secret-key -a "Your Name" > private_key.asc
     </section>
 
     <section class="section">
-      <h2>Not Covered Yet</h2>
-      <p class="note">
-        Two things this walkthrough does not do, and does not pretend to:
+      <h2>Creating And Importing Mnemonics</h2>
+      <p>
+        <strong>Bitcoin Core does not generate a BIP-39 mnemonic.</strong> There
+        is no <span class="inline-code">bitcoin-cli</span> command that prints
+        twelve or twenty-four words, and there never was one. Core speaks
+        descriptors and keeps its own HD seed; BIP-39 is a wallet-interchange
+        format it deliberately stayed out of. So the phrase is generated
+        elsewhere, turned into an extended private key, and imported as a
+        descriptor. That last step is the only part Core participates in.
       </p>
-      <ul class="todo-list note">
-        <li>Creating and importing mnemonics.</li>
-        <li>
-          Using the private keys and mnemonics from here in Electrum.
-        </li>
-      </ul>
+
+      <h3>Generating the phrase outside Core</h3>
+      <p>
+        BIP-39 is a pipeline: entropy becomes a word list, the word list
+        becomes a seed through PBKDF2, the seed becomes BIP-32 keys. The tool
+        below walks it end to end and prints the
+        <span class="inline-code">xprv</span> and
+        <span class="inline-code">WIF</span> at the other side.
+      </p>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={mnemonicGenBlock.label}><code>{mnemonicGenBlock.code}</code></pre>
+      <p class="note">
+        Generate on a machine that is offline, and read the words off the
+        screen rather than out of a file. Entropy that leaks is a wallet
+        somebody else owns.
+      </p>
+
+      <h3>From xprv to a descriptor Core accepts</h3>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={descriptorChecksumBlock.label}><code>{descriptorChecksumBlock.code}</code></pre>
+
+      <h3>Importing with importdescriptors</h3>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={importDescriptorsBlock.label}><code>{importDescriptorsBlock.code}</code></pre>
+
+      <div class="warning">
+        <span class="warning__label">[timestamp decides what you can see]</span>
+        <p>
+          <span class="inline-code">timestamp</span> is where the rescan
+          starts, in UNIX epoch seconds. The string
+          <span class="inline-code">"now"</span> skips the scan entirely — it
+          is correct only for a key that has never received anything. Put
+          <span class="inline-code">"now"</span> on a descriptor rebuilt from
+          an old mnemonic and Core will not look at any of the history: the
+          wallet reports a zero balance and every past transaction is missing.
+          The coins are on the chain and untouched, but nothing on your screen
+          says so. Use <span class="inline-code">0</span> to scan from genesis,
+          or the epoch seconds of the day the wallet was first created.
+        </p>
+        <p>
+          The rescan cannot read blocks the node no longer has. With the
+          <span class="inline-code">prune=550</span> from earlier on this page,
+          only the last few hundred megabytes of chain remain on disk, and an
+          old descriptor has nothing to scan. Recovering an existing wallet
+          means an unpruned node.
+        </p>
+      </div>
+
+    </section>
+
+    <section class="section">
+      <h2>Using These Keys In Electrum</h2>
+      <p>
+        Electrum reads the same mnemonic and the same WIF keys, and gets a
+        useful amount of it wrong by default.
+      </p>
+
+      <h3>Restoring the mnemonic</h3>
+      <div class="warning">
+        <span class="warning__label">[tick BIP39 or restore nothing]</span>
+        <p>
+          Electrum has its own seed format, which is not BIP-39. Paste a
+          BIP-39 phrase into the restore screen without opening
+          <span class="inline-code">Options</span> and ticking
+          <span class="inline-code">BIP39 seed</span>, and Electrum interprets
+          those same words under its own scheme, derives a completely
+          different set of keys, and opens an empty wallet. No error, no
+          warning — the phrase is valid, it just means something else there.
+          This is the single most common way people conclude they have lost
+          funds that were never lost.
+        </p>
+      </div>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={electrumRestoreBlock.label}><code>{electrumRestoreBlock.code}</code></pre>
+      <p>
+        The derivation path has to match too. A BIP-39 phrase does not carry
+        one, so a correct phrase read at the wrong path also produces a valid,
+        empty wallet — the same symptom from a different cause.
+      </p>
+
+      <h3>A single key: sweep or import</h3>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={electrumSweepBlock.label}><code>{electrumSweepBlock.code}</code></pre>
+      <p>
+        Sweep unless you have a reason not to. It ends with the coins under a
+        key your seed already covers; import ends with a wallet whose only
+        backup is a file.
+      </p>
+
+      <h3>Pointing Electrum at your own node</h3>
+      <p>
+        A public Electrum server answers your queries by being told which
+        addresses you care about. That hands its operator the map: every
+        address in your wallet, grouped, linked to each other and to your IP.
+        Running the node was the point of this whole page, and connecting the
+        wallet on top of it to somebody else's server gives the privacy back
+        at the last step.
+      </p>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={electrumServerBlock.label}><code>{electrumServerBlock.code}</code></pre>
+
+      <p class="note">
+        Setting up ElectrumX or Fulcrum itself is its own walkthrough and is
+        not covered here.
+      </p>
       <p class="source-link"><a href="https://github.com/bitcoin/bitcoin" target="_blank" rel="noopener">View the Bitcoin Core source on GitHub</a></p>
     </section>
   </article>
