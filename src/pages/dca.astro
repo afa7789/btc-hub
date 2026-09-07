@@ -66,6 +66,14 @@ const chartLabel = [
       color: var(--data-gold);
       margin-bottom: 1em;
     }
+
+    /* Texto corrido, nao aviso: fica na cor de corpo para nao competir com o
+       disclaimer logo abaixo, que precisa ser o elemento mais gritante aqui. */
+    .why-dca {
+      max-width: 68ch;
+      margin-bottom: 1em;
+      color: var(--fg-secondary);
+    }
     
     .dca-header {
       margin-bottom: 2em;
@@ -196,6 +204,14 @@ const chartLabel = [
     <header class="dca-header">
       <h1>DCA Calculator</h1>
     </header>
+
+    <p class="why-dca">
+      Why buy on a schedule at all: catching the bottom or the top requires
+      knowing something the market does not, and if you had that you would not
+      be reading a calculator. Everyone else is guessing. Buying the same
+      amount at a fixed interval gives up the perfect entry in exchange for
+      never needing one — you get the average instead of your timing.
+    </p>
 
     <p class="disclaimer">
       Disclaimer: This is a demo tool for educational purposes. Data and calculations may not be as accurate as they appear. 
