@@ -1,0 +1,225 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { BANDS, bandPrice, fitRainbow } from "../utils/rainbow";
+
+const title = "Rainbow";
+const description =
+  "Bitcoin's price against a logarithmic regression fitted to our own dataset, with bands at multiples of the residual standard deviation.";
+
+const fit = fitRainbow();
+
+// Desenhado aqui e nao no navegador: e um grafico estatico, entao renderiza
+// sem JavaScript — o unico do site que faz isso.
+const W = 960;
+const H = 540;
+const M = { top: 20, right: 210, bottom: 44, left: 64 };
+const innerW = W - M.left - M.right;
+const innerH = H - M.top - M.bottom;
+
+const lastDay = fit.points[fit.points.length - 1]?.day ?? 1;
+const firstDay = fit.points[0]?.day ?? 1;
+
+// Um ponto por semana: 5889 pontos num SVG inline seriam ~200KB de markup.
+const sampled = fit.points.filter(
+  (_, i) => i % 7 === 0 || i === fit.points.length - 1,
+);
+
+/*
+ * Limites vindos do preco real, nao da curva ajustada. No dia 1 a regressao
+ * vale ~1e-9, entao usar a banda de baixo como piso esticava a escala log por
+ * 15 decadas e comprimia o grafico inteiro contra o topo.
+ */
+const observedMin = Math.min(...fit.points.map((p) => p.price));
+const observedMax = Math.max(...fit.points.map((p) => p.price));
+const minPrice = observedMin * 0.35;
+const maxPrice =
+  Math.max(
+    observedMax,
+    bandPrice(fit, lastDay, BANDS[BANDS.length - 1]?.sigma ?? 2.5),
+  ) * 1.4;
+
+const x = (day: number) =>
+  M.left + ((day - firstDay) / (lastDay - firstDay)) * innerW;
+const y = (price: number) =>
+  M.top +
+  innerH -
+  ((Math.log10(price) - Math.log10(minPrice)) /
+    (Math.log10(maxPrice) - Math.log10(minPrice))) *
+    innerH;
+
+const bandCurve = (sigma: number) =>
+  sampled.map(
+    (p) =>
+      `${x(p.day).toFixed(1)},${y(bandPrice(fit, p.day, sigma)).toFixed(1)}`,
+  );
+
+/*
+ * Cada faixa e a area entre a sua curva e a de baixo. A mais baixa fecha numa
+ * curva-piso meio sigma abaixo, e nao no fundo do grafico: descer ate o piso
+ * pintava metade do painel de azul.
+ */
+const FLOOR_SIGMA = (BANDS[0]?.sigma ?? -1.5) - 0.5;
+const areas = BANDS.map((band, i) => {
+  const upper = bandCurve(band.sigma);
+  const lower = bandCurve(BANDS[i - 1]?.sigma ?? FLOOR_SIGMA).reverse();
+  return { band, points: [...upper, ...lower].join(" ") };
+});
+
+const priceLine = sampled
+  .map((p) => `${x(p.day).toFixed(1)},${y(p.price).toFixed(1)}`)
+  .join(" ");
+
+const priceTicks = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000].filter(
+  (p) => p >= minPrice && p <= maxPrice,
+);
+const yearTicks = fit.points
+  .filter((p) => {
+    const d = new Date(
+      new Date(`${fit.firstDate}T00:00:00Z`).getTime() +
+        (p.day - 1) * 86_400_000,
+    );
+    return (
+      d.getUTCMonth() === 0 &&
+      d.getUTCDate() === 1 &&
+      d.getUTCFullYear() % 2 === 0
+    );
+  })
+  .map((p) => ({
+    day: p.day,
+    year: new Date(
+      new Date(`${fit.firstDate}T00:00:00Z`).getTime() +
+        (p.day - 1) * 86_400_000,
+    ).getUTCFullYear(),
+  }));
+
+const money = (v: number) =>
+  v >= 1000
+    ? `$${Math.round(v / 1000).toLocaleString("en-US")}K`
+    : `$${Math.round(v)}`;
+---
+
+<BaseLayout title={title} description={description}>
+  <style>
+    .page-header h1 {
+      margin: 0;
+      border: none;
+      padding-bottom: 0;
+    }
+
+    .section {
+      margin-bottom: 1.5em;
+    }
+
+    .rainbow {
+      width: 100%;
+      max-width: 960px;
+      margin: 20px 0;
+      background: var(--chart-bg);
+      overflow-x: auto;
+    }
+
+    .rainbow svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      min-width: 640px;
+      font-family: var(--font);
+    }
+
+    .rainbow text {
+      fill: var(--chart-ink);
+      font-size: 11px;
+    }
+
+    .rainbow .band-label {
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .verdict {
+      font-weight: bold;
+      font-size: var(--text-card);
+    }
+
+    .fit-note {
+      color: var(--fg-secondary);
+    }
+  </style>
+
+  <article>
+    <header class="page-header">
+      <h1>Rainbow</h1>
+    </header>
+
+    <section class="section">
+      <p>
+        Bitcoin's price on a log scale against a logarithmic regression, with
+        coloured bands around it. Where the price sits in the bands is the whole
+        point of the chart.
+      </p>
+      <p class="verdict">
+        Right now: <span style={`color: ${fit.todayBand.color}`}>{fit.todayBand.label}</span>
+        &mdash; {fit.todaySigma.toFixed(2)} standard deviations from the fitted line.
+      </p>
+    </section>
+
+    <div class="rainbow">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        aria-label={`Bitcoin price from ${fit.firstDate} to ${fit.lastDate} on a logarithmic scale, against a fitted regression with nine bands. The last close sits ${fit.todaySigma.toFixed(2)} standard deviations from the fit, in the "${fit.todayBand.label}" band.`}
+      >
+        {areas.map(area => (
+          <polygon points={area.points} fill={area.band.color} opacity="0.85" />
+        ))}
+
+        {priceTicks.map(price => (
+          <g>
+            <line
+              x1={M.left} x2={M.left + innerW}
+              y1={y(price)} y2={y(price)}
+              stroke="var(--chart-ink)" stroke-width="0.5" opacity="0.25"
+            />
+            <text x={M.left - 8} y={y(price) + 4} text-anchor="end">{money(price)}</text>
+          </g>
+        ))}
+
+        {yearTicks.map(tick => (
+          <text x={x(tick.day)} y={M.top + innerH + 22} text-anchor="middle">{tick.year}</text>
+        ))}
+
+        <polyline points={priceLine} fill="none" stroke="var(--chart-ink)" stroke-width="1.6" />
+
+        {BANDS.map(band => (
+          <text
+            class="band-label"
+            x={M.left + innerW + 10}
+            y={y(bandPrice(fit, lastDay, band.sigma)) + 4}
+            fill={band.color}
+          >{band.label}</text>
+        ))}
+      </svg>
+    </div>
+
+    <section class="section">
+      <p class="fit-note">
+        The regression is fitted here, at build time, to the same price series
+        the rest of the site plots &mdash; not to constants copied from another
+        chart. The model is
+        <code>log10(price) = {fit.a.toFixed(4)} &middot; ln(days) &minus; {Math.abs(fit.b).toFixed(4)}</code>,
+        least squares over {fit.points.length.toLocaleString("en-US")} daily closes
+        from {fit.firstDate} to {fit.lastDate}, R&sup2; = {fit.r2.toFixed(3)}.
+        The bands sit at multiples of the residual standard deviation
+        (&sigma; = {fit.sigma.toFixed(3)} in log10 terms), so their width is a
+        property of how far the price has actually strayed from the fit rather
+        than a number someone picked.
+      </p>
+      <p>
+        <strong>What it is not:</strong> a forecast. A log regression through a
+        rising series will always slope up, and the band you are in says where
+        the price is relative to its own past, not where it is going. Refreshing
+        the dataset refits the line and moves every band.
+      </p>
+    </section>
+  </article>
+</BaseLayout>

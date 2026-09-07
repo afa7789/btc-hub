@@ -50,6 +50,13 @@ export const tools: Tool[] = [
     status: "LIVE",
   },
   {
+    href: "/rainbow",
+    label: "RAINBOW",
+    description:
+      "Bitcoin against a log regression fitted to our own data, with bands at multiples of the residual",
+    status: "LIVE",
+  },
+  {
     href: "/satsukashii",
     label: "BIG MAC INDEX",
     description: "Big Mac Index vs Bitcoin price history comparison",

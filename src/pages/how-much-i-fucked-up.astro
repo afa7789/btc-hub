@@ -61,12 +61,14 @@ const investedDate = new Date(`${scenario.date}T00:00:00Z`).toLocaleDateString(
       opacity: 0.65;
     }
     
+    /* Alinhada a borda do artigo, nao centrada: com margin auto o card criava
+       uma terceira borda de inicio, deslocada do h1 e dos paragrafos. E o raio
+       de 8px sobrou do prototipo — o sistema e de canto vivo. */
     .calculator {
       max-width: 800px;
-      margin: 0 auto;
       padding: 20px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
+      border: var(--border-width) solid var(--border-strong);
+      border-radius: 0;
       background: var(--bg-surface);
     }
     
@@ -90,10 +92,10 @@ const investedDate = new Date(`${scenario.date}T00:00:00Z`).toLocaleDateString(
     
     .form-group input {
       padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      background: var(--bg);
-      color: var(--fg);
+      border: var(--border-width) solid var(--border-strong);
+      border-radius: 0;
+      background: var(--bg-elevated);
+      color: var(--fg-primary);
       font-size: 16px;
     }
     
@@ -101,7 +103,6 @@ const investedDate = new Date(`${scenario.date}T00:00:00Z`).toLocaleDateString(
       font-size: 18px;
       font-weight: bold;
       color: var(--accent);
-      text-align: center;
       margin-top: 5px;
     }
     

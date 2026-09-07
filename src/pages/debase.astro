@@ -44,8 +44,6 @@ const description =
       display: block;
       overflow: visible;
       max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
       box-sizing: border-box;
       /* Horizontal only: an empty container must keep clientHeight === 0,
          which chart_draw.js relies on to fall back to its default height. */
@@ -53,10 +51,11 @@ const description =
       background: var(--chart-bg);
     }
     
+    /* Compartilha a borda do artigo com os paragrafos. O margin-left de 80px
+       criava uma terceira borda de inicio na pagina: paragrafo em 136, ATH em
+       216, grafico centrado em 270. */
     .ath-display {
-      padding: 0 20px;
       margin-top: 60px;
-      margin-left: 80px;
     }
     
     .ath-display p {
@@ -132,9 +131,7 @@ const description =
 
     @media (max-width: 600px) {
       .ath-display {
-        padding: 0 10px;
         margin-top: 40px;
-        margin-left: 40px;
       }
 
       /* Antes: 32px/24px !important dentro de um espaco de desenho de 362px,
