@@ -95,14 +95,19 @@ const canonicalURL = new URL(
   <body>
     <a href="#main" class="skip-link">Skip to content</a>
     <NoScriptBanner prerendered={prerendered} />
-    <Ticker />
+    <!-- Landmark banner: o ticker e a barra utilitaria ficavam fora de qualquer
+         landmark, entao um usuario de leitor de tela navegando por regioes nao
+         alcancava o preco nem os controles globais. -->
+    <header class="site-header">
+      <Ticker />
 
-    <div class="container">
-      <UtilityBar>
-        <slot name="utility" />
-      </UtilityBar>
-      <Nav />
-    </div>
+      <div class="container">
+        <UtilityBar>
+          <slot name="utility" />
+        </UtilityBar>
+        <Nav />
+      </div>
+    </header>
     <div class="container">
       
       <main class="main" id="main" tabindex="-1">

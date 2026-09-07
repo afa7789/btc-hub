@@ -400,6 +400,17 @@ function drawChart(transactions) {
     midLabel.setAttribute("fill", textColor);
   }
 
+  // O nome acessivel tem de acompanhar o recalculo: se ficasse com o texto
+  // prerenderizado em dca.astro, o leitor de tela leria numeros de outro
+  // cenario. Mesma frase, valores do calculo atual.
+  svg.setAttribute(
+    "aria-label",
+    `DCA progress: line chart from ${transactions[0].date} to ${transactions[transactions.length - 1].date}. ` +
+      `The dashed line is the total invested, reaching ${formatVal(maxInvested)}; ` +
+      `the solid line is the portfolio value, peaking at ${formatVal(maxValue)}. ` +
+      "The same data is listed row by row in the transactions table below.",
+  );
+
   const chartElements = svg.querySelectorAll("text, line");
   chartElements.forEach((element) => {
     if (element.tagName === "text" && !element.classList.contains("chart-label")) {

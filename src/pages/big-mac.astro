@@ -250,9 +250,20 @@ const longDate = (iso: string) =>
 
         d3.select(container).selectAll('*').remove();
 
+        // role + aria-label: sem nome acessivel o leitor de tela so despeja os
+        // <text> soltos do SVG (WCAG 1.1.1).
+        const usdExtent = d3.extent(parsed, d => d.bigmac_usd);
+        const fmtSats = v => v.toLocaleString('en-US', { maximumFractionDigits: 0 });
         const svg = d3.select(container).append('svg')
           .attr('viewBox', `0 0 ${width} ${height}`)
-          .attr('preserveAspectRatio', 'xMidYMid meet');
+          .attr('preserveAspectRatio', 'xMidYMid meet')
+          .attr('role', 'img')
+          .attr('aria-label',
+            `Big Mac index: line chart with two series from ${d3.timeFormat('%Y')(parsed[0].date)} to ` +
+            `${d3.timeFormat('%Y')(parsed[parsed.length - 1].date)}. ` +
+            `The green line is the Big Mac price in US dollars, from $${usdExtent[0].toFixed(2)} to $${usdExtent[1].toFixed(2)}. ` +
+            `The orange line is the price in satoshis on a logarithmic scale, falling from ` +
+            `${fmtSats(d3.max(parsed, d => d.bigmac_satoshi))} to ${fmtSats(parsed[parsed.length - 1].bigmac_satoshi)}.`);
 
         // Background
         svg.append('rect')

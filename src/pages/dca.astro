@@ -45,6 +45,16 @@ const investedLine = polyline((t) => t.totalInvested);
 const valueLine = polyline((t) => t.totalUnits * t.price);
 const short = (v: number) =>
   v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v.toFixed(0)}`;
+// Nome acessivel do grafico. Sem ele o leitor de tela recebe so os <text>
+// soltos do SVG (WCAG 1.1.1). Descreve as duas series, o intervalo e os
+// extremos, e aponta a tabela abaixo, que tem os mesmos dados linha a linha.
+// dca.js reescreve este mesmo atributo a cada recalculo, senao o rotulo
+// congelaria no cenario prerenderizado.
+const chartLabel =
+  `DCA progress: line chart from ${points[0].date} to ${points[points.length - 1].date}. ` +
+  `The dashed line is the total invested, reaching ${short(maxInvested)}; ` +
+  `the solid line is the portfolio value, peaking at ${short(maxValue)}. ` +
+  `The same data is listed row by row in the transactions table below.`;
 ---
 
 <BaseLayout title={title} description={description} prerendered>
@@ -237,7 +247,7 @@ const short = (v: number) =>
     <section id="transactions">
       <h2>Transactions</h2>
       
-      <svg id="dca-chart" width="800" height="300" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid meet">
+      <svg id="dca-chart" width="800" height="300" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label={chartLabel}>
         <text x="10" y="25" font-family="monospace" font-size="15" fill="currentColor">DCA Progress</text>
         <line x1="50" y1="50" x2="50" y2="250" stroke="currentColor" stroke-width="1"/>
         <line x1="50" y1="250" x2="750" y2="250" stroke="currentColor" stroke-width="1"/>

@@ -1,6 +1,68 @@
 // scripts/chart_draw.js
 // All chart drawing functions for DEBASE
 
+/*
+ * D3 aplica stroke/fill como ATRIBUTO de apresentacao, e ali var(--x) nao vale.
+ * Entao a cor tem de ser lida do token no momento do desenho — mesmo padrao do
+ * seriesColor() em src/pages/debase.astro e do token() em big-mac.astro. Os
+ * literais abaixo sao so fallback para o caso de o token nao existir.
+ *
+ * Contraste medido de cada token usado aqui contra --chart-bg (#0a0a0a),
+ * minimo de 3:1 por WCAG 1.4.11 (elemento nao textual):
+ *   --series-btc      #f7931a   8.62:1
+ *   --data-cyan       #00e5ff  12.87:1
+ *   --status-positive #00ff66  14.61:1
+ *   --status-negative #ff3333   5.44:1  (tambem >= 4.5:1, e usado em texto)
+ *   --status-warning  #ffb300  11.03:1
+ *   --accent-btc      #ff9900   9.25:1
+ *   --chart-ink       #ffffff  19.80:1
+ *   --chart-grid      #444444   2.03:1  (grade e linha de referencia: adorno,
+ *                                        nao carrega informacao — 1.4.11 nao
+ *                                        se aplica. Antes era #ccc a 15% de
+ *                                        opacidade, ~1.4:1, ainda mais fraco.)
+ */
+function chartColor(token, fallback) {
+  return (
+    getComputedStyle(document.documentElement)
+      .getPropertyValue(token)
+      .trim() || fallback
+  );
+}
+
+// Rotulos acessiveis: um grafico sem nome vira silencio (ou um despejo de
+// <text> soltos) no leitor de tela — WCAG 1.1.1. Cada funcao de desenho monta
+// uma frase com a serie, o intervalo e os extremos, e a aplica no <svg> junto
+// com role="img", que impede a leitura solta dos <text> internos.
+function chartMoney(value) {
+  if (!Number.isFinite(value)) return "?";
+  if (Math.abs(value) >= 1000)
+    return `$${d3.format(",.0f")(value)}`;
+  if (Math.abs(value) >= 1) return `$${value.toFixed(2)}`;
+  return `$${value.toPrecision(2)}`;
+}
+
+function chartYear(date) {
+  return date instanceof Date && !Number.isNaN(date.getTime())
+    ? d3.timeFormat("%Y")(date)
+    : "?";
+}
+
+function chartMultiplier(value) {
+  if (!Number.isFinite(value)) return "?";
+  if (value >= 1000) return `${d3.format(",.0f")(value)}x`;
+  if (value >= 1) return `${value.toFixed(1)}x`;
+  return `${value.toPrecision(2)}x`;
+}
+
+function chartSeriesList(labels) {
+  if (labels.length === 1) return labels[0];
+  return `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
+}
+
+function describeChart(svg, label) {
+  svg.attr("role", "img").attr("aria-label", label);
+}
+
 // Draw Bitcoin Halving Chart with vertical lines and shaded regions
 function halvingDraw({
   divId = "halving-chart",
@@ -38,6 +100,9 @@ function halvingDraw({
     .attr("preserveAspectRatio", "xMidYMid meet")
     .attr("width", "100%");
 
+  // Preenchido quando ha serie de preco; entra no aria-label no fim.
+  let priceExtent = null;
+
   allHalvings.forEach((halving, i) => {
     const beforeStart = new Date(halving.getTime() - 500 * 24 * 3600 * 1000);
     const afterEnd = new Date(halving.getTime() + 500 * 24 * 3600 * 1000);
@@ -51,7 +116,7 @@ function halvingDraw({
         Math.max(0, x(halving) - Math.max(margin.left, x(beforeStart))),
       )
       .attr("height", height - margin.top - margin.bottom)
-      .attr("fill", "#e0f7fa")
+      .attr("fill", chartColor("--data-cyan", "#00e5ff"))
       .attr("opacity", 0.15);
 
     svg
@@ -63,7 +128,7 @@ function halvingDraw({
         Math.max(0, Math.min(width - margin.right, x(afterEnd)) - x(halving)),
       )
       .attr("height", height - margin.top - margin.bottom)
-      .attr("fill", "#ffe0b2")
+      .attr("fill", chartColor("--accent-btc", "#ff9900"))
       .attr("opacity", 0.15);
   });
 
@@ -78,6 +143,10 @@ function halvingDraw({
         d3.min(filteredData, (d) => d.price),
       );
       let maxPrice = d3.max(filteredData, (d) => d.price);
+      priceExtent = [
+        d3.min(filteredData, (d) => d.price),
+        maxPrice,
+      ];
       maxPrice = maxPrice * 2.0;
       const btcY = d3
         .scaleLog()
@@ -94,7 +163,7 @@ function halvingDraw({
         .append("path")
         .datum(filteredData)
         .attr("fill", "none")
-        .attr("stroke", "#f7931a")
+        .attr("stroke", chartColor("--series-btc", "#f7931a"))
         .attr("stroke-width", 2)
         .attr("d", btcLine);
 
@@ -111,7 +180,7 @@ function halvingDraw({
             .append("path")
             .datum(beforeData)
             .attr("fill", "none")
-            .attr("stroke", "#1976d2")
+            .attr("stroke", chartColor("--data-cyan", "#00e5ff"))
             .attr("stroke-width", 3)
             .attr("d", btcLine);
         }
@@ -126,7 +195,7 @@ function halvingDraw({
             .append("path")
             .datum(afterData)
             .attr("fill", "none")
-            .attr("stroke", "#388e3c")
+            .attr("stroke", chartColor("--status-positive", "#00ff66"))
             .attr("stroke-width", 3)
             .attr("d", btcLine);
         }
@@ -149,7 +218,7 @@ function halvingDraw({
         .attr("x", 0 - height / 2)
         .attr("dy", "-1em")
         .style("text-anchor", "middle")
-        .style("fill", "#f7931a")
+        .style("fill", chartColor("--series-btc", "#f7931a"))
         .text("BTC Price (USD, log scale)");
     }
   }
@@ -161,7 +230,7 @@ function halvingDraw({
       .attr("x2", x(halving))
       .attr("y1", margin.top)
       .attr("y2", height - margin.bottom)
-      .attr("stroke", "#d32f2f")
+      .attr("stroke", chartColor("--status-negative", "#ff3333"))
       .attr("stroke-width", 2);
 
     svg
@@ -169,7 +238,7 @@ function halvingDraw({
       .attr("x", x(halving))
       .attr("y", margin.top + 5)
       .attr("text-anchor", "middle")
-      .attr("fill", "#d32f2f")
+      .attr("fill", chartColor("--status-negative", "#ff3333"))
       .style("font-size", "0.8em")
       .text(`Halving ${i + 1}`);
   });
@@ -181,7 +250,7 @@ function halvingDraw({
       .attr("x2", x(nextHalving))
       .attr("y1", margin.top)
       .attr("y2", height - margin.bottom)
-      .attr("stroke", "#1976d2")
+      .attr("stroke", chartColor("--status-warning", "#ffb300"))
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "4,2");
 
@@ -190,7 +259,7 @@ function halvingDraw({
       .attr("x", x(nextHalving))
       .attr("y", margin.top + 5)
       .attr("text-anchor", "middle")
-      .attr("fill", "#1976d2")
+      .attr("fill", chartColor("--status-warning", "#ffb300"))
       .style("font-size", "0.8em")
       .text("Next Halving");
   }
@@ -208,6 +277,21 @@ function halvingDraw({
     .text("Bitcoin Halvings and Price Cycles")
     .style("font-weight", "bold")
     .style("font-size", "1.2em");
+
+  const pricePhrase = priceExtent
+    ? ` The Bitcoin price line runs from ${chartMoney(priceExtent[0])} to ${chartMoney(priceExtent[1])} on a logarithmic scale.`
+    : "";
+  describeChart(
+    svg,
+    `Bitcoin halvings and price cycles: line chart from ${chartYear(minDate)} to ${chartYear(maxDate)}.` +
+      ` ${halvings.length} past halvings are marked with vertical lines${
+        nextHalving
+          ? `, plus the next one projected for ${d3.timeFormat("%B %Y")(nextHalving)}`
+          : ""
+      }.` +
+      ` The 500 days before each halving are shaded and drawn in cyan, the 500 days after in green.${pricePhrase}` +
+      " The halving dates are also listed in the table below.",
+  );
 }
 
 function drawCombinedChart(
@@ -359,6 +443,15 @@ function drawCombinedChart(
     )
     .attr("text-anchor", "middle")
     .text(title.toUpperCase());
+
+  describeChart(
+    svg,
+    `${title}: line chart with ${dataSets.length} series — ` +
+      `${chartSeriesList(dataSets.map((d) => d.label))}. ` +
+      `Horizontal axis from ${chartYear(d3.min(allDates))} to ${chartYear(d3.max(allDates))}; ` +
+      `vertical axis in ${labelLeft}, from ${chartMoney(d3.min(allPrices))} to ${chartMoney(d3.max(allPrices))}. ` +
+      "The all-time highs of each series are given as text above the chart.",
+  );
 
   const legend = svg
     .append("g")
@@ -546,7 +639,7 @@ function drawDollarPurchasingPowerChart(purchasingPowerData) {
     .datum(data)
     .attr("class", "line usd-purchasing-power-line")
     .attr("fill", "none")
-    .attr("stroke", "#FFFFFF")
+    .attr("stroke", chartColor("--chart-ink", "#ffffff"))
     .attr(
       "stroke-width",
       window.innerWidth <= 400 ? 10 : window.innerWidth <= 600 ? 8 : 3,
@@ -563,6 +656,17 @@ function drawDollarPurchasingPowerChart(purchasingPowerData) {
     .attr("text-anchor", "middle")
     .style("font-weight", "bold")
     .text("DOLLAR PURCHASING POWER (CPI)");
+
+  const first = data[0];
+  const last = data[data.length - 1];
+  describeChart(
+    svg,
+    "Dollar purchasing power measured by CPI: single line chart from " +
+      `${chartYear(first.date)} to ${chartYear(last.date)} on a logarithmic scale. ` +
+      `The purchasing power of one dollar falls from ${first.value.toFixed(2)} in ${chartYear(first.date)} ` +
+      `to ${last.value.toFixed(2)} in ${chartYear(last.date)}, a low of ` +
+      `${d3.min(data, (d) => d.value).toFixed(2)}.`,
+  );
 }
 
 function drawRelativeGrowthChart(
@@ -675,8 +779,7 @@ function drawRelativeGrowthChart(
         .tickFormat(""),
     )
     .selectAll(".tick line")
-    .attr("stroke", "#ccc")
-    .attr("stroke-opacity", 0.15);
+    .attr("stroke", chartColor("--chart-grid", "#444444"));
 
   svg
     .append("g")
@@ -690,8 +793,7 @@ function drawRelativeGrowthChart(
         .tickFormat(""),
     )
     .selectAll(".tick line")
-    .attr("stroke", "#ccc")
-    .attr("stroke-opacity", 0.15);
+    .attr("stroke", chartColor("--chart-grid", "#444444"));
 
   const xAxis = svg
     .append("g")
@@ -783,6 +885,16 @@ function drawRelativeGrowthChart(
     .style("font-weight", "bold")
     .text(title);
 
+  describeChart(
+    svg,
+    `${title}: line chart with ${validDataSets.length} series — ` +
+      `${chartSeriesList(validDataSets.map((d) => d.label))}. ` +
+      `Horizontal axis from ${chartYear(d3.min(allDates))} to ${chartYear(d3.max(allDates))}; ` +
+      `vertical axis is a growth multiplier${useLogScale ? " on a logarithmic scale" : ""}, ` +
+      `from ${chartMultiplier(d3.min(allPrices))} to ${chartMultiplier(d3.max(allPrices))}, ` +
+      "with a dashed reference line at 1x.",
+  );
+
   const legend = svg
     .append("g")
     .attr("class", "legend")
@@ -817,16 +929,15 @@ function drawRelativeGrowthChart(
     .attr("x2", internalWidth - margin.right)
     .attr("y1", y(1))
     .attr("y2", y(1))
-    .attr("stroke", "#666")
-    .attr("stroke-dasharray", "3,3")
-    .attr("opacity", 0.5);
+    .attr("stroke", chartColor("--chart-grid", "#444444"))
+    .attr("stroke-dasharray", "3,3");
 
   svg
     .append("text")
     .attr("x", margin.left + 5)
     .attr("y", y(1) - 5)
     .style("font-size", "0.7em")
-    .style("fill", "#666")
+    .style("fill", chartColor("--chart-ink", "#ffffff"))
     .text("1x");
 }
 

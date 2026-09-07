@@ -240,6 +240,18 @@ a:hover {
   color: var(--data-gold);
 }
 
+/*
+ * Link dentro de prosa precisa de sublinhado. Sem ele o unico sinal e a cor, o
+ * que falha WCAG 1.4.1 e some para quem nao distingue laranja de branco. Fora
+ * de prosa — nav, cards, footer — a posicao e a moldura ja dizem que e um
+ * controle, entao ali o sublinhado continua so no hover.
+ */
+p a,
+li a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 :focus-visible {
   outline: var(--border-width) solid var(--border-accent);
   outline-offset: 2px;
