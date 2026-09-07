@@ -15,6 +15,13 @@
     "indentWidth": 2
   },
   "files": {
-    "ignore": [".astro", "node_modules", "dist"]
+    "ignore": [
+      ".astro",
+      "node_modules",
+      "dist",
+      "dist-*",
+      ".ux-review",
+      "dist-pages"
+    ]
   }
 }
