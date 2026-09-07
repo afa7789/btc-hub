@@ -43,6 +43,7 @@ Thumbs.db
 # Excecao: este nao e harness de captura descartavel, e o gate que prova que
 # os graficos ainda desenham. Precisa viajar com o repo.
 !.ux-review/harness/draw-check.mjs
+!.ux-review/harness/reflow-check.mjs
 .ux-review/discovery.raw.md
 
 # dagRobin — estado por maquina, nao fonte
