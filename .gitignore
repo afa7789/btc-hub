@@ -33,7 +33,9 @@ Thumbs.db
 
 # frontend audit — relatorios sao versionados, artefatos efemeros nao
 .ux-review/screenshots/
-.ux-review/audits/
+# Os dumps JSON sao pesados e efemeros; os markdowns de investigacao sao o
+# registro de por que um achado foi aceito ou reprovado, e valem versionamento.
+.ux-review/audits/*.json
 .ux-review/comparisons/
 .ux-review/harness/
 .ux-review/discovery.raw.md
