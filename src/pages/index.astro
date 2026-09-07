@@ -139,11 +139,17 @@ const repos = [
    * A largura da arte e fixa em colunas de caractere, entao o corpo e derivado
    * da largura do container: monoespacada avanca ~0.6em por caractere.
    */
+  /*
+   * Largura limitada, nao menos linhas: o corpo do caractere e derivado do
+   * container, entao encolher a caixa encolhe a arte inteira mantendo as 20
+   * linhas de resolucao. Reduzir as linhas desmontaria as formas.
+   */
   .hero {
     container-type: inline-size;
+    max-width: 480px;
     border: none;
     padding: 0;
-    margin: 0 0 1.5rem;
+    margin: 0 auto 1.5rem;
     line-height: 1;
   }
   

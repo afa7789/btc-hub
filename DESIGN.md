@@ -148,7 +148,11 @@ tradição de MOTD de terminal — letras góticas construídas com caracteres A
   resolução piora: 150 colunas a 12,7px vira ruído. O nome completo vive no logo
   do nav e no `<h1>` de `.sr-only` — o que também evita dizer a mesma coisa duas
   vezes na mesma tela.
-- **O corpo é derivado do container**, `calc(100cqi / (colunas * 0.62))`.
+- **O corpo é derivado do container**, `calc(100cqi / (colunas * 0.62))`. Por
+  isso o tamanho do herói se controla limitando a largura da caixa
+  (`max-width: 480px`), não reduzindo linhas: encolher a caixa encolhe a arte
+  inteira mantendo as 20 linhas de resolução, enquanto reduzir linhas desmonta
+  as formas. Renderiza em 480×159px, a ~7,8px por caractere.
 - **Escondido abaixo de 900px**, onde cairia para ~5px por caractere. Um fallback
   em `--font-display` assume o lugar.
 - **`<pre aria-hidden="true">` com um `<h1>` real em `.sr-only`.**
