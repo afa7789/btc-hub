@@ -280,21 +280,34 @@ do favicon.
 | Primitivas `.btn-primary` / `.btn-secondary` / `.tag` / `.num` | Implementadas; aplicadas em `/dca` e `/how-much-i-fucked-up` |
 | Tabelas com `tabular-nums` e hover de linha | Implementadas globalmente |
 | Indicador de página ativa | Implementado — `> PÁGINA <` em `Nav.astro` |
-| Ticker no BaseLayout | Implementado — presente nas 7 páginas |
-| Utility bar unificada | Implementada (`UtilityBar.astro`) — status `[CG_API: …]`, slot `utility` para controles de página, tema |
+| Ticker no BaseLayout | Implementado — presente nas 10 páginas, dentro de um landmark `<header>` |
+| Utility bar unificada | Implementada (`UtilityBar.astro`) — status `[PRICES: LIVE/STORED/UNAVAILABLE]`, slot `utility`, tema |
 | Seletor de moeda base (USD/BRL/sats) | Não — exige conversão em todas as ferramentas |
 | Rota 404 | Implementada (`src/pages/404.astro`) + `error_page` no nginx |
+| Fonte única de rotas | Implementada (`src/data/routes.ts`) — nav, grid da home e lista do 404 leem dela, com `group` decidindo a linha do nav |
+| Nomes acessíveis nos gráficos | Implementado — `role="img"` + `aria-label` em 10 SVGs do `/debase` e 1 em `/halving`, `/big-mac`, `/dca`, `/rainbow` |
+| Blocos do `/all-the-money` alcançáveis por teclado | Implementado — 25.346 viraram `<button>`, um tab stop por item |
+| Modal do `/sem-melhores` | Implementado — `role="dialog"`, trap de foco, restauração ao fechar |
+| Estrutura de cabeçalhos | Implementada — 10 `h2` no `/debase`, seções no `/halving` e `/big-mac` |
+| Links de prosa sublinhados | Implementado — cor deixou de ser o único sinal |
 | `prefers-reduced-motion` no ticker | Implementado — para de rolar e vira faixa scrollável |
 | `color-scheme` por tema | Implementado — date pickers e scrollbars nativos seguem o tema |
 | Favicon 512×512 em bleed | Não |
 | Tokens de série e canvas (2.1 / 2.2) | Implementados |
-| Cores literais migradas | Implementado no CSS de todas as páginas e nas 18 séries de `/debase`. **Falta** `public/scripts/debase/chart_draw.js` (8 literais) e a paleta SHA-256 de `public/scripts/all-the-money/script.js` |
+| Cores literais migradas | Implementado no CSS, nas 18 séries de `/debase` e em `chart_draw.js` (as 8 literais saíram; três estavam abaixo de 3:1 contra o canvas). **Falta** a paleta SHA-256 de `public/scripts/all-the-money/script.js` |
 | Backlog da seção 5 | Não, exceto o item de prerender |
 
 ### Dívidas conhecidas
 
 - `src/styles/sem-melhores.css` ainda tem seu próprio sistema de cores — é o
-  último arquivo fora dos tokens. O
+  último arquivo fora dos tokens.
+- A paleta do `/all-the-money` deriva cor de SHA-256 do slug, sem limite de
+  luminância e com `Math.random()` no fallback: ouro sai magenta, e um bloco
+  pode cair perto do preto ou do branco. É decisão de produto, não defeito —
+  trocar por rampa categórica curada muda a identidade da página.
+- O axe reporta `color-contrast` nos títulos de eixo do `/debase`, `/halving` e
+  `/rainbow` no tema claro. É falso positivo: ele lê `color` em vez do `fill` do
+  SVG. Prova em `.claude/FALSE_POSITIVES.md`. O
   conflito de toggles já foi resolvido: a página não tem mais botão de tema
   próprio e manda o de idioma para o slot `utility`.
 - Os nomes dos datasets são âncoras fixas, não descrições de intervalo. O
