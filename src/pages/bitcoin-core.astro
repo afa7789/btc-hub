@@ -1,0 +1,450 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const title = "Bitcoin Core";
+const description =
+  "Running a Bitcoin Core node from scratch: cloning, building, pruning, and the two wallet formats.";
+
+/*
+ * Os comandos vivem no frontmatter, nao no corpo do template.
+ *
+ * Duas razoes. A primeira e sintatica: `${USER}` e `{` sao expressoes em JSX,
+ * entao um comando escrito solto no markup ou nao compila ou e interpolado.
+ * Aqui a string atravessa como dado e sai literal no HTML.
+ *
+ * A segunda e editorial: sao comandos reais que alguem vai copiar e colar num
+ * terminal com dinheiro do outro lado. Um caractere trocado quebra o tutorial
+ * de quem le, entao eles ficam num unico lugar auditavel em vez de espalhados
+ * pela marcacao.
+ *
+ * `aria-label` nao e enfeite: cada bloco e uma regiao rolavel na horizontal e
+ * precisa de nome acessivel proprio (ver o <pre> em .code-block).
+ */
+interface CodeBlock {
+  label: string;
+  code: string;
+}
+
+const cloneBlock: CodeBlock = {
+  label: "Terminal commands: cloning the Bitcoin Core repository",
+  code: `git clone https://github.com/bitcoin/bitcoin btc_core
+cd btc_core`,
+};
+
+const docsBlock: CodeBlock = {
+  label: "Terminal command: reading the macOS build documentation",
+  code: "less doc/build-osx.md # Read this, etc.",
+};
+
+const buildBlock: CodeBlock = {
+  label: "Terminal commands: checking out a release tag and building",
+  code: `git tag
+# Look for the latest tag without rc, e.g.:
+# v28.0
+# v28.0rc1
+# v28.0rc2
+# v28.1 # In this example, it's v28.1
+# v28.1rc1
+# v28.1rc2
+# v29.0rc1
+# v29.0rc2
+# v29.0rc3
+git checkout v28.1
+
+# Pre-install everything
+brew install berkeley-db@4 # This is needed for legacy support
+
+# Building
+CC=$(brew --prefix llvm)/bin/clang CXX=$(brew --prefix llvm)/bin/clang++
+./autogen.sh
+# We also want legacy support, so install Berkeley DB
+./configure --with-gui=no # I don't want a graphical user interface in this case
+make
+make check # Running tests with Python 3 (you can skip this)`,
+};
+
+const locationBlock: CodeBlock = {
+  label: "Default data directory path on macOS",
+  code: `# This is where Bitcoin data, wallet, blocks, etc., will be stored by default:
+/Users/\${USER}/Library/Application Support/Bitcoin/`,
+};
+
+const pruneBlock: CodeBlock = {
+  label: "Terminal command: setting prune in bitcoin.conf",
+  code: `# Setting Prune in the Config
+# We should set prune in the config to avoid wasting computer space on many blocks
+echo "prune=550" >> /Users/\${USER}/Library/Application\\ Support/Bitcoin/bitcoin.conf`,
+};
+
+const binariesBlock: CodeBlock = {
+  label: "The three binaries built in src",
+  code: `./src/bitcoind
+./src/bitcoin-cli
+./src/bitcoin-wallet`,
+};
+
+const daemonBlock: CodeBlock = {
+  label: "Terminal command: starting the Bitcoin daemon",
+  code: "./src/bitcoind -daemon      # Starts the Bitcoin daemon.",
+};
+
+const legacyWalletBlock: CodeBlock = {
+  label: "Terminal commands: creating and loading a legacy wallet",
+  code: `# Creating a Legacy Wallet
+./src/bitcoin-wallet -legacy -wallet="test" create
+
+# Activating and Loading the Wallet in bitcoin-cli
+./src/bitcoin-cli loadwallet test
+
+# Fetching Wallet Data
+./src/bitcoin-cli getwalletinfo`,
+};
+
+const legacyExportBlock: CodeBlock = {
+  label:
+    "Terminal commands: exporting addresses and private keys from a legacy wallet",
+  code: `# Creating an Address and Exporting Data (Showing it's a Legacy Wallet)
+# This returns a public key address to receive Bitcoin:
+./src/bitcoin-cli getnewaddress "label"
+# e.g.: bc1qnxh055rdn73dutsspkyg8c8t962pefduymxj3q
+# If no label,this will list the public key, you can fetch it with:
+./src/bitcoin-cli getaddressesbylabel ""
+
+# exporting one private key
+./src/bitcoin-cli dumpprivkey the_public_address_you_created
+
+# Dump all addresses
+./src/bitcoin-cli dumpwallet /path/to/dump_info.txt`,
+};
+
+const descriptorBlock: CodeBlock = {
+  label: "Terminal commands: creating and inspecting a descriptor wallet",
+  code: `# Creating a Wallet with Descriptors (Non-Legacy)
+./src/bitcoin-wallet -wallet="my_descriptor_wallet" create
+./src/bitcoin-wallet -wallet="my_descriptor_wallet" info
+
+# Loading the Wallet
+./src/bitcoin-cli loadwallet my_descriptor_wallet
+./src/bitcoin-cli getwalletinfo
+
+# Listing Descriptors, fetching data from them:
+./src/bitcoin-cli listdescriptors
+
+# The exporting keys Legacy Functions Don't Work
+# (e.g., dumpprivkey will not work with descriptor wallets)`,
+};
+
+const encryptBlock: CodeBlock = {
+  label: "Terminal commands: encrypting the wallet and storing PGP keys",
+  code: `# To encrypt the wallet and store it elsewhere:
+./src/bitcoin-cli encryptwallet "your_secure_passphrase"
+# This encrypts the wallet.dat file. Back it up securely!
+# Store it in a safe location like an external drive or encrypted storage.
+
+# Storing PGP Private Key and Public Key
+# Bitcoin Core doesn't directly handle PGP keys, but you can:
+# 1. Generate a PGP key pair using a tool like GPG:
+gpg --generate-key
+# Follow the prompts to create your key pair
+gpg --export -a "Your Name" > public_key.asc
+gpg --export-secret-key -a "Your Name" > private_key.asc
+# 2. Store the private_key.asc and public_key.asc files securely.
+# 3. Use these keys to encrypt backups or communicate securely.`,
+};
+---
+
+<BaseLayout title={title} description={description}>
+  <style>
+    .page-header {
+      margin-bottom: 2em;
+    }
+
+    .page-header h1 {
+      margin: 0;
+      border: none;
+      padding-bottom: 0;
+    }
+
+    .section {
+      margin-bottom: 2em;
+    }
+
+    .section h3 {
+      margin-top: 1.5em;
+    }
+
+    /*
+     * O bloco de codigo e o proprio scroller.
+     *
+     * `overflow-x: auto` no <pre> e o que impede uma linha longa — a de
+     * `echo "prune=550" >> ...` passa de 90 caracteres — de empurrar a largura
+     * do documento e fazer a PAGINA rolar na horizontal.
+     *
+     * `tabindex="0"` e obrigatorio junto: uma regiao que rola so com o mouse
+     * fica inalcancavel por teclado (WCAG 2.1.1). E um elemento focavel por
+     * tabindex precisa de nome e papel para o leitor de tela anunciar onde o
+     * foco parou, dai o `role="region"` + `aria-label` de cada bloco.
+     *
+     * `white-space: pre` (nao `pre-wrap`): quebrar linha de comando na largura
+     * da caixa inventa uma quebra que nao existe no comando. Quem copia
+     * precisa do texto exato.
+     */
+    .code-block {
+      margin: 1em 0;
+      padding: 0.75rem 1rem;
+      background: var(--bg-surface);
+      border: var(--border-width) solid var(--border-subtle);
+      overflow-x: auto;
+      white-space: pre;
+      font-family: var(--font);
+      font-size: var(--text-body);
+      line-height: 1.7;
+      color: var(--fg-primary);
+      tab-size: 4;
+    }
+
+    .code-block code {
+      font-family: inherit;
+      color: inherit;
+      background: none;
+    }
+
+    /* Caminho ou binario citado no meio de uma frase. */
+    .inline-code {
+      font-family: var(--font);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      padding: 0 0.3em;
+      white-space: nowrap;
+    }
+
+    /*
+     * Aviso editorial. A cor de aviso fica na borda e no rotulo; o corpo
+     * continua em --fg-primary, que passa AA nos dois temas sobre
+     * --bg-surface. Texto de aviso colorido seria o unico sinal, e cor
+     * sozinha nao e sinal.
+     */
+    .warning {
+      margin: 1.5em 0;
+      padding: 1rem;
+      background: var(--bg-surface);
+      border: var(--border-width) solid var(--status-warning);
+    }
+
+    .warning__label {
+      display: block;
+      font-size: var(--text-micro);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--status-warning);
+      margin-bottom: 0.5rem;
+    }
+
+    .warning p {
+      margin-bottom: 0;
+    }
+
+    .warning p:not(:last-child) {
+      margin-bottom: 1em;
+    }
+
+    .note {
+      color: var(--fg-muted);
+    }
+
+    .todo-list {
+      margin: 0 0 1em 1.25rem;
+    }
+
+    .todo-list li {
+      margin-bottom: 0.35em;
+    }
+  </style>
+
+  <article>
+    <header class="page-header">
+      <h1>Bitcoin Core</h1>
+      <p>
+        Building Bitcoin Core from source and running a pruned node, on macOS.
+        Every command below is meant to be copied verbatim into a terminal.
+      </p>
+    </header>
+
+    <section class="section">
+      <h2>Cloning The Repository</h2>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={cloneBlock.label}><code>{cloneBlock.code}</code></pre>
+    </section>
+
+    <section class="section">
+      <h2>Building The Repository</h2>
+
+      <h3>Check the documentation for your OS</h3>
+      <p>
+        Bitcoin Core ships one build document per platform. This walkthrough is
+        macOS, so the file is <span class="inline-code">doc/build-osx.md</span>;
+        on Linux or Windows read the matching one instead — the dependencies
+        differ.
+      </p>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={docsBlock.label}><code>{docsBlock.code}</code></pre>
+
+      <h3>Building it</h3>
+      <p>
+        Check out a release tag, not <span class="inline-code">master</span>.
+        Tags ending in <span class="inline-code">rc</span> are release
+        candidates — pick the latest one without that suffix. Berkeley DB 4 is
+        only needed if you want legacy wallet support.
+      </p>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={buildBlock.label}><code>{buildBlock.code}</code></pre>
+
+      <h3>Location information</h3>
+      <p>
+        Data, wallet and blocks land in the default data directory unless you
+        pass <span class="inline-code">-datadir</span>:
+      </p>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={locationBlock.label}><code>{locationBlock.code}</code></pre>
+
+      <h3>Bitcoin config</h3>
+      <p>
+        Set prune in the config to avoid wasting computer space on many blocks.
+        <span class="inline-code">prune=550</span> is the minimum the node
+        accepts, keeping roughly 550 MiB of recent blocks instead of the full
+        chain.
+      </p>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={pruneBlock.label}><code>{pruneBlock.code}</code></pre>
+    </section>
+
+    <section class="section">
+      <h2>Running The Binaries</h2>
+      <p>
+        Three binaries built in <span class="inline-code">src</span> do the
+        work. Pass <span class="inline-code">-help</span> to any of them to
+        learn more.
+      </p>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={binariesBlock.label}><code>{binariesBlock.code}</code></pre>
+
+      <h3>Starting the node</h3>
+      <p>Starting the Bitcoin daemon, from scratch, with Bitcoin Core:</p>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={daemonBlock.label}><code>{daemonBlock.code}</code></pre>
+    </section>
+
+    <section class="section">
+      <h2>Wallets</h2>
+
+      <div class="warning">
+        <span class="warning__label">[Private keys ahead]</span>
+        <p>
+          The commands in this section create, print and export real private
+          keys. Anything that holds a private key holds the coins: whoever reads
+          the file spends the money, and there is no recovery, no chargeback and
+          no support line.
+        </p>
+        <p>
+          Run these against a wallet you are willing to lose until you know
+          exactly what each command writes to disk.
+        </p>
+      </div>
+
+      <h3>Legacy wallet</h3>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={legacyWalletBlock.label}><code>{legacyWalletBlock.code}</code></pre>
+
+      <h3>Exporting a legacy wallet</h3>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={legacyExportBlock.label}><code>{legacyExportBlock.code}</code></pre>
+      <p>
+        <strong>Observation.</strong> If you look for the previous address, you
+        can find its private key in this file. In the dump, you will have the
+        master private key, followed by a bunch of
+        <span class="inline-code">private_key // public_key</span> pairs.
+      </p>
+
+      <h3>Current wallet format, with descriptors</h3>
+      <p>
+        Descriptor wallets are the current default. The legacy export functions
+        do not work on them — <span class="inline-code">dumpprivkey</span> will
+        fail, and you read the keys through the descriptors instead.
+      </p>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={descriptorBlock.label}><code>{descriptorBlock.code}</code></pre>
+    </section>
+
+    <section class="section">
+      <h2>Encrypting The Wallet File For Safe Storage</h2>
+      <p>
+        Encrypting <span class="inline-code">wallet.dat</span> and backing it up
+        elsewhere. Bitcoin Core does not handle PGP keys itself, but GPG covers
+        the backup and the secure communication around it.
+      </p>
+      <pre
+        class="code-block"
+        tabindex="0"
+        role="region"
+        aria-label={encryptBlock.label}><code>{encryptBlock.code}</code></pre>
+
+      <div class="warning">
+        <span class="warning__label">[Backups are the wallet]</span>
+        <p>
+          The passphrase is not recoverable. Lose it and the encrypted
+          <span class="inline-code">wallet.dat</span> is a dead file — the coins
+          stay on the chain and nobody, including you, can move them.
+        </p>
+        <p>
+          <span class="inline-code">private_key.asc</span> is your GPG secret
+          key in plain text. Treat that file the way you treat the wallet
+          itself: encrypted storage or an offline drive, never a synced folder.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Not Covered Yet</h2>
+      <p class="note">
+        Two things this walkthrough does not do, and does not pretend to:
+      </p>
+      <ul class="todo-list note">
+        <li>Creating and importing mnemonics.</li>
+        <li>
+          Using the private keys and mnemonics from here in Electrum.
+        </li>
+      </ul>
+      <p class="source-link"><a href="https://github.com/bitcoin/bitcoin" target="_blank" rel="noopener">View the Bitcoin Core source on GitHub</a></p>
+    </section>
+  </article>
+</BaseLayout>

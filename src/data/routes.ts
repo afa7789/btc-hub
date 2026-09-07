@@ -7,14 +7,14 @@
  * at `/`), or in the hub but not the nav (unreachable from inside any tool).
  * The casing had already drifted before this module existed.
  */
-export type ToolGroup = "chart" | "tool";
+export type ToolGroup = "chart" | "tool" | "guide";
 
 export interface Tool {
   href: string;
   /**
-   * Which nav row the item belongs to. "chart" renders on the second row, the
-   * rest on the first — the split is content, not layout, so it lives here and
-   * not in Nav.astro.
+   * Which nav row the item belongs to. "chart" renders on the second row,
+   * "guide" on the third, the rest on the first — the split is content, not
+   * layout, so it lives here and not in Nav.astro.
    */
   group: ToolGroup;
   /** Used verbatim in the nav, the hub card, the 404 list and the page title. */
@@ -23,9 +23,10 @@ export interface Tool {
   /**
    * Where the numbers come from. Every card used to read "LIVE", which carries
    * no information when it never varies — and reads as a lie on the pages that
-   * only ever plot a bundled dataset.
+   * only ever plot a bundled dataset. "GUIDE" is the pages that plot nothing:
+   * prose and commands, no series behind them.
    */
-  status: "LIVE PRICES" | "DATASET" | "DATASET + LIVE";
+  status: "LIVE PRICES" | "DATASET" | "DATASET + LIVE" | "GUIDE";
 }
 
 export const tools: Tool[] = [
@@ -89,5 +90,13 @@ export const tools: Tool[] = [
     description:
       '"What if I invested X on date Y?" calculator with historical data',
     status: "DATASET + LIVE",
+  },
+  {
+    href: "/bitcoin-core",
+    group: "guide",
+    label: "BITCOIN CORE",
+    description:
+      "Build Bitcoin Core from source and run a pruned node, with both wallet formats",
+    status: "GUIDE",
   },
 ];

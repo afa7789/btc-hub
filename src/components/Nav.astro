@@ -28,6 +28,12 @@ const wordmarkColumns = Math.max(
  */
 const chartTools = tools.filter((item) => item.group === "chart");
 const otherTools = tools.filter((item) => item.group !== "chart");
+/*
+ * Duas linhas, sempre: graficos embaixo, todo o resto em cima. Um grupo novo
+ * NAO ganha linha propria — uma terceira linha com um item sozinho foi
+ * rejeitada explicitamente pelo dono do site. Se a linha de cima ficar larga
+ * demais, mexa no breakpoint, nao no agrupamento.
+ */
 const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
 ---
 
