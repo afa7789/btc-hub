@@ -3,7 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import "../styles/sem-melhores.css";
 ---
 
-<BaseLayout title="SemMelhores">
+<BaseLayout title="SEM MELHORES">
   <button type="button" slot="utility" id="languageToggle" class="language-toggle" aria-label="Switch language">🇺🇸</button>
 
   <div class="sem-melhores-page">
@@ -12,7 +12,7 @@ import "../styles/sem-melhores.css";
         <h1 class="main-title">
           <a href="https://github.com/afa7789/SemMelhores" target="_blank">
             <span class="title-icon">◆</span>
-            <span class="title-text">Sem Melhores</span>
+            <span class="title-text">SEM MELHORES</span>
           </a>
         </h1>
         <p class="subtitle">~as 100 melhores~ criptomoedas, desconsiderando stablecoins e staked ativos</p>
@@ -53,15 +53,22 @@ import "../styles/sem-melhores.css";
       </div>
     </div>
 
-    <footer class="main-footer">
-      <p>don't trust verify</p>
-    </footer>
+    <!-- Nao e <footer>: o layout ja monta um, e dois landmarks de rodape na
+         mesma tela fazem quem navega por regioes parar na banda errada. -->
+    <p class="page-tagline">don't trust, verify</p>
   </div>
 </BaseLayout>
 
 <script src="../scripts/sem-melhores/script.ts"></script>
 
 <style>
+  .page-tagline {
+    margin-top: 2rem;
+    text-align: center;
+    letter-spacing: 0.1em;
+    color: var(--fg-secondary);
+  }
+  
   .empty-state {
     padding: 2rem 0;
     color: var(--fg-secondary);

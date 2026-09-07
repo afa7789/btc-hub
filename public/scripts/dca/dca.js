@@ -443,10 +443,12 @@ function drawChart(transactions) {
   // cenario. Mesma frase, valores do calculo atual.
   svg.setAttribute(
     "aria-label",
-    `DCA progress: line chart from ${transactions[0].date} to ${transactions[transactions.length - 1].date}. ` +
-      `The dashed line is the total invested, reaching ${formatVal(maxInvested)}; ` +
-      `the solid line is the portfolio value, peaking at ${formatVal(maxValue)}. ` +
+    [
+      `DCA progress: line chart from ${transactions[0].date} to ${transactions[transactions.length - 1].date}.`,
+      `The dashed line is the total invested, reaching ${formatVal(maxInvested)};`,
+      `the solid line is the portfolio value, peaking at ${formatVal(maxValue)}.`,
       "The same data is listed row by row in the transactions table below.",
+    ].join(" "),
   );
 
   const chartElements = svg.querySelectorAll("text, line");

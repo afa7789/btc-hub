@@ -343,6 +343,73 @@ function getCategoryById(categoryId) {
 }
 
 // Create visualization blocks
+/*
+ * Um bloco = um <button>. Antes eram <div> sem foco: clique era a unica forma
+ * de abrir o detalhe e o tooltip so existia em :hover (WCAG 2.1.1, 4.1.2,
+ * 1.4.13).
+ *
+ * Um tab stop POR ITEM, nao por bloco: 25 mil paradas de Tab seriam pior que
+ * nenhuma. O primeiro bloco de cada item carrega o aria-label com nome, valor e
+ * quantidade de blocos; os irmaos repetem a mesma informacao, entao saem da
+ * ordem de tabulacao e da arvore de acessibilidade.
+ */
+function createWealthBlock(item, index, totalBlocks, itemColor, partialBlockRatio) {
+    const block = document.createElement('button');
+    block.type = 'button';
+    block.className = 'block';
+
+    const isPartialBlock = partialBlockRatio < 1 && index === totalBlocks - 1;
+    if (isPartialBlock) {
+        block.classList.add('small-block');
+
+        // Scale by square root for area-proportional scaling
+        // Since area = width x height, scaling by sqrt(ratio) gives us area = ratio
+        const areaScale = Math.sqrt(partialBlockRatio);
+        block.style.transform = `scale(${areaScale})`;
+        block.style.transformOrigin = 'top left';
+        block.style.display = 'inline-block';
+        block.style.verticalAlign = 'top';
+    }
+
+    block.style.backgroundColor = itemColor;
+    block.setAttribute('data-tooltip', `${item.name}: $${item.valueFormatted}`);
+    block.setAttribute('data-item-id', item.id);
+    block.setAttribute('data-item-slug', item.slug);
+
+    if (index === 0) {
+        const blockWord = totalBlocks === 1 ? 'block' : 'blocks';
+        block.setAttribute(
+            'aria-label',
+            `${item.name}: $${item.valueFormatted}, ${totalBlocks} ${blockWord}. Activate for details.`
+        );
+    } else {
+        block.setAttribute('aria-hidden', 'true');
+        block.tabIndex = -1;
+    }
+
+    block.addEventListener('click', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+            toggleComparison(item);
+        } else {
+            showItemDetails(item);
+        }
+    });
+
+    /*
+     * O click sintetizado pelo teclado nao carrega o modificador, entao
+     * Ctrl/Cmd+Enter precisa de tratamento proprio — sem ele, adicionar a
+     * comparacao seria exclusivo do mouse.
+     */
+    block.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            toggleComparison(item);
+        }
+    });
+
+    return block;
+}
+
 function createVisualization() {
     if (!wealthData) {
         console.error('No data available for visualization');
@@ -465,44 +532,9 @@ function createVisualization() {
             blocksContainer.className = 'blocks-container';
             
             for (let i = 0; i < totalBlocks; i++) {
-                const block = document.createElement('div');
-                block.className = 'block';
-                
-                // Check if this is the last block and we have a partial amount
-                const isPartialBlock = hasPartialBlock && i === totalBlocks - 1;
-                
-                if (isPartialBlock) {
-                    block.classList.add('small-block');
-                    
-                    // Scale by square root for area-proportional scaling
-                    // Since area = width × height, scaling by sqrt(ratio) gives us area = ratio
-                    const areaScale = Math.sqrt(partialBlockRatio);
-                    block.style.transform = `scale(${areaScale})`;
-                    block.style.transformOrigin = 'top left';
-                    block.style.display = 'inline-block';
-                    block.style.verticalAlign = 'top';
-                    
-                    // Debug logging
-                    if (item.name.includes('Jeff Bezos') || item.name.includes('Elon Musk')) {
-                        console.log(`📐 ${item.name}: Ratio=${partialBlockRatio.toFixed(3)}, AreaScale=${areaScale.toFixed(3)}, FinalArea=${(areaScale * areaScale).toFixed(3)} (should equal ratio)`);
-                    }
-                }
-                
-                block.style.backgroundColor = itemColor;
-                block.setAttribute('data-tooltip', `${item.name}: $${item.valueFormatted}`);
-                block.setAttribute('data-item-id', item.id);
-                block.setAttribute('data-item-slug', item.slug);
-                
-                // Add click handlers
-                block.addEventListener('click', (e) => {
-                    if (e.ctrlKey || e.metaKey) {
-                        toggleComparison(item);
-                    } else {
-                        showItemDetails(item);
-                    }
-                });
-                
-                blocksContainer.appendChild(block);
+                blocksContainer.appendChild(
+                    createWealthBlock(item, i, totalBlocks, itemColor, partialBlockRatio)
+                );
                 blockIndex++;
             }
             
@@ -511,44 +543,9 @@ function createVisualization() {
         } else {
             // Original flat view
             for (let i = 0; i < totalBlocks; i++) {
-                const block = document.createElement('div');
-                block.className = 'block';
-                
-                // Check if this is the last block and we have a partial amount
-                const isPartialBlock = hasPartialBlock && i === totalBlocks - 1;
-                
-                if (isPartialBlock) {
-                    block.classList.add('small-block');
-                    
-                    // Scale by square root for area-proportional scaling
-                    // Since area = width × height, scaling by sqrt(ratio) gives us area = ratio
-                    const areaScale = Math.sqrt(partialBlockRatio);
-                    block.style.transform = `scale(${areaScale})`;
-                    block.style.transformOrigin = 'top left';
-                    block.style.display = 'inline-block';
-                    block.style.verticalAlign = 'top';
-                    
-                    // Debug logging
-                    if (item.name.includes('Jeff Bezos') || item.name.includes('Elon Musk')) {
-                        console.log(`📐 ${item.name}: Ratio=${partialBlockRatio.toFixed(3)}, AreaScale=${areaScale.toFixed(3)}, FinalArea=${(areaScale * areaScale).toFixed(3)} (should equal ratio)`);
-                    }
-                }
-                
-                block.style.backgroundColor = itemColor;
-                block.setAttribute('data-tooltip', `${item.name}: $${item.valueFormatted}`);
-                block.setAttribute('data-item-id', item.id);
-                block.setAttribute('data-item-slug', item.slug);
-                
-                // Add click handlers
-                block.addEventListener('click', (e) => {
-                    if (e.ctrlKey || e.metaKey) {
-                        toggleComparison(item);
-                    } else {
-                        showItemDetails(item);
-                    }
-                });
-                
-                container.appendChild(block);
+                container.appendChild(
+                    createWealthBlock(item, i, totalBlocks, itemColor, partialBlockRatio)
+                );
                 blockIndex++;
             }
         }

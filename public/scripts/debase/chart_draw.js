@@ -274,18 +274,22 @@ function halvingDraw({
     .style("font-size", "1.2em");
 
   const pricePhrase = priceExtent
-    ? ` The Bitcoin price line runs from ${chartMoney(priceExtent[0])} to ${chartMoney(priceExtent[1])} on a logarithmic scale.`
+    ? `The Bitcoin price line runs from ${chartMoney(priceExtent[0])} to ${chartMoney(priceExtent[1])} on a logarithmic scale.`
+    : "";
+  const nextPhrase = nextHalving
+    ? `, plus the next one projected for ${d3.timeFormat("%B %Y")(nextHalving)}`
     : "";
   describeChart(
     svg,
-    `Bitcoin halvings and price cycles: line chart from ${chartYear(minDate)} to ${chartYear(maxDate)}.` +
-      ` ${halvings.length} past halvings are marked with vertical lines${
-        nextHalving
-          ? `, plus the next one projected for ${d3.timeFormat("%B %Y")(nextHalving)}`
-          : ""
-      }.` +
-      ` The 500 days before each halving are shaded and drawn in cyan, the 500 days after in green.${pricePhrase}` +
-      " The halving dates are also listed in the table below.",
+    [
+      `Bitcoin halvings and price cycles: line chart from ${chartYear(minDate)} to ${chartYear(maxDate)}.`,
+      `${halvings.length} past halvings are marked with vertical lines${nextPhrase}.`,
+      "The 500 days before each halving are shaded and drawn in cyan, the 500 days after in green.",
+      pricePhrase,
+      "The halving dates are also listed in the table below.",
+    ]
+      .filter(Boolean)
+      .join(" "),
   );
 }
 
@@ -441,11 +445,12 @@ function drawCombinedChart(
 
   describeChart(
     svg,
-    `${title}: line chart with ${dataSets.length} series — ` +
-      `${chartSeriesList(dataSets.map((d) => d.label))}. ` +
-      `Horizontal axis from ${chartYear(d3.min(allDates))} to ${chartYear(d3.max(allDates))}; ` +
-      `vertical axis in ${labelLeft}, from ${chartMoney(d3.min(allPrices))} to ${chartMoney(d3.max(allPrices))}. ` +
+    [
+      `${title}: line chart with ${dataSets.length} series — ${chartSeriesList(dataSets.map((d) => d.label))}.`,
+      `Horizontal axis from ${chartYear(d3.min(allDates))} to ${chartYear(d3.max(allDates))};`,
+      `vertical axis in ${labelLeft}, from ${chartMoney(d3.min(allPrices))} to ${chartMoney(d3.max(allPrices))}.`,
       "The all-time highs of each series are given as text above the chart.",
+    ].join(" "),
   );
 
   const legend = svg
@@ -656,11 +661,13 @@ function drawDollarPurchasingPowerChart(purchasingPowerData) {
   const last = data[data.length - 1];
   describeChart(
     svg,
-    "Dollar purchasing power measured by CPI: single line chart from " +
-      `${chartYear(first.date)} to ${chartYear(last.date)} on a logarithmic scale. ` +
-      `The purchasing power of one dollar falls from ${first.value.toFixed(2)} in ${chartYear(first.date)} ` +
-      `to ${last.value.toFixed(2)} in ${chartYear(last.date)}, a low of ` +
-      `${d3.min(data, (d) => d.value).toFixed(2)}.`,
+    [
+      "Dollar purchasing power measured by CPI: single line chart from",
+      `${chartYear(first.date)} to ${chartYear(last.date)} on a logarithmic scale.`,
+      `The purchasing power of one dollar falls from ${first.value.toFixed(2)} in ${chartYear(first.date)}`,
+      `to ${last.value.toFixed(2)} in ${chartYear(last.date)},`,
+      `a low of ${d3.min(data, (d) => d.value).toFixed(2)}.`,
+    ].join(" "),
   );
 }
 
@@ -882,12 +889,13 @@ function drawRelativeGrowthChart(
 
   describeChart(
     svg,
-    `${title}: line chart with ${validDataSets.length} series — ` +
-      `${chartSeriesList(validDataSets.map((d) => d.label))}. ` +
-      `Horizontal axis from ${chartYear(d3.min(allDates))} to ${chartYear(d3.max(allDates))}; ` +
-      `vertical axis is a growth multiplier${useLogScale ? " on a logarithmic scale" : ""}, ` +
-      `from ${chartMultiplier(d3.min(allPrices))} to ${chartMultiplier(d3.max(allPrices))}, ` +
+    [
+      `${title}: line chart with ${validDataSets.length} series — ${chartSeriesList(validDataSets.map((d) => d.label))}.`,
+      `Horizontal axis from ${chartYear(d3.min(allDates))} to ${chartYear(d3.max(allDates))};`,
+      `vertical axis is a growth multiplier${useLogScale ? " on a logarithmic scale" : ""},`,
+      `from ${chartMultiplier(d3.min(allPrices))} to ${chartMultiplier(d3.max(allPrices))},`,
       "with a dashed reference line at 1x.",
+    ].join(" "),
   );
 
   const legend = svg

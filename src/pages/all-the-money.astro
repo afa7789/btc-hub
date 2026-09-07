@@ -7,11 +7,19 @@ const description =
 ---
 
 <BaseLayout title={title} description={description}>
-  <style is:global>
+  <style>
     /* Adapted from original styles.css with variable mapping */
 
+    /*
+     * Escopo: este bloco era `is:global` e redefinia `button`, `input`,
+     * `select`, `header` e `h1` para o documento inteiro — o toggle de tema e o
+     * nav compartilhado herdavam a caixa desta pagina. Agora e escopado; os
+     * seletores nus viraram classes de pagina (.atm-header, .atm-controls) e o
+     * que o JS cria em runtime (sem atributo de escopo do Astro) usa :global().
+     */
+
     /* Header - brutalist style */
-    header {
+    .atm-header {
       text-align: center;
       margin-bottom: 30px;
       border: 3px solid var(--border);
@@ -23,34 +31,27 @@ const description =
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
-    }
-
-    h1 {
-      font-size: 2rem;
-      letter-spacing: 2px;
-      font-weight: bold;
-      text-transform: uppercase;
-      border: none;
-      padding-bottom: 0;
-      margin-bottom: 0;
+      margin-bottom: 1rem;
     }
 
     .header-controls {
       display: flex;
-      gap: 10px;
+      gap: 0.5rem;
+      align-items: center;
     }
 
     .header-bottom {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
       margin-top: 15px;
       padding-top: 15px;
       border-top: 2px solid var(--border);
     }
 
-    header p {
+    .atm-header p {
       font-size: 1rem;
       font-weight: bold;
       text-transform: uppercase;
@@ -66,40 +67,23 @@ const description =
       vertical-align: middle;
     }
 
-    /* Buttons - brutalist style */
-    button {
-      background: var(--bg);
-      color: var(--fg);
-      border: 3px solid var(--border);
-      padding: 12px 16px;
-      font-family: 'Courier New', 'Courier', monospace !important;
-      font-size: 12px;
-      cursor: pointer;
+    /*
+     * Caixa, cor e borda dos botoes vem do design system em global.css — este
+     * bloco era `is:global` e so vencia global.css nas declaracoes que ela nao
+     * tem. Manter mais que isso mudaria o desenho da pagina.
+     */
+    .atm-controls button,
+    .comparison-mode button {
+      font-family: var(--font);
       font-weight: bold;
-      text-transform: uppercase;
+      cursor: pointer;
       transition: none;
       min-width: 60px;
     }
 
-    button:hover {
-      background: var(--fg);
-      color: var(--bg);
-    }
-
-    button:active {
+    .atm-controls button:active,
+    .comparison-mode button:active {
       transform: translate(2px, 2px);
-    }
-
-    /* Utility classes */
-    .loading {
-      text-align: center;
-      font-size: 14px;
-      font-weight: bold;
-      text-transform: uppercase;
-      margin: 20px 0;
-      padding: 20px;
-      border: 3px solid var(--border);
-      background: var(--bg);
     }
 
     .hidden {
@@ -130,7 +114,7 @@ const description =
     }
 
     /* Wrapper for blocks in wrapped mode - makes all blocks stay in one line */
-    .blocks-wrapper {
+    :global(.blocks-wrapper) {
       display: flex;
       flex-wrap: wrap;
       gap: 2px;
@@ -138,8 +122,19 @@ const description =
       line-height: 0;
     }
 
-    /* Blocks */
-    .block {
+    /*
+     * Blocks. Sao <button> desde a task de acessibilidade — o reset abaixo
+     * apaga o chrome de botao para o desenho nao mudar.
+     */
+    :global(.block) {
+      -webkit-appearance: none;
+      appearance: none;
+      margin: 0;
+      padding: 0;
+      font: inherit;
+      color: inherit;
+      min-width: 0;
+      text-transform: none;
       width: 30px;
       height: 30px;
       border: 1px solid var(--border);
@@ -150,13 +145,23 @@ const description =
       vertical-align: top;
     }
 
-    .block:hover {
+    :global(.block:hover) {
       transform: scale(1.1);
       z-index: 10;
       border-width: 2px;
     }
 
-    .block:hover::after {
+    /* Foco de teclado precisa levantar o bloco junto com o tooltip. */
+    :global(.block:focus-visible) {
+      z-index: 100;
+    }
+
+    /*
+     * O tooltip era so :hover, entao teclado e leitor de tela nao alcancavam o
+     * unico detalhe disponivel (WCAG 1.4.13).
+     */
+    :global(.block:hover::after),
+    :global(.block:focus-visible::after) {
       content: attr(data-tooltip);
       position: absolute;
       bottom: 25px;
@@ -173,19 +178,19 @@ const description =
       border: 2px solid var(--border);
     }
 
-    .small-block {
+    :global(.small-block) {
       opacity: 0.8;
       margin: 0;
       vertical-align: top;
       display: inline-block;
     }
 
-    .small-block:hover {
+    :global(.small-block:hover) {
       transform: scale(1.2) !important;
     }
 
     /* Scale reference */
-    .scale-reference {
+    :global(.scale-reference) {
       display: flex;
       align-items: center;
       gap: 20px;
@@ -199,25 +204,25 @@ const description =
       text-transform: uppercase;
     }
 
-    .scale-label {
+    :global(.scale-label) {
       font-size: 14px;
       letter-spacing: 1px;
     }
 
-    .scale-blocks-demo {
+    :global(.scale-blocks-demo) {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .reference-block {
+    :global(.reference-block) {
       width: 20px;
       height: 20px;
       background: var(--fg);
       border: 2px solid var(--border);
     }
 
-    .scale-text {
+    :global(.scale-text) {
       font-size: 14px;
       font-weight: bold;
     }
@@ -234,6 +239,10 @@ const description =
       border: 3px solid var(--border);
       z-index: 1000;
       font-weight: bold;
+      margin: 20px 0;
+      text-align: center;
+      font-size: 14px;
+      text-transform: uppercase;
       animation: loadingPulse 1.5s infinite;
     }
 
@@ -242,30 +251,8 @@ const description =
       50% { transform: translate(-50%, -50%) scale(1.05); }
     }
 
-    /* Enhanced header styles */
-    .header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-
-    .header-controls {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .header-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
     /* Update notification - brutalist */
-    .update-notification {
+    :global(.update-notification) {
       position: fixed;
       top: 20px;
       right: 20px;
@@ -281,12 +268,12 @@ const description =
       transition: none;
     }
 
-    .update-notification.show {
+    :global(.update-notification.show) {
       transform: translateX(0);
     }
 
     /* Enhanced animations */
-    .block.updating {
+    :global(.block.updating) {
       animation: pulse 1.5s infinite;
     }
 
@@ -296,7 +283,7 @@ const description =
     }
 
     /* Enhanced tooltips */
-    .tooltip {
+    :global(.tooltip) {
       background: var(--bg);
       color: var(--fg);
       border: 2px solid var(--border);
@@ -307,7 +294,7 @@ const description =
       transition: opacity 0.2s ease;
     }
 
-    .tooltip-credibility {
+    :global(.tooltip-credibility) {
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -322,23 +309,25 @@ const description =
       text-transform: uppercase;
       align-self: center;
     }
-    
+
     .control-hint {
       font-size: var(--text-micro);
       color: var(--fg-secondary);
-      margin: 0.5rem 0 1rem;
+      /* 1em, nao 1rem: escopado esta regra passou a vencer o
+         `p:not(:last-child)` de global.css, que dava 1em (11px aqui). */
+      margin: 0.5rem 0 1em;
     }
-    
-    .credibility-indicator {
+
+    :global(.credibility-indicator) {
       font-size: 1.2rem;
     }
 
-    .credibility-high { color: var(--status-positive); }
-    .credibility-medium { color: var(--status-warning); }
-    .credibility-low { color: var(--status-negative); }
+    :global(.credibility-high) { color: var(--status-positive); }
+    :global(.credibility-medium) { color: var(--status-warning); }
+    :global(.credibility-low) { color: var(--status-negative); }
 
     /* Controls - brutalist style */
-    .controls {
+    .atm-controls {
       display: flex;
       gap: 15px;
       margin-bottom: 20px;
@@ -349,13 +338,13 @@ const description =
       align-items: center;
     }
 
-    .controls input,
-    .controls select {
+    .atm-controls input,
+    .atm-controls select {
       padding: 12px 16px;
       background: var(--bg);
       color: var(--fg);
       border: 3px solid var(--border);
-      font-family: 'Courier New', 'Courier', monospace !important;
+      font-family: var(--font);
       font-size: 12px;
       text-transform: uppercase;
       font-weight: bold;
@@ -363,8 +352,8 @@ const description =
       min-width: 0;
     }
 
-    .controls input:focus-visible,
-    .controls select:focus-visible {
+    .atm-controls input:focus-visible,
+    .atm-controls select:focus-visible {
       /* Inverting alone is not a focus indicator when the field is already
          high contrast; keep the global outline on top of it. */
       outline: var(--border-width) solid var(--border-accent);
@@ -373,20 +362,11 @@ const description =
       color: var(--bg);
     }
 
-    .controls input::placeholder {
+    .atm-controls input::placeholder {
       color: var(--fg);
       opacity: 0.7;
       text-transform: uppercase;
       font-weight: bold;
-    }
-
-    .blocks-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2px;
-      padding-top: 80px; /* Space for scale indicator */
-      align-items: flex-start;
-      line-height: 0; /* Remove line spacing between blocks */
     }
 
     /* Comparison mode */
@@ -404,13 +384,13 @@ const description =
       margin: 15px 0;
     }
 
-    .comparison-item {
+    :global(.comparison-item) {
       padding: 15px;
       border: 1px solid var(--border);
       background: var(--bg);
     }
 
-    .comparison-item h4 {
+    :global(.comparison-item h4) {
       color: var(--accent);
       margin-bottom: 10px;
     }
@@ -452,7 +432,7 @@ const description =
     }
 
     /* Wrapped view styles */
-    .item-wrapper {
+    :global(.item-wrapper) {
       border: 3px solid var(--border);
       margin-bottom: 20px;
       background: var(--bg);
@@ -462,7 +442,7 @@ const description =
     }
 
     /* When inside blocks-wrapper, make items inline */
-    .blocks-wrapper .item-wrapper {
+    :global(.blocks-wrapper .item-wrapper) {
       display: inline-block;
       vertical-align: top;
       width: auto;
@@ -470,7 +450,7 @@ const description =
       clear: none;
     }
 
-    .item-label {
+    :global(.item-label) {
       background: var(--fg);
       color: var(--bg);
       padding: 12px 16px;
@@ -488,21 +468,23 @@ const description =
     }
 
     @media (max-width: 480px) {
-      .item-label {
+      :global(.item-label) {
         font-size: 0.8em;
       }
     }
 
-    .blocks-container {
+    :global(.blocks-container) {
       display: flex;
       flex-wrap: wrap;
       gap: 2px;
       padding: 15px;
       min-height: 60px;
+      align-items: flex-start;
+      line-height: 0; /* Remove line spacing between blocks */
     }
 
     /* When inside blocks-wrapper, make blocks-container more compact */
-    .blocks-wrapper .item-wrapper .blocks-container {
+    :global(.blocks-wrapper .item-wrapper .blocks-container) {
       padding: 8px;
       min-height: auto;
     }
@@ -513,7 +495,7 @@ const description =
       color: var(--fg);
       border: 3px solid var(--border);
       padding: 12px 16px;
-      font-family: 'Courier New', monospace !important;
+      font-family: var(--font);
       font-size: 12px;
       font-weight: bold;
       text-transform: uppercase;
@@ -536,15 +518,9 @@ const description =
     .data-sources-content.hidden {
       display: none;
     }
-
-    @media (max-width: 768px) {
-      .container {
-        padding: 10px;
-      }
-    }
   </style>
 
-    <header>
+    <header class="atm-header">
       <div class="header-top">
         <h1><a href="https://github.com/afa7789/all_the_money_in_the_world" target="_blank" rel="noopener" style="color:inherit; text-decoration:none;">All the Money in the World</a></h1>
       </div>
@@ -555,7 +531,7 @@ const description =
 
     <div id="loading" class="loading hidden">Fetching latest data...</div>
     
-    <div class="controls">
+    <div class="atm-controls">
       <label for="searchInput" class="control-label">Search items</label>
       <input type="search" id="searchInput" placeholder="gold, bitcoin, silver" aria-describedby="search-hint" />
       <label for="sortBy" class="control-label">Sort</label>

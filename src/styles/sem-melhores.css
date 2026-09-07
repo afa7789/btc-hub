@@ -205,22 +205,6 @@
 }
 
 /* FOOTER */
-.sem-melhores-page .main-footer {
-  margin-top: 50px;
-  padding: 20px 0;
-  text-align: center;
-  border-top: 1px solid var(--border);
-}
-
-.sem-melhores-page .main-footer p {
-  margin: 0;
-  font-size: 1em;
-  color: var(--fg);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  font-family: var(--font);
-}
-
 /* MODAL */
 .sem-melhores-page .modal {
   display: none;
