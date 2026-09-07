@@ -440,3 +440,19 @@ p:not(:last-child) {
   align-items: center;
   min-height: 24px;
 }
+
+/*
+ * WCAG 1.4.10: caminhos de arquivo dentro de <code> em texto corrido nao tem
+ * espaco onde quebrar, entao um como "public/datasets/satsukashii/prices.json"
+ * mede 351px e empurra o DOCUMENTO inteiro para o lado em uma tela de 320px.
+ *
+ * `anywhere` em vez de `break-word` de proposito: so ele permite a quebra
+ * dentro da palavra ao CALCULAR a largura minima intrinseca do conteudo, que
+ * e exatamente o que faz o pai parar de esticar.
+ *
+ * Nao vale para <pre> <code>: la o bloco rola sozinho, e quebrar um comando no
+ * meio faria alguem colar uma linha partida num terminal.
+ */
+:not(pre) > code {
+  overflow-wrap: anywhere;
+}

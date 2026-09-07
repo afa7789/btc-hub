@@ -93,7 +93,10 @@ const repos = [
   .repos__list {
     list-style: none;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    /* min(300px, 100%): em 320px de viewport o minimo fixo de 300px mais o
+       padding do cartao passa da tela e o DOCUMENTO rola de lado (WCAG 1.4.10
+       exige caber em 320). O min() deixa a trilha encolher abaixo de 300. */
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
     gap: 1.5rem;
     max-width: 900px;
     margin: 0 auto;
@@ -162,7 +165,8 @@ const repos = [
   
   .tools__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    /* Mesmo motivo do .repos__list acima. */
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
     gap: 2rem;
   }
   
