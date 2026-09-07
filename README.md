@@ -4,7 +4,7 @@ A collection of Bitcoin-related data visualization tools built with Astro.
 
 ## Tools
 
-Nine static pages, live at **https://afa7789.github.io/btc-hub/**.
+Ten static pages, live at **https://afa7789.github.io/btc-hub/**.
 
 The shell (nav, layout, copy) is prerendered HTML. Most charts are client-side vanilla
 JS and need JavaScript enabled, with three deliberate exceptions: `/dca` and
@@ -89,6 +89,19 @@ discrete steps) and the cost in satoshis on the right (**log scale**, since it h
 fallen by orders of magnitude). Source is `/datasets/satsukashii/prices.json`, derived
 from The Economist's official Big Mac Index dataset by `scripts/compute-satsukashii.ts`,
 which pairs each Big Mac USD price with that day's bitcoin close.
+
+### `/bitcoin-core` — BITCOIN CORE
+
+The odd one out: no dataset, no chart. A guide to building Bitcoin Core from
+source and running a node — cloning, the macOS build with Berkeley DB for legacy
+support, pruning, and both wallet formats (legacy dump/export versus descriptor
+wallets, where the old key-export commands simply do not work). Every other page
+here assumes you already run a node; this one covers that step.
+
+The commands are checked literal against the source text after each build, since
+a mangled character is a broken command in someone's terminal. They live in the
+page frontmatter rather than inline because JSX would read `{` and `$` as
+interpolation.
 
 ### `/how-much-i-fucked-up` — HOW MUCH I FUCKED UP
 
