@@ -428,3 +428,15 @@ p:not(:last-child) {
     font-size: max(16px, 1em);
   }
 }
+
+/*
+ * WCAG 2.5.8: alvo de 24x24px. A excecao de "link em linha de texto" nao vale
+ * aqui — a marcacao e <p class="source-link"><a>…</a></p>, logo o link e o
+ * paragrafo inteiro, nao uma palavra dentro de uma frase. inline-flex da altura
+ * ao inline sem alterar o fluxo do texto; mesmo padrao de .repo a.
+ */
+.source-link a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
