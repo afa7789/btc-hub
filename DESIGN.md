@@ -126,36 +126,33 @@ são blackletter — é onde entra o gótico, sem contaminar a leitura de dados.
 --font-display: 'UnifrakturCook', 'Pirata One', 'Courier New', monospace;
 ```
 
-### 3.1 Banner ASCII
+### 3.1 Wordmark ASCII
 
-A home abre com um banner gerado por `scripts/render-ascii-banner.mjs`, na
-tradição de MOTD de terminal — letras góticas construídas com caracteres ASCII.
+O logo do nav é o wordmark `BTC_THINGS` desenhado em ASCII, gerado por
+`scripts/render-ascii-banner.mjs` — presente em todas as páginas. A home **não**
+repete: o herói foi removido justamente porque dizia a mesma coisa duas vezes na
+mesma tela.
 
 - **Não é FIGlet.** Nenhuma das 328 faces dele é blackletter de verdade *e*
   legível: `fraktur` é a única genuína e precisa de ~25px por caractere;
   `Caligraphy2` quebra os traços; `ANSI Shadow` e `Delta Corps Priest 1` são
   blocos sólidos legíveis mas não góticos; `Whimsy` é decorativa/circense.
-  O script **rasteriza a própria fonte gótica** num canvas e amostra os pixels,
-  então as formas são gótico real.
+  O script **rasteriza a própria fonte de display** num canvas e amostra os
+  pixels, então as formas são gótico real.
 - **Limiar, não rampa.** Uma rampa de 10 níveis mapeia traço fino de blackletter
   para caracteres leves (`:`, `-`, `.`), porque cada célula fica parcialmente
-  coberta, e as letras saem esqueléticas. Os níveis são `W` / `w` / `.`, que
-  preenchem o traço.
-- **Diz `BTC`, não `BTC_THINGS`.** Linhas de resolução `R` e corpo na tela `P`
-  são inversamente acoplados pela largura do container: `P ≈ 137/R`. Blackletter
-  precisa de ~20 linhas para mostrar os terminais angulares, o que com 10
-  caracteres daria 7px por caractere. Com 3 são 20 linhas a 18,5px. Mais
-  resolução piora: 150 colunas a 12,7px vira ruído. O nome completo vive no logo
-  do nav e no `<h1>` de `.sr-only` — o que também evita dizer a mesma coisa duas
-  vezes na mesma tela.
-- **O corpo é derivado do container**, `calc(100cqi / (colunas * 0.62))`. Por
-  isso o tamanho do herói se controla limitando a largura da caixa
-  (`max-width: 480px`), não reduzindo linhas: encolher a caixa encolhe a arte
-  inteira mantendo as 20 linhas de resolução, enquanto reduzir linhas desmonta
-  as formas. Renderiza em 480×159px, a ~7,8px por caractere.
-- **Escondido abaixo de 900px**, onde cairia para ~5px por caractere. Um fallback
-  em `--font-display` assume o lugar.
-- **`<pre aria-hidden="true">` com um `<h1>` real em `.sr-only`.**
+  coberta, e as letras saem esqueléticas. Os níveis são `W` / `w` / `.`.
+- **Altura e corpo são acoplados.** O corpo sai da largura da caixa
+  (`calc(100cqi / (colunas * 0.62))`) e a altura da arte é
+  `≈ largura / (proporção × 1.03)` — para `BTC_THINGS` a proporção é ~8, então a
+  altura do logo é ditada pela largura da caixa, não pelo número de colunas.
+  Mais colunas dão mais linhas de detalhe **e** caractere menor. O ponto usado é
+  100 colunas numa caixa de 520px: 8 linhas a ~8,7px por caractere, 520×71px.
+  80 colunas dá caractere maior (9,2px) mas só 6 linhas, e as formas ficam
+  grosseiras demais para ler.
+- **Abaixo de 768px vira texto** em `--font-display`: o caractere cairia abaixo
+  do visível.
+- **`<pre aria-hidden="true">` com `.sr-only` ao lado**, dentro do `<a>` do logo.
 
 ### 3.2 Favicon
 

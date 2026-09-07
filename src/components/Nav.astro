@@ -1,4 +1,6 @@
 ---
+import wordmark from "../assets/wordmark.txt?raw";
+
 // Built pages are served as /dca/, so the raw pathname never matched the
 // hrefs below and the active state was dead. Compare without trailing slashes.
 const current = Astro.url.pathname.replace(/\/+$/, "") || "/";
@@ -11,11 +13,25 @@ const navItems = [
   { href: "/satsukashii", label: "BIG MAC INDEX" },
   { href: "/how-much-i-fucked-up", label: "HOW MUCH I FUCKED UP" },
 ];
+
+/*
+ * Gerado por scripts/render-ascii-banner.mjs rasterizando a propria fonte
+ * gotica. A largura e fixa em colunas, entao o corpo do caractere sai da
+ * largura da caixa: em ~440px sao ~7.4px por caractere.
+ */
+const wordmarkLines = wordmark.replace(/\n+$/, "").split("\n");
+const wordmarkColumns = Math.max(
+  ...wordmarkLines.map((line: string) => line.length),
+);
 ---
 
 <nav class="nav">
   <div class="nav__container">
-    <a href="/" class="nav__logo">BTC_THINGS</a>
+    <a href="/" class="nav__logo" style={`--wordmark-cols: ${wordmarkColumns}`}>
+      <span class="sr-only">BTC_THINGS</span>
+      <pre class="nav__logo-art" aria-hidden="true">{wordmarkLines.join("\n")}</pre>
+      <span class="nav__logo-text" aria-hidden="true">BTC_THINGS</span>
+    </a>
     
     <input
       type="checkbox"
@@ -65,12 +81,39 @@ const navItems = [
   }
   
   .nav__logo {
-    font-family: var(--font-display);
-    font-size: 2.4rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    line-height: 1;
+    display: block;
+    container-type: inline-size;
+    width: 100%;
+    max-width: 520px;
     color: var(--accent);
+    line-height: 1;
+  }
+  
+  .nav__logo-art {
+    font-family: var(--font);
+    font-size: calc(100cqi / (var(--wordmark-cols) * 0.62));
+    line-height: 1.02;
+    white-space: pre;
+    overflow: hidden;
+  }
+  
+  /* Abaixo da largura em que o caractere ainda se ve, o logo volta a ser
+     texto na fonte de display. */
+  .nav__logo-text {
+    display: none;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    letter-spacing: 0.02em;
+  }
+  
+  @media (max-width: 768px) {
+    .nav__logo-art {
+      display: none;
+    }
+  
+    .nav__logo-text {
+      display: block;
+    }
   }
   
   .nav__links {

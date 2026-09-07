@@ -1,5 +1,4 @@
 ---
-import wordmark from "../assets/wordmark.txt?raw";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const tools = [
@@ -52,17 +51,6 @@ const tools = [
 // Gerado no build. FIGlet "fraktur" e blackletter desenhado em ASCII — a
 // tradicao de banner de terminal. So cabe em string curta, entao vive aqui e
 // nao nos titulos das paginas.
-/*
- * Gerado por scripts/render-ascii-banner.mjs a partir da propria fonte gotica.
- *
- * Diz "BTC", nao "BTC_THINGS", por uma restricao dura: linhas de resolucao e
- * corpo na tela sao inversamente acoplados pela largura do container, em
- * P = 137/R. Blackletter precisa de ~20 linhas para mostrar os terminais, o que
- * com 10 caracteres daria 7px por caractere. Com 3 caracteres sao 20 linhas a
- * 18.5px. O nome completo vive no logo do nav e no <h1> de .sr-only.
- */
-const bannerLines = wordmark.replace(/\n+$/, "").split("\n");
-const bannerColumns = Math.max(...bannerLines.map((l: string) => l.length));
 
 const repos = [
   {
@@ -85,13 +73,9 @@ const repos = [
 <BaseLayout title="HOME">
   <div class="landing">
     <header class="landing__header">
-      <h1 class="hero">
-        <span class="sr-only">BTC_THINGS</span>
-        <div class="hero__art" aria-hidden="true" style={`--banner-cols: ${bannerColumns}`}>
-          <pre>{bannerLines.join("\n")}</pre>
-        </div>
-        <span class="hero__fallback" aria-hidden="true">BTC_THINGS</span>
-      </h1>
+      <!-- O wordmark ASCII vive no logo do nav, presente em todas as paginas.
+           Repeti-lo aqui seria dizer a mesma coisa duas vezes na mesma tela. -->
+      <h1 class="sr-only">BTC_THINGS</h1>
       <p class="landing__subtitle">
         Tools for visualizing Bitcoin, money, and purchasing power over time
       </p>
@@ -135,62 +119,6 @@ const repos = [
 </BaseLayout>
 
 <style>
-  /*
-   * A largura da arte e fixa em colunas de caractere, entao o corpo e derivado
-   * da largura do container: monoespacada avanca ~0.6em por caractere.
-   */
-  /*
-   * Largura limitada, nao menos linhas: o corpo do caractere e derivado do
-   * container, entao encolher a caixa encolhe a arte inteira mantendo as 20
-   * linhas de resolucao. Reduzir as linhas desmontaria as formas.
-   */
-  .hero {
-    container-type: inline-size;
-    max-width: 480px;
-    border: none;
-    padding: 0;
-    margin: 0 auto 1.5rem;
-    line-height: 1;
-  }
-  
-  /* Todas as linhas herdam o mesmo corpo, derivado do bloco mais largo, para o
-     caractere ter tamanho uniforme entre elas. */
-  .hero__art {
-    font-size: calc(100cqi / (var(--banner-cols) * 0.62));
-    color: var(--accent-btc);
-    text-align: center;
-  }
-  
-  .hero__art pre {
-    font-family: var(--font);
-    font-size: inherit;
-    line-height: 1.02;
-    white-space: pre;
-    display: inline-block;
-    text-align: start;
-  }
-  
-  .hero__fallback {
-    display: none;
-  }
-  
-  /* Abaixo disto a arte cai para ~4px por caractere e vira ruido. */
-  @media (max-width: 900px) {
-    .hero__art {
-      display: none;
-    }
-  
-    .hero__fallback {
-      display: block;
-      text-align: center;
-      color: var(--accent-btc);
-      /* Herdava o tamanho de h1 (~64px) e estourava 390px em 22px. */
-      font-size: clamp(1.75rem, 11vw, 3rem);
-      line-height: 1.05;
-      overflow-wrap: anywhere;
-    }
-  }
-  
   .repos {
     margin-top: 4rem;
   }

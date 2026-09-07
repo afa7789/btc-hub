@@ -1,20 +1,8 @@
-          wWWWWWWWWWWWWWWWWww.           wWWWWWWWWWWWWWWWWWWWWWWWWWW.           wwWWWWWWWWWWww..wW
-             wWWWWWWwwwwWWWWWWWWw        wWWWWWWWWWWWWWWWWWWWWWWWWWWw        wWWWWWWww..wwwWWWWWWW.
-              wWWWWw        wWWWWWw      wWWw       wWWWW.       wWWw      wWWWWW.           wWWWW.
-              .WWWWw          WWWWW.     WWw        wWWWW.        WWw    .WWWWWw              .WWWw
-              .WWWWw          wWWWWW     WW         wWWWW.         Ww   .WWWWW.                 WWw
-              .WWWWw          .WWWWW     ..         wWWWW.         .    WWWWWw                  .Ww
-              .WWWWw          wWWWWw                wWWWW.             WWWWWW                    w.
-              .WWWWw         wWWWWw                 wWWWW.             WWWWWw
-              .WWWWWwwwwwwwWWWWWW.                  wWWWW.            wWWWWW
-              .WWWWWWWWWWWWWWWWw.                   wWWWW.            wWWWWW
-              .WWWWw      .wWWWWWWw                 wWWWW.            wWWWWW
-              .WWWWw          wWWWWW.               wWWWW.            wWWWWW.
-              .WWWWw           wWWWWW               wWWWW.             WWWWWw
-              .WWWWw           .WWWWW.              wWWWW.             wWWWWW
-              .WWWWw           .WWWWW.              wWWWW.              WWWWWW
-              .WWWWw           WWWWWW               wWWWW.               WWWWWW                  ww
-              wWWWWw          wWWWWW.               wWWWWw                wWWWWWw              wWWw
-              WWWWWW..   ..wWWWWWWw                 WWWWWW                 .WWWWWWWw.      .wWWWw
-          wWWWWWWWWWWWWWWWWWWWWww               wWWWWWWWWWWWWw                wWWWWWWWWWWWWWWW.
-                                                                                  .wwwwwww.
+   .wWWwwWW. wWwwWWwwWw .WWwwwWW.       .WwwWWwwWW.WWw. .wWW..wWW..wWW   .wWw  wWWwwwWW  .WwwwWw
+    .Ww   WW w   WW   .wWw     w.       ..  WW   w wW.   .Ww  .Ww  .WWW.   W  WW.     W  WW.  .w
+    .WW.wWW.     WW    WW                   WW     wWw...wWw  .Ww  .W WWw  W .WW    .... .WWWw
+    .Ww.wwWw     WW    WW                   WW     wWwwwwwWw  .Ww  .W  wWW.W wWW     WW.   .WWWw
+    .Ww   WW.    WW    wWw                  WW     wW.   .Ww  .Ww  .W   .WWW  WW     wW  w    WW
+    wWW.wwWW    .WW.    wWWw..ww.           WW.    WWw   wWW  wWW  wW.    WW   WWw...WW  WW..wWw
+   .......      ....      .ww.   ........  ....   ....   .............     .     .ww.    . .w.
+                                 wwwwwww.
