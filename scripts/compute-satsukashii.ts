@@ -184,7 +184,8 @@ function computeSatsukashii() {
   };
 
   console.log(`Writing ${prices.length} price points to ${outputPath}`);
-  writeFileSync(outputPath, JSON.stringify(result, null, 2));
+  // Newline final: sem ela o biome reprova o arquivo e o gate (bun run check) falha.
+  writeFileSync(outputPath, `${JSON.stringify(result, null, 2)}\n`);
   console.log("Done!");
 }
 
