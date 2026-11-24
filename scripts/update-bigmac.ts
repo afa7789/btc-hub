@@ -180,6 +180,38 @@ function convertToLocalFormat(csvText: string): LocalRow[] {
 }
 
 // ---------------------------------------------------------------------------
+// Merge with the existing dataset
+// ---------------------------------------------------------------------------
+
+const rowKey = (row: LocalRow): string => `${row.iso_a3}|${row.date}`;
+const compare = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+
+/**
+ * A fonte da Economist deixa de publicar paises que ja tiveram historico: em
+ * 2026 os 17 do euro viraram so o agregado EUZ. Sobrescrever o CSV apagava
+ * 2011-2025 desses paises. Por isso o update JUNTA, nao substitui:
+ * - linha da fonte ganha por (iso_a3, date);
+ * - linha antiga que a fonte nao traz mais fica como esta;
+ * - GDP antigo sobrevive quando a fonte nova vem sem GDP para a mesma chave
+ *   (o full-index nao tem essas colunas).
+ * Ordem (date, iso_a3): a mesma da fonte e do arquivo versionado.
+ */
+function mergeRows(existing: LocalRow[], fresh: LocalRow[]): LocalRow[] {
+  const merged = new Map(existing.map((row) => [rowKey(row), row]));
+  for (const row of fresh) {
+    const old = merged.get(rowKey(row));
+    merged.set(rowKey(row), {
+      ...row,
+      GDP_dollar: row.GDP_dollar || old?.GDP_dollar || "",
+      GDP_local: row.GDP_local || old?.GDP_local || "",
+    });
+  }
+  return [...merged.values()].sort(
+    (a, b) => compare(a.date, b.date) || compare(a.iso_a3, b.iso_a3),
+  );
+}
+
+// ---------------------------------------------------------------------------
 // CLI arg parsing
 // ---------------------------------------------------------------------------
 
@@ -232,22 +264,16 @@ async function main(): Promise<void> {
   const rows = convertToLocalFormat(csvText);
   console.log(`Downloaded ${rows.length} rows`);
 
-  // Compare with existing
-  if (existsSync(outputPath)) {
-    const existing = readFileSync(outputPath, "utf-8").trim().split("\n");
-    const existingRowCount = existing.length - 1; // subtract header
-    console.log(`Existing file has ${existingRowCount} rows`);
-    const diff = rows.length - existingRowCount;
-    if (diff > 0) {
-      console.log(`  ~${diff} new rows`);
-    } else if (diff === 0) {
-      console.log("  No new rows (already up to date)");
-    } else {
-      console.log(
-        `  Downloaded has ${Math.abs(diff)} fewer rows (schema may differ, replacing)`,
-      );
-    }
-  }
+  // Merge with existing: never drop history the source stopped publishing
+  const existing = existsSync(outputPath)
+    ? convertToLocalFormat(readFileSync(outputPath, "utf-8"))
+    : [];
+  const merged = mergeRows(existing, rows);
+  const freshKeys = new Set(rows.map(rowKey));
+  const kept = existing.filter((row) => !freshKeys.has(rowKey(row))).length;
+  console.log(
+    `Existing ${existing.length} rows -> merged ${merged.length} (${merged.length - existing.length} new keys, ${kept} kept that the source no longer publishes)`,
+  );
 
   if (args.dryRun) {
     console.log("Dry run — not writing.");
@@ -260,7 +286,7 @@ async function main(): Promise<void> {
     mkdirSync(outDir, { recursive: true });
   }
 
-  const localCsv = serializeCSV(LOCAL_COLUMNS, rows);
+  const localCsv = serializeCSV(LOCAL_COLUMNS, merged);
   writeFileSync(outputPath, localCsv, "utf-8");
   console.log(`Wrote ${outputPath}`);
 
