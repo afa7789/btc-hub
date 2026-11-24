@@ -1,0 +1,133 @@
+---
+/*
+ * Mesmos enderecos financiam btc-hub e wallet-gen (gerados com o proprio
+ * wallet-gen). Sem JS os enderecos continuam visiveis, selecionaveis e com o
+ * link de carteira (bitcoin:/ethereum:/monero:); o botao COPY so aparece
+ * quando ha Clipboard API para ele funcionar.
+ */
+const addresses = [
+  {
+    coin: "BTC",
+    scheme: "bitcoin",
+    address: "bc1qqjykl9nym5qn9u2dpqt0vfz8cgl4pt3n8mkngq",
+  },
+  {
+    coin: "ETH",
+    scheme: "ethereum",
+    address: "0xa2FB6CA627659644EFeBe3A83361e22e8B34921C",
+  },
+  {
+    coin: "XMR",
+    scheme: "monero",
+    address:
+      "42Nv3KCbqexE78fZMeMrjRHMDME62s5Jya71Pz12e79HUP6Wwbr37uG9ukRWrtvTg2WkikNk1NCz4RcU3dDcafUhLtdTdfY",
+  },
+];
+---
+
+<section class="sponsor" id="sponsor" aria-labelledby="sponsor-title">
+  <h2 class="sponsor__title" id="sponsor-title">Sponsor</h2>
+  <p class="sponsor__lead">
+    btc-hub and <a href="https://afa7789.github.io/wallet-gen/" target="_blank" rel="noopener">wallet-gen<span aria-hidden="true"> ↗</span></a>
+    are free and open source. If they helped you, these addresses fund both.
+  </p>
+  <ul class="sponsor__list">
+    {addresses.map(({ coin, scheme, address }) => (
+      <li class="sponsor__item">
+        <span class="sponsor__coin">[{coin}]</span>
+        <a class="sponsor__address" href={`${scheme}:${address}`}><code>{address}</code></a>
+        <button type="button" class="sponsor__copy" data-copy={address} aria-label={`Copy ${coin} address`} hidden>
+          COPY
+        </button>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .sponsor {
+    margin-top: 4rem;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .sponsor__title {
+    font-size: var(--text-section);
+    text-align: center;
+    margin: 0 0 1rem;
+  }
+
+  .sponsor__lead {
+    text-align: center;
+    color: var(--fg-secondary);
+    margin-bottom: 1.5rem;
+  }
+
+  .sponsor__list {
+    list-style: none;
+    border: var(--border-width) solid var(--border-strong);
+    padding: 1rem 1.5rem;
+  }
+
+  .sponsor__item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    padding: 0.5rem 0;
+  }
+
+  .sponsor__coin {
+    color: var(--accent-btc);
+    font-weight: bold;
+    min-width: 3.5rem;
+  }
+
+  /* Endereco XMR tem 95 caracteres: sem quebra livre ele rola a pagina em 320px. */
+  .sponsor__address {
+    flex: 1 1 16rem;
+    min-width: 0;
+    min-height: 24px;
+    word-break: break-all;
+  }
+
+  .sponsor__copy {
+    font: inherit;
+    font-size: var(--text-micro);
+    letter-spacing: 1px;
+    padding: 0.25rem 0.6rem;
+    min-height: 28px;
+    background: var(--bg-surface);
+    color: var(--accent-btc);
+    border: 1px solid var(--fg-muted);
+    cursor: pointer;
+  }
+
+  .sponsor__copy:hover,
+  .sponsor__copy:focus-visible {
+    border-color: var(--border-accent);
+  }
+</style>
+
+<script>
+  // Delegado e reaplicado a cada navegacao: o router troca o <body>.
+  const reveal = () => {
+    for (const button of document.querySelectorAll<HTMLButtonElement>(".sponsor__copy")) {
+      button.hidden = !navigator.clipboard;
+    }
+  };
+  document.addEventListener("astro:page-load", reveal);
+
+  document.addEventListener("click", async (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest<HTMLButtonElement>(".sponsor__copy");
+    if (!button?.dataset.copy) return;
+    await navigator.clipboard.writeText(button.dataset.copy);
+    button.textContent = "COPIED";
+    setTimeout(() => {
+      button.textContent = "COPY";
+    }, 1500);
+  });
+</script>

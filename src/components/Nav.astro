@@ -1,6 +1,6 @@
 ---
 import wordmark from "../assets/wordmark.txt?raw";
-import { tools } from "../data/routes";
+import { siblings, tools } from "../data/routes";
 import { stripBase, withBase } from "../utils/base";
 
 // Built pages are served as /dca/, so the raw pathname never matched the
@@ -54,15 +54,20 @@ const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
       aria-controls="nav-links"
     />
     <div class="nav__links" id="nav-links">
-      {navRows.map(row => (
+      {navRows.map((row, index) => (
         <div class="nav__row">
           {row.map(item => (
-            <a 
+            <a
               href={withBase(item.href)}
               class:list={['nav__link', { 'nav__link--active': current === item.href }]}
               aria-current={current === item.href ? 'page' : undefined}
             >
               {item.label}
+            </a>
+          ))}
+          {index === 0 && siblings.map(site => (
+            <a href={site.href} class="nav__link" target="_blank" rel="noopener">
+              {site.label}<span aria-hidden="true"> ↗</span><span class="sr-only"> (other site, new tab)</span>
             </a>
           ))}
         </div>
@@ -141,11 +146,13 @@ const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
    * que le como bug. Aqui cada grupo e a sua propria linha, entao o corte e
    * sempre 4/4 e nunca depende da largura.
    *
-   * Cada linha e `nowrap` na pratica: gap e corpo encolhem com a viewport ate
-   * o grupo mais largo ("SEM MELHORES ... HOW MUCH I FUCKED UP", ja com a
-   * decoracao "> <" do item ativo) caber inteiro em 769px. O `wrap` fica so
-   * como valvula: numa fonte de fallback mais larga o nav quebra em vez de
-   * vazar na horizontal.
+   * Cada linha e `nowrap` na pratica. Com WALLET-GEN (site irmao, fim da
+   * linha de cima) o grupo mais largo ja com a decoracao "> <" do item ativo
+   * mede 1063px — MEDIDO por busca binaria em todas as rotas da linha de cima,
+   * nao estimado. Por isso o menu colapsa abaixo de 1080px (ver o media query
+   * do fim), e nao em 768 como antes: mexer no breakpoint, nao no agrupamento.
+   * O `wrap` fica so como valvula: numa fonte de fallback mais larga o nav
+   * quebra em vez de vazar na horizontal.
    */
   .nav__links {
     display: flex;
@@ -197,18 +204,6 @@ const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
     content: " <";
   }
 
-  /*
-   * Entre 769px e 1024px o corpo desce de 14.4px para 13px (--text-body, o
-   * corpo de texto do design system) para a linha de cima caber sem quebrar.
-   * Piso de 13px, acima do minimo de 12px renderizado; abaixo de 769px o nav
-   * ja e pilha vertical e nao precisa encolher nada.
-   */
-  @media (min-width: 769px) {
-    .nav__link {
-      font-size: clamp(0.8125rem, 0.549rem + 0.549vw, 0.9rem);
-    }
-  }
-  
   .nav__toggle-input {
     position: absolute;
     opacity: 0;
@@ -240,8 +235,9 @@ const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
   }
   
   /* O disclosure sem JS continua igual: o nav__links some e so o :checked o
-     traz de volta — sem script nenhum no caminho. */
-  @media (max-width: 768px) {
+     traz de volta — sem script nenhum no caminho. 1079px: a linha de cima
+     precisa de 1063px (comentario do .nav__links); o logo segue em 768px. */
+  @media (max-width: 1079px) {
     .nav__links {
       display: none;
       width: 100%;

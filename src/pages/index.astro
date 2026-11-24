@@ -1,4 +1,5 @@
 ---
+import Sponsor from "../components/Sponsor.astro";
 import { tools } from "../data/routes";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { withBase } from "../utils/base";
@@ -26,6 +27,13 @@ const repos = [
     description:
       "Bitcoin output descriptor parser and address generator in C — derives keys along BIP-32/44 paths and emits addresses across the common formats. Built on OpenSSL and json-c.",
     lang: "C",
+  },
+  {
+    href: "https://github.com/afa7789/wallet-gen",
+    title: "WALLET-GEN",
+    description:
+      "Generates BTC, ETH and XMR wallets from the OS CSPRNG and keeps the private keys under your password (scrypt + AES-256-GCM). App for Mac, Linux and Windows, a CLI, and a web page at afa7789.github.io/wallet-gen.",
+    lang: "Python + JS",
   },
 ];
 ---
@@ -75,6 +83,7 @@ const repos = [
       </ul>
     </section>
 
+    <Sponsor />
   </div>
 </BaseLayout>
 

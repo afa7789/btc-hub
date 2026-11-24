@@ -29,6 +29,20 @@ export interface Tool {
   status: "LIVE PRICES" | "DATASET" | "DATASET + LIVE" | "GUIDE";
 }
 
+/**
+ * Sites irmaos: outro build, outro repositorio. Ficam FORA de `tools` de
+ * proposito — o grid da home promete "clique e abre uma pagina deste site" e o
+ * 404 lista so rotas deste build. O nav mostra no fim da linha de cima, com ↗.
+ */
+export interface Sibling {
+  href: string;
+  label: string;
+}
+
+export const siblings: Sibling[] = [
+  { href: "https://afa7789.github.io/wallet-gen/", label: "WALLET-GEN" },
+];
+
 export const tools: Tool[] = [
   {
     href: "/sem-melhores",
