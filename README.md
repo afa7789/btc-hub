@@ -159,6 +159,10 @@ RoboSats via its GitHub, since no source confirmed its domain), gift cards and
 travel (Bitrefill, Cake Pay, Piggy Cards, Travala), merchant payments (Flexa,
 CipherPay, BTCPay Server), cards (KAST), crypto payroll (Zebec, Opolis) and
 on-chain companies (MetaLeX). The list lives as data in the page frontmatter.
+Before it, also marked as ours, "Where the tax line sits" gives HelloSafe's
+January 2025 snapshot of crypto capital-gains rates by country (via Visual
+Capitalist) and the Brazilian rules: the R$35,000 monthly exemption the Receita
+states, and MP 1.303/2025, which would have ended it and lapsed in October 2025.
 
 ### `/how-much-i-fucked-up` — HOW MUCH I FUCKED UP
 
