@@ -344,6 +344,60 @@ const description =
       color: var(--chart-ink-muted);
     }
 
+    /* margin: auto devolve a centralizacao do <dialog>, que o reset global
+       (* { margin: 0 }) tira e deixava o painel colado no canto. */
+    .details-dialog {
+      margin: auto;
+      width: min(40rem, calc(100vw - 2rem));
+      padding: 1.25rem;
+      background: var(--bg-surface);
+      color: var(--fg-primary);
+      border: var(--border-width) solid var(--border-strong);
+    }
+
+    .details-dialog::backdrop {
+      background: rgb(0 0 0 / 0.75);
+    }
+
+    .details-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .details-head h2 {
+      margin: 0;
+      border: none;
+      padding: 0;
+    }
+
+    .details-value {
+      margin: 0.5rem 0 1rem;
+      font-size: 1.6em;
+      font-weight: bold;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .details-method {
+      margin-bottom: 1rem;
+    }
+
+    .details-method summary {
+      cursor: pointer;
+      font-size: var(--text-micro);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--fg-secondary);
+    }
+
+    .details-method p {
+      margin-top: 0.5rem;
+      font-size: var(--text-micro);
+      color: var(--fg-muted);
+      overflow-wrap: anywhere;
+    }
+
     #toggleDataSources {
       margin-bottom: 1rem;
     }
@@ -379,7 +433,7 @@ const description =
         <button type="button" id="exportData" class="btn-secondary">Export</button>
       </div>
     </form>
-    <p id="search-hint" class="control-hint">Separate several items with commas to compare them.</p>
+    <p id="search-hint" class="control-hint">Separate several items with commas to see them together. To compare them in a table, Ctrl/Cmd-click a block, press Ctrl+Enter on it, or use "Add to comparison" in its details.</p>
 
     <div id="visualization" class="visualization">
       <div id="blocks-container" class="blocks-container"></div>
@@ -390,6 +444,22 @@ const description =
       <div id="comparison-items" class="comparison-items"></div>
       <button type="button" id="clearComparison" class="btn-secondary">Clear comparison</button>
     </div>
+
+    <dialog id="item-details" class="details-dialog" aria-labelledby="item-details-title">
+      <div class="details-head">
+        <h2 id="item-details-title" class="details-title"></h2>
+        <button type="button" class="btn-secondary" data-close>Close</button>
+      </div>
+      <p class="details-value"></p>
+      <dl class="stat-grid details-facts"></dl>
+      <p class="details-note"></p>
+      <details class="details-method">
+        <summary>How this number was built</summary>
+        <p></p>
+      </details>
+      <p class="source-link"><a class="details-source" href="" target="_blank" rel="noopener"></a></p>
+      <button type="button" class="btn-primary details-compare">Add to comparison</button>
+    </dialog>
 
     <section id="statistics" class="section">
       <h2>Quick Stats</h2>

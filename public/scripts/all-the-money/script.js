@@ -649,24 +649,83 @@ function updatePageTitle() {
   if (summary) summary.textContent = baseText + filterInfo + blockInfo;
 }
 
-// Show item details
+/*
+ * Detalhes do item num <dialog> da pagina, nao num alert(): o navegador ja
+ * prende o foco, fecha com Esc e devolve o foco ao bloco. Mostra tambem a
+ * metodologia completa (dataSource.method), que antes nao aparecia em lugar
+ * nenhum, e um botao que leva o item para a comparacao.
+ */
+const DETAILS_DATE = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+function fact(label, value) {
+  const row = document.createElement("div");
+  row.appendChild(textEl("dt", "", label));
+  row.appendChild(textEl("dd", "", value));
+  return row;
+}
+
+function blocksText(item) {
+  const blocks = parseValue(item) / currentScale;
+  if (blocks < 1) return `${blocks.toFixed(2)} of a block`;
+  return `${Math.ceil(blocks).toLocaleString()} blocks`;
+}
+
 function showItemDetails(item) {
+  const dialog = document.getElementById("item-details");
+  if (!dialog) return;
+  const source = item.dataSource || {};
   const category = getCategoryById(item.categoryId);
-  const lastUpdated = new Date(item.lastUpdated).toLocaleDateString();
-  const dataSource = item.dataSource || { provider: "Unknown", type: "manual" };
+  dialog.dataset.itemId = item.id;
+  dialog.querySelector(".details-title").textContent = item.name;
+  dialog.querySelector(".details-value").textContent =
+    `$${item.valueFormatted}`;
+  dialog
+    .querySelector(".details-facts")
+    .replaceChildren(
+      fact("Category", category ? category.name : "Other"),
+      fact("As of", DETAILS_DATE.format(new Date(item.lastUpdated))),
+      fact("Size", blocksText(item)),
+    );
+  dialog.querySelector(".details-note").textContent = source.notes || "";
+  const method = dialog.querySelector(".details-method");
+  method.hidden = !source.method;
+  method.querySelector("p").textContent = source.method || "";
+  const link = dialog.querySelector(".details-source");
+  link.hidden = !source.url;
+  link.href = source.url || "";
+  link.textContent = `Source: ${source.provider || source.url || ""}`;
+  dialog.showModal();
+}
 
-  const details = `
-📊 ${item.name}
-💰 Value: $${item.valueFormatted}
-🏷️ Category: ${category ? category.name : "Unknown"}
-🔄 Live Updates: ${item.isLiveUpdatable ? "Yes" : "No"}
-📅 Last Updated: ${lastUpdated}
-Source: ${dataSource.provider}
-🔗 Slug: ${item.slug}
-ℹ️ Notes: ${dataSource.notes || "No additional notes"}
-    `.trim();
-
-  alert(details);
+function bindDetailsDialog() {
+  const dialog = document.getElementById("item-details");
+  if (!dialog) return;
+  dialog.addEventListener("click", (e) => {
+    // Clique no fundo (fora da caixa) fecha, como Esc.
+    if (e.target === dialog || e.target.closest("[data-close]")) dialog.close();
+  });
+  // Ao fechar, o foco volta ao primeiro bloco do item (o focavel; os outros
+  // sao aria-hidden). Buscado pelo id na hora, nao guardado: um re-render no
+  // meio troca os nos. Adiado um tique porque, quando "close" dispara, o resto
+  // da pagina ainda esta inerte e o focus() seria ignorado.
+  dialog.addEventListener("close", () => {
+    const id = CSS.escape(dialog.dataset.itemId || "");
+    setTimeout(() =>
+      document.querySelector(`.block[data-item-id="${id}"]`)?.focus(),
+    );
+  });
+  dialog.querySelector(".details-compare").addEventListener("click", () => {
+    const item = wealthData?.items.find(
+      (it) => it.id === dialog.dataset.itemId,
+    );
+    if (item) toggleComparison(item);
+    dialog.close();
+  });
 }
 
 // Create data sources section
@@ -884,6 +943,7 @@ function bindBlockEvents(container) {
 function initializeControls() {
   const blocksContainer = document.getElementById("blocks-container");
   if (blocksContainer) bindBlockEvents(blocksContainer);
+  bindDetailsDialog();
 
   // Add event listeners
   const searchInput = document.getElementById("searchInput");
@@ -979,8 +1039,10 @@ function initializeKeyboardShortcuts() {
       document.getElementById("searchInput")?.focus();
     }
 
-    // Escape: Clear search and comparison
-    if (e.key === "Escape") {
+    // Escape: Clear search and comparison. Nao com um dialogo aberto: ali o
+    // Esc so fecha o dialogo, e limpar a busca junto apagaria o filtro de quem
+    // so queria fechar o painel de detalhes.
+    if (e.key === "Escape" && !document.querySelector("dialog[open]")) {
       const searchInput = document.getElementById("searchInput");
       if (searchInput) {
         searchInput.value = "";

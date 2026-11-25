@@ -351,11 +351,11 @@
       "lastUpdated": "2026-11-25T00:00:00Z",
       "dataSource": {
         "type": "calculated",
-        "provider": "World Gold Council + gold-api.com spot",
+        "provider": "World Gold Council (stock) at the site's gold.csv close",
         "url": "https://www.gold.org/goldhub/data/above-ground-stocks",
         "apiEndpoint": null,
         "notes": "224,200 t above ground (World Gold Council, Q3 2026) at $3,556/oz, 25 Nov 2026.",
-        "method": "WGC above-ground stock end-Q3 2026 = 224,200 t (page dated 2026-11-03) x spot $3,551.20/oz (https://api.gold-api.com/price/XAU, 2026-11-25 20:04 UTC; spot, not LBMA; COMEX Dec future GC=F $3,577.4 same time). Tonnes x 32,150.7466 oz/t x price. WGC's own valuation at end-Q3 LBMA PM = US$30.0tn. Stored note used stale ~$2,350/oz."
+        "method": "World Gold Council above-ground stock at end-Q3 2026: 224,200 tonnes (gold.org above-ground stocks page, dated 2026-11-03). Valued at the 2026-11-25 close in this site's own gold.csv, $3,556.40/oz: 224,200 t x 32,150.7466 oz/t x 3,556.40 = $25,635.2bn. WGC's own valuation at the end-Q3 LBMA PM price was $30.0tn; gold has fallen since."
       },
       "isLiveUpdatable": false
     },
