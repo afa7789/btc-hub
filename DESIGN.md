@@ -312,6 +312,8 @@ do favicon.
   com os tokens de série — bitcoin, ether, ouro, fiduciário (`--series-fiat`) e
   dívida (`--status-negative`) — e o resto em `--series-neutral`, sobre canvas
   escuro fixo. Decisão de produto revertida a pedido de legibilidade.
+  Itens vizinhos do mesmo token alternam três tons (base, +30% e +60% de
+  branco, `createShadePicker`) para a fronteira entre eles ficar visível.
 - O axe reporta `color-contrast` nos títulos de eixo do `/debase`, `/halving` e
   `/rainbow` no tema claro. É falso positivo: ele lê `color` em vez do `fill` do
   SVG. Prova em `.claude/FALSE_POSITIVES.md`. O

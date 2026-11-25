@@ -140,3 +140,7 @@ This file tracks lessons learned during the BTC_Things project.
   desconectava o elemento guardado. E no evento `close` o resto da pagina ainda
   esta inerte, entao `focus()` ali e ignorado em silencio. Atalho global
   respeita `dialog[open]`; o foco volta buscando o no pelo id, um tique depois.
+- **2026-11-25**: No /all-the-money, cor so por significado deixou 11 das 15
+  categorias no mesmo cinza: nao dava para ver onde um item acabava e o outro
+  comecava. Correcao do dono: pode ser a mesma cor, mas varia o tom. Cor unica
+  para itens distintos e adjacentes precisa de outra pista de fronteira (tom).

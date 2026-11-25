@@ -22,7 +22,8 @@ let comparisonItems = [];
  * sem controle de luminancia: o Bitcoin saia azul e o ouro magenta, e a pagina
  * virava um arco-iris sem leitura. Agora a cor so aparece onde diz algo, com
  * os tokens que o site inteiro ja usa (DESIGN.md 2.1): bitcoin, ether, ouro,
- * dinheiro fiduciario e divida. O resto do mundo fica no cinza neutro.
+ * dinheiro fiduciario e divida. O resto do mundo fica no cinza neutro; quem
+ * separa um item do vizinho e o tom (createShadePicker), nao a cor.
  */
 const ITEM_COLOR = {
   "bitcoin-market-cap": "--series-btc",
@@ -46,6 +47,26 @@ function colorFor(item, styles) {
     CATEGORY_COLOR[item.categoryId] ||
     "--series-neutral";
   return styles.getPropertyValue(token).trim();
+}
+
+/*
+ * Mesma cor, tons diferentes. Itens vizinhos que caem no mesmo token (quase
+ * tudo que e cinza) viravam uma massa so, sem dar para ver onde um termina e o
+ * outro comeca. O tom vem da posicao do item na ordem desenhada, por token:
+ * dois vizinhos da mesma cor nunca repetem o tom, em qualquer ordenacao.
+ * So clareia — misturar com branco nao derruba os 3:1 contra --chart-bg.
+ */
+const SHADE_WHITE_PCT = [0, 30, 60];
+
+function createShadePicker(styles) {
+  const seen = {};
+  return (item) => {
+    const base = colorFor(item, styles);
+    const step = seen[base] || 0;
+    seen[base] = step + 1;
+    const white = SHADE_WHITE_PCT[step % SHADE_WHITE_PCT.length];
+    return white ? `color-mix(in srgb, ${base}, white ${white}%)` : base;
+  };
 }
 
 // Storage helper functions
@@ -392,7 +413,8 @@ function createWealthBlock(
 /*
  * "Por categoria" segue a ordem curada de data.json (do individuo ao
  * derivativo, a mesma narrativa de escala do Visual Capitalist), e dentro de
- * cada categoria vai do menor ao maior. As outras ordens seguem ascendentes.
+ * cada categoria vai do menor ao maior. "value-desc" mistura tudo, do maior
+ * ao menor; "value" faz o inverso.
  */
 function sortItems(items, sortBy) {
   const rank = (id) => wealthData.categories.findIndex((c) => c.id === id);
@@ -402,7 +424,8 @@ function sortItems(items, sortBy) {
       const byCategory = rank(a.categoryId) - rank(b.categoryId);
       if (byCategory !== 0) return byCategory;
     }
-    return parseValue(a) - parseValue(b);
+    const bySize = parseValue(a) - parseValue(b);
+    return sortBy === "value-desc" ? -bySize : bySize;
   });
 }
 
@@ -525,12 +548,13 @@ function createVisualization() {
 
   let blockIndex = 0;
   const styles = getComputedStyle(document.documentElement);
+  const shadeFor = createShadePicker(styles);
   const groupByCategory = wrapped && sortBy === "category";
   let lastCategoryId = null;
 
   for (const item of items) {
     const itemValue = parseValue(item);
-    const itemColor = colorFor(item, styles);
+    const itemColor = shadeFor(item);
 
     // Calculate blocks needed - use exact division, not ceiling
     const exactBlocks = itemValue / currentScale;
