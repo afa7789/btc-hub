@@ -191,17 +191,11 @@ const pct = (v: number) =>
         margin-top: 40px;
       }
 
-      /* Antes: 32px/24px !important dentro de um espaco de desenho de 362px,
-         o que sobrepunha os ticks e cortava o titulo dos dois lados. Com o
-         viewBox de 800 em chart_draw.js o texto escala junto, entao o valor
-         aqui compensa a reducao (~0.45x em 390px). */
-      article :global(svg text) {
-        font-size: 26px;
-      }
-
-      article :global(svg .tick text) {
-        font-size: 22px;
-      }
+      /* Sem aumento de fonte aqui. As tres funcoes de chart_draw.js usadas
+         nesta pagina desenham com viewBox = largura real do conteiner, entao
+         nao ha reducao a compensar: os 26px/22px que estavam aqui saiam com
+         ~21px reais num grafico de ~300px, cortando o titulo e empilhando a
+         legenda (linhas a cada 20px). Os 16px/14px da base saem com ~13px. */
     }
   </style>
 

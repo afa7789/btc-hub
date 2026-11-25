@@ -122,3 +122,10 @@ This file tracks lessons learned during the BTC_Things project.
   ainda mostra a curva de 2014, e o texto dela contradiz o codigo (R² e numero
   de pontos). Antes de copiar o modelo de um site, ler o JS dele: constante do
   metodo nao e resultado do ajuste, e prosa nao e especificacao.
+- **2026-11-25**: O /debase no celular subia o texto dos graficos para 26px
+  "para compensar a reducao de ~0.45x do viewBox de 800". Mas as tres funcoes
+  de chart_draw.js usadas ali desenham com viewBox = largura real do conteiner
+  (`internalWidth = containerWidth`): nao havia reducao, e os 26px saiam com
+  ~21px reais, cortando titulo e empilhando legenda. Antes de compensar escala,
+  medir a escala renderizada (largura na tela / largura do viewBox) — um
+  comentario que afirma a escala nao e medicao.

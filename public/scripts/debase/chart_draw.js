@@ -57,6 +57,53 @@ function chartSeriesList(labels) {
   return `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
 }
 
+/*
+ * Titulo centralizado no topo do grafico. Se nao cabe entre as margens, quebra
+ * em linhas palavra a palavra: encolher a fonte nao serve, porque os titulos
+ * de ~40 caracteres so caberiam em 300px abaixo de 10px reais. Era o mesmo
+ * bloco copiado nas tres funcoes de desenho.
+ */
+function drawTitle(svg, text, internalWidth, margin) {
+  const y = window.innerWidth <= 400 ? 30 : window.innerWidth <= 600 ? 25 : 20;
+  const maxWidth = internalWidth - margin.left - margin.right;
+  const title = svg
+    .append("text")
+    .attr("x", internalWidth / 2)
+    .attr("y", y)
+    .attr("text-anchor", "middle")
+    .style("font-weight", "bold")
+    .text(text);
+  if (title.node().getComputedTextLength() <= maxWidth) return;
+
+  title.text(null);
+  let words = [];
+  let tspan = title.append("tspan").attr("x", internalWidth / 2);
+  for (const word of text.split(/\s+/)) {
+    words.push(word);
+    tspan.text(words.join(" "));
+    if (words.length > 1 && tspan.node().getComputedTextLength() > maxWidth) {
+      words.pop();
+      tspan.text(words.join(" "));
+      words = [word];
+      tspan = title
+        .append("tspan")
+        .attr("x", internalWidth / 2)
+        .attr("dy", "1.15em")
+        .text(word);
+    }
+  }
+
+  // Com tres linhas (titulo longo em 320px) a ultima invadia o topo do
+  // grafico: sobe o bloco ate a ultima linha terminar acima da margem.
+  const lines = title.selectAll("tspan").size();
+  const lineHeight =
+    1.15 * Number.parseFloat(getComputedStyle(title.node()).fontSize);
+  const limit = margin.top - 12;
+  if (y + (lines - 1) * lineHeight > limit) {
+    title.attr("y", Math.max(14, limit - (lines - 1) * lineHeight));
+  }
+}
+
 function describeChart(svg, label) {
   svg.attr("role", "img").attr("aria-label", label);
 }
@@ -433,15 +480,7 @@ function drawCombinedChart(
       .attr("d", line);
   }
 
-  svg
-    .append("text")
-    .attr("x", internalWidth / 2)
-    .attr(
-      "y",
-      window.innerWidth <= 400 ? 30 : window.innerWidth <= 600 ? 25 : 20,
-    )
-    .attr("text-anchor", "middle")
-    .text(title.toUpperCase());
+  drawTitle(svg, title.toUpperCase(), internalWidth, margin);
 
   describeChart(
     svg,
@@ -646,16 +685,7 @@ function drawDollarPurchasingPowerChart(purchasingPowerData) {
     )
     .attr("d", line);
 
-  svg
-    .append("text")
-    .attr("x", internalWidth / 2)
-    .attr(
-      "y",
-      window.innerWidth <= 400 ? 30 : window.innerWidth <= 600 ? 25 : 20,
-    )
-    .attr("text-anchor", "middle")
-    .style("font-weight", "bold")
-    .text("DOLLAR PURCHASING POWER (CPI)");
+  drawTitle(svg, "DOLLAR PURCHASING POWER (CPI)", internalWidth, margin);
 
   const first = data[0];
   const last = data[data.length - 1];
@@ -876,16 +906,7 @@ function drawRelativeGrowthChart(
       .attr("d", line);
   }
 
-  svg
-    .append("text")
-    .attr("x", internalWidth / 2)
-    .attr(
-      "y",
-      window.innerWidth <= 400 ? 30 : window.innerWidth <= 600 ? 25 : 20,
-    )
-    .attr("text-anchor", "middle")
-    .style("font-weight", "bold")
-    .text(title);
+  drawTitle(svg, title, internalWidth, margin);
 
   describeChart(
     svg,
