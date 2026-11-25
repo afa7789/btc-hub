@@ -2197,6 +2197,52 @@
         "reason": "Individual corporation included in 'Global Equities' total",
         "parentItem": "global-equities"
       }
+    },
+    {
+      "id": "samsung-market-cap",
+      "slug": "samsung-market-capitalization",
+      "name": "Samsung Electronics",
+      "categoryId": "corporations",
+      "valueBillions": 827.34,
+      "valueFormatted": "827.34 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/samsung/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 25 Nov 2026.",
+        "method": "Market cap 2026-11-25 per companiesmarketcap.com, read from the page on 2026-11-25. Korea listing 005930.KS, converted to USD by the source."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "huawei-revenue",
+      "slug": "huawei-annual-revenue",
+      "name": "Huawei (annual revenue)",
+      "categoryId": "corporations",
+      "valueBillions": 126,
+      "valueFormatted": "126 billion",
+      "lastUpdated": "2025-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Huawei",
+        "url": "https://www.huawei.com/en/news/2026/3/annual-report-2025",
+        "apiEndpoint": null,
+        "notes": "Not listed, owned by its employees: this is one year of sales (CNY880.9 billion in 2025), not what the company is worth.",
+        "method": "NOT LISTED, employee-owned, no market cap or funding-round valuation. 2025 Annual Report (released 2026-03-31, audited by KPMG): revenue CNY880.9bn (+2.2%), net profit CNY68bn. Converted at Huawei's own year-end rate of 6.9906 CNY/USD = ~$126bn. REVENUE, not a valuation; shown for scale."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Annual revenue, a flow, not a stock of wealth",
+        "parentItem": null
+      }
     }
   ]
 }
