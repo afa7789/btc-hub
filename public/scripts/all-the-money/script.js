@@ -445,26 +445,6 @@ function createWealthBlock(
     block.tabIndex = -1;
   }
 
-  block.addEventListener("click", (e) => {
-    if (e.ctrlKey || e.metaKey) {
-      toggleComparison(item);
-    } else {
-      showItemDetails(item);
-    }
-  });
-
-  /*
-   * O click sintetizado pelo teclado nao carrega o modificador, entao
-   * Ctrl/Cmd+Enter precisa de tratamento proprio — sem ele, adicionar a
-   * comparacao seria exclusivo do mouse.
-   */
-  block.addEventListener("keydown", (e) => {
-    if ((e.ctrlKey || e.metaKey) && (e.key === "Enter" || e.key === " ")) {
-      e.preventDefault();
-      toggleComparison(item);
-    }
-  });
-
   return block;
 }
 
@@ -909,7 +889,48 @@ function highlightComparisonBlocks() {
 }
 
 // Search and filter functionality
+/*
+ * Um par de ouvintes no conteiner, nao dois por bloco. Com 25 mil blocos
+ * eram 50 mil closures recriadas a cada re-render (busca, ordem, modo
+ * agrupado); o bloco ja carrega data-item-id, entao o item sai dali.
+ */
+function bindBlockEvents(container) {
+  const itemFor = (target) => {
+    const block = target.closest?.(".block");
+    if (!block || !container.contains(block)) return null;
+    const id = block.getAttribute("data-item-id");
+    return wealthData?.items.find((it) => String(it.id) === id) ?? null;
+  };
+
+  container.addEventListener("click", (e) => {
+    const item = itemFor(e.target);
+    if (!item) return;
+    if (e.ctrlKey || e.metaKey) {
+      toggleComparison(item);
+    } else {
+      showItemDetails(item);
+    }
+  });
+
+  /*
+   * O click sintetizado pelo teclado nao carrega o modificador, entao
+   * Ctrl/Cmd+Enter precisa de tratamento proprio — sem ele, adicionar a
+   * comparacao seria exclusivo do mouse.
+   */
+  container.addEventListener("keydown", (e) => {
+    const modified = e.ctrlKey || e.metaKey;
+    if (!modified || (e.key !== "Enter" && e.key !== " ")) return;
+    const item = itemFor(e.target);
+    if (!item) return;
+    e.preventDefault();
+    toggleComparison(item);
+  });
+}
+
 function initializeControls() {
+  const blocksContainer = document.getElementById("blocks-container");
+  if (blocksContainer) bindBlockEvents(blocksContainer);
+
   // Add event listeners
   const searchInput = document.getElementById("searchInput");
   const sortBy = document.getElementById("sortBy");
