@@ -134,3 +134,9 @@ This file tracks lessons learned during the BTC_Things project.
   ClientRouter mantem a sessao: o segundo a carregar morria com SyntaxError e
   a pagina nao desenhava ao chegar pelo nav — invisivel para o draw-check, que
   abre cada rota por URL. Gate novo: `.ux-review/harness/spa-crawl.mjs`.
+- **2026-11-25**: Ao trocar o `alert()` do /all-the-money por `<dialog>`, o
+  foco nao voltava ao bloco: o Esc que fechava o dialogo tambem disparava o
+  atalho global "Esc limpa a busca", que redesenhava os 28 mil blocos e
+  desconectava o elemento guardado. E no evento `close` o resto da pagina ainda
+  esta inerte, entao `focus()` ali e ignorado em silencio. Atalho global
+  respeita `dialog[open]`; o foco volta buscando o no pelo id, um tique depois.
