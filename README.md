@@ -259,8 +259,9 @@ After the fetch, `update.sh` reads the newest date out of each dataset (the max 
 column for the CSVs, `biggest_date` / `metadata.lastUpdated` for the JSONs) and fails
 if an automated dataset is older than its allowed window. The default is 30 days;
 per-dataset windows account for the upstream release cadence — crypto and metals are
-held to a few days, monthly CPI to 45, and the Big Mac index publishes only twice a
-year. This exists because a silently failing updater used to look exactly like a
+held to a few days, monthly CPI to 75 (a month is dated to its first day and only
+replaced ~72 days later, when the next one is published), and the Big Mac index
+publishes only twice a year. This exists because a silently failing updater used to look exactly like a
 successful run.
 
 ### Prerequisites for data updates
