@@ -1,0 +1,437 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const title = "Off-Ramp";
+const description =
+  "Eric on how to off-ramp crypto without paying insane taxes: P2P, crypto credit cards, crypto-backed loans, Telegram and Colossus Pay.";
+
+/*
+ * Transcricao de um resumo de terceiros (duas imagens), nao texto nosso.
+ *
+ * Toda afirmacao fiscal fica atribuida a ele ("he says", "in his view"): a
+ * pagina relata o que o Eric defende, nao afirma em voz propria que algo
+ * "nao e evento tributavel". Nomes de empresas ficam em texto puro — sem URL
+ * adivinhada numa pagina sobre dinheiro. <strong> e o negrito do original,
+ * <mark> e o marca-texto do original.
+ *
+ * A ultima secao ("Where to start") e nossa, nao do Eric, e diz isso. Todo
+ * dominio abaixo foi conferido (busca + resposta HTTP 200 do proprio site); o
+ * RoboSats aponta para o GitHub do projeto porque nenhuma fonte confirmou o
+ * dominio. Cada descricao diz so o que as fontes confirmaram — sem taxa,
+ * limite ou pais que nao estivesse escrito em algum lugar.
+ */
+interface Service {
+  name: string;
+  href: string;
+  text: string;
+}
+
+interface ServiceGroup {
+  title: string;
+  services: Service[];
+  note?: string;
+}
+
+const serviceGroups: ServiceGroup[] = [
+  {
+    title: "Peer to peer",
+    services: [
+      {
+        name: "Peer",
+        href: "https://peer.xyz",
+        text: "is the peer-to-peer method above. Sellers lock stablecoins in an on-chain escrow on Base, the buyer pays through apps like Venmo, Revolut or Wise, and a zero-knowledge proof of the payment receipt releases the funds. The open protocol underneath still carries the ZKP2P name.",
+      },
+      {
+        name: "RoboSats",
+        href: "https://github.com/RoboSats/robosats",
+        text: "trades bitcoin for fiat peer to peer over Lightning, with no KYC and no account: each trade runs under a throwaway robot identity, through Tor or the Android app. Escrow and bonds are Lightning hold invoices, locked until the trade settles. It moves sats, not stablecoins.",
+      },
+    ],
+    note: "RoboSats links to its GitHub repository, not to a domain. Cloned trading sites are a common way to steal funds, and the repository is the address that is hardest to fake.",
+  },
+  {
+    title: "Gift cards and travel",
+    services: [
+      {
+        name: "Bitrefill",
+        href: "https://www.bitrefill.com",
+        text: "sells gift cards and phone top-ups for bitcoin, Lightning, stablecoins and other coins. An email address is enough to buy, and the code arrives by email.",
+      },
+      {
+        name: "Cake Pay",
+        href: "https://cakepay.com",
+        text: "sells gift cards for Bitcoin, Lightning, Litecoin, Monero or Zcash, on the web or inside Cake Wallet. Its web store has been taken offline before over provider problems, so try a small one first.",
+      },
+      {
+        name: "Piggy Cards",
+        href: "https://piggy.cards",
+        text: "sells digital gift cards, prepaid Mastercard and Visa included, for Bitcoin, Ethereum, Solana, stablecoins and others, delivered by email. Its own blog puts the crypto processing fee on the prepaid cards at 2–4%.",
+      },
+      {
+        name: "Travala",
+        href: "https://www.travala.com",
+        text: "books hotels, flights and activities paid in more than 100 cryptocurrencies, or by card.",
+      },
+    ],
+  },
+  {
+    title: "Paying a merchant directly",
+    services: [
+      {
+        name: "Flexa",
+        href: "https://flexa.co",
+        text: "is a payments network on the merchant side: scan the code at checkout, pick the asset in your wallet, pay. The merchant can settle in fiat or in crypto.",
+      },
+      {
+        name: "CipherPay",
+        href: "https://cipherpay.app",
+        text: "is a Zcash payment processor for websites and physical stores. The ZEC goes straight to the merchant's wallet, never through CipherPay.",
+      },
+      {
+        name: "BTCPay Server",
+        href: "https://btcpayserver.org",
+        text: "is free, open source and self-hosted: a shop takes bitcoin and Lightning straight into its own wallet, with no processor in the middle and no processing fee. Every shop that runs it is one more place you can pay without cashing out first.",
+      },
+    ],
+  },
+  {
+    title: "Cards",
+    services: [
+      {
+        name: "KAST",
+        href: "https://www.kast.xyz",
+        text: "is a Visa card that spends stablecoins, virtual or physical. Eric lists it among the crypto credit cards above, and KAST's own terms describe it as a credit card secured by the assets you deposit.",
+      },
+    ],
+  },
+  {
+    title: "Getting paid in crypto",
+    services: [
+      {
+        name: "Zebec",
+        href: "https://zebec.io",
+        text: "runs payroll in stablecoins, streamed in real time, with Mastercard cards to spend it.",
+      },
+      {
+        name: "Opolis",
+        href: "https://opolis.co",
+        text: "is a member-owned employer of record for independent workers: regular payroll, pay stubs and a W-2, with the option to take part of the pay in crypto or to fund payroll from crypto income.",
+      },
+    ],
+  },
+  {
+    title: "Running a company on-chain",
+    services: [
+      {
+        name: "MetaLeX",
+        href: "https://metalex.tech",
+        text: "is a crypto-law firm and tech company behind cyberCORPs: legal companies whose financing, cap table and governance run on smart contracts. Its first product, cyberSAFE, puts a SAFE fundraising deal on-chain.",
+      },
+    ],
+  },
+];
+---
+
+<BaseLayout title={title} description={description}>
+  <style>
+    .page-header {
+      margin-bottom: 2em;
+    }
+
+    .page-header h1 {
+      margin: 0 0 0.5em;
+      border: none;
+      padding-bottom: 0;
+    }
+
+    .section {
+      margin-bottom: 2em;
+    }
+
+    .section h3 {
+      margin-top: 1.5em;
+    }
+
+    /* O reset global zera o padding de <ul>; sem isto o marcador cai fora da
+       coluna. A medida acompanha a do <p>. */
+    .points {
+      max-width: 68ch;
+      padding-left: 1.5em;
+      list-style: square;
+    }
+
+    .points:not(:last-child) {
+      margin-bottom: 1em;
+    }
+
+    .points li:not(:last-child) {
+      margin-bottom: 0.6em;
+    }
+
+    .points li::marker {
+      color: var(--accent-btc);
+    }
+
+    mark {
+      background: var(--accent-btc);
+      color: var(--on-accent);
+      padding: 0 0.15em;
+    }
+
+    .note {
+      color: var(--fg-muted);
+    }
+  </style>
+
+  <article>
+    <header class="page-header">
+      <h1>Off-Ramp</h1>
+      <p>
+        Eric on how to <mark>off-ramp crypto without paying insane taxes</mark>.
+      </p>
+      <p class="note">
+        His take, summarized. Not tax advice: whether any of this triggers a
+        taxable event depends on where you live.
+      </p>
+    </header>
+
+    <section class="section">
+      <h2>This is for high-tax countries</h2>
+      <ul class="points">
+        <li>
+          <strong>He kept getting the same question:</strong> what's the
+          smartest way to off-ramp crypto without paying <mark>insane taxes</mark>?
+        </li>
+        <li>
+          <strong>This is mainly for people in the <mark>US, UK, Canada</mark>,</strong>
+          and other Western or European countries, where crypto taxes can go as
+          high as <mark>50–60%</mark>.
+        </li>
+        <li>
+          <strong>If you're in the UAE paying <mark>0% tax</mark>,</strong> he
+          says you're playing life on easy mode, and this article isn't for you.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>He is not telling you to break the law</h2>
+      <ul class="points">
+        <li>
+          All of the methods below sit in a <mark>legal gray zone</mark>, or use
+          technical loopholes that already exist in many places.
+        </li>
+        <li>
+          <strong>He compares them to a US <mark>1031 exchange</mark>,</strong>
+          where real estate can be sold without triggering immediate taxes.
+        </li>
+        <li>Think of these, he says, as the crypto version of that.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Skip no-KYC cards</h2>
+      <ul class="points">
+        <li>
+          <strong>After running a no-KYC card company, he
+          <mark>strongly advises against</mark> this.</strong> These cards are
+          extremely risky and can be <mark>shut down at any time</mark> with no
+          warning.
+        </li>
+        <li>
+          <strong>If you still use one, <mark>never keep a balance</mark> on the
+          card.</strong> Only top up right before you spend.
+        </li>
+        <li>
+          <strong>Speaking from experience, he had <mark>over $50k locked up</mark>
+          by a no-KYC card issuer.</strong> There are better and safer ways.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Use structured peer-to-peer</h2>
+      <ul class="points">
+        <li>
+          <strong>The first method is <mark>Peer</mark> (formerly ZKP2P).</strong>
+          It lets you on-ramp and off-ramp crypto through a peer-to-peer network.
+        </li>
+        <li>
+          <strong>This is not like old chat-based apps.</strong> The seller puts
+          fiat or crypto in escrow, the buyer pays, and funds are released
+          automatically, usually in <mark>seconds</mark>.
+        </li>
+        <li>
+          <strong>In 2025, Peer processed <mark>over $20M</mark></strong> across
+          Revolut, Cash App, Zelle, Venmo, and PayPal.
+        </li>
+        <li>
+          <strong><mark>p2p.me</mark> works in a similar way,</strong> but
+          focuses on currencies in Argentina, Brazil, and India, and plugs into
+          local payment apps.
+        </li>
+        <li>
+          <strong>This does not look like a <mark>normal exchange sale</mark>,</strong>
+          so many people see it as a cleaner off-ramp than a centralized
+          exchange.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Spend with a crypto credit card</h2>
+      <ul class="points">
+        <li>
+          <strong>The big word here is <mark>credit</mark>.</strong> This does
+          not apply to crypto debit cards.
+        </li>
+        <li>
+          <strong>You usually get taxed when you <mark>sell crypto for fiat</mark>.</strong>
+          Borrowing against your crypto is <mark>not a taxable event</mark>.
+        </li>
+        <li>
+          <strong>A debit card typically sells crypto when you swipe.</strong> A
+          credit card has the issuer front the payment, then the app pays it off
+          from your wallet.
+        </li>
+        <li>
+          <strong>Because it's classified as a <mark>loan or credit</mark>,</strong>
+          he says it is not taxed like a regular off-ramp. Paying it back is
+          treated as <mark>debt repayment</mark>.
+        </li>
+        <li>
+          <strong>In his view, this is one of the <mark>cleanest ways</mark> to
+          reduce taxes when off-ramping.</strong> KYC is still required, which
+          he sees as a good thing. Companies include Kast, Avici, xPlace, Exa,
+          Brahma, and eMoney.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Borrow against your crypto</h2>
+      <ul class="points">
+        <li>
+          <strong>This uses the same idea, but with a real
+          <mark>crypto-backed loan</mark>,</strong> not a credit card.
+        </li>
+        <li>
+          <strong>Say you have <mark>$100k in bitcoin</mark> and want to buy a
+          car.</strong> Most dealerships won't let you swipe Apple Pay for six
+          figures.
+        </li>
+        <li>
+          <strong>A lending platform can wire you $100k and take your bitcoin as
+          <mark>collateral</mark>.</strong> You get cash without passing through
+          a taxable event.
+        </li>
+        <li>
+          <strong>You will pay interest, usually around
+          <mark>7–10% a year</mark>.</strong> For many people, paying interest
+          is still better than a large capital gains bill.
+        </li>
+        <li>
+          <strong>Companies include Ledn, Nexo, Figure, Lava, and Strike.</strong>
+          Terms, rates, and locations differ, but the structure is similar: you
+          post crypto as collateral, get cash, and repay the loan over time
+          without a direct sale. He would personally take his business to
+          <mark>Strike</mark>, and points people to Jack Mallers' story of being
+          debanked and his fight with JP Morgan.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Be careful on Telegram</h2>
+      <ul class="points">
+        <li>
+          <strong>Exchangers Market is a Telegram channel with around
+          <mark>30 to 50 exchangers</mark>,</strong> and it supports almost
+          every payment app. You can find it as <mark>@exchangers</mark> on
+          Telegram.
+        </li>
+        <li>
+          <strong>Fees are usually <mark>5–10%</mark>,</strong> and there are
+          plenty of shady accounts and some very good scammers.
+        </li>
+        <li>
+          <strong>If you don't know how Telegram deals work,</strong> it's easy
+          to get tricked and <mark>lose money</mark>.
+        </li>
+        <li>
+          <strong>He thinks <mark>Peer</mark> is safer.</strong> It supports
+          most of the same payment methods, the process is more structured, and
+          the fees are usually lower. Telegram can be convenient once you trust
+          someone, but it comes with more risk.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Watch Colossus Pay</h2>
+      <ul class="points">
+        <li>
+          <strong>This is the option he is <mark>most interested in</mark> right
+          now.</strong> Colossus Pay, founded by @josephdelong, is still being
+          built and should launch sometime this year. He says it is going to be
+          one of his favorite options going forward.
+        </li>
+        <li>
+          <strong>It is building its own card network,</strong> where
+          <mark>stablecoins go straight to the acquirer</mark>, who converts the
+          money on the merchant side. Visa and Mastercard are not in the flow.
+        </li>
+        <li>
+          <strong>Settlement happens in crypto,</strong> and the acquirer
+          converts to dollars on the merchant end.
+        </li>
+        <li>
+          <strong>Because the funds never directly touch traditional fiat
+          rails,</strong> he says it is <mark>not considered a taxable event</mark>,
+          so you can spend in real life without paying tax.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>The main takeaway</h2>
+      <ul class="points">
+        <li>You only get taxed when you trigger a <mark>taxable event</mark>.</li>
+        <li>
+          <strong>Off-ramping does not always mean you have to
+          <mark>sell on an exchange</mark></strong> and take a massive tax hit.
+        </li>
+        <li>There are <mark>smarter ways</mark> to go about it.</li>
+        <li>
+          <strong>The worst thing you can do, he says,</strong> is
+          <mark>blindly click sell</mark> on a centralized exchange without
+          knowing your options.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Where to start</h2>
+      <p class="note">Not part of Eric's summary: added here.</p>
+      <p class="note">
+        The spending options skip the exchange, not necessarily the tax. In the
+        US, UK and Canada, paying for something with crypto counts as disposing
+        of it, the same as selling it.
+      </p>
+      {serviceGroups.map((group) => (
+        <Fragment>
+          <h3>{group.title}</h3>
+          <ul class="points">
+            {group.services.map((service) => (
+              <li>
+                <strong><a href={service.href} target="_blank" rel="noopener">{service.name}<span aria-hidden="true">↗</span></a></strong>{" "}
+                {service.text}
+              </li>
+            ))}
+          </ul>
+          {group.note && <p class="note">{group.note}</p>}
+        </Fragment>
+      ))}
+    </section>
+  </article>
+</BaseLayout>

@@ -97,3 +97,8 @@ This file tracks lessons learned during the BTC_Things project.
 - **2026-09-07**: `dagRobin add --deps a,b,c` grava as três como UMA string, então a
   tarefa nunca desbloqueia sozinha. Conferir com `dagRobin get <id>` depois de criar,
   e não confiar que `ready` sabe o que está liberado.
+- **2026-11-24**: A largura da linha de cima do nav não é constante: o gap era
+  `clamp(0.5rem, 1.1vw, 1.5rem)`, então cresce com a tela enquanto o container
+  trava em 1200px. Ao adicionar `/off-ramp` a linha quebrou em 1920px (faltavam
+  2px), não só perto do breakpoint. Item novo no nav = medir de 1080 a 2560, com
+  item ativo; o gap agora tem teto de 1rem e o menu colapsa abaixo de 1180px.

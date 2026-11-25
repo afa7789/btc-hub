@@ -113,4 +113,12 @@ export const tools: Tool[] = [
       "Build Bitcoin Core from source and run a pruned node, with both wallet formats",
     status: "GUIDE",
   },
+  {
+    href: "/off-ramp",
+    group: "guide",
+    label: "OFF-RAMP",
+    description:
+      "Eric on off-ramping crypto without an exchange sale, plus where to spend, get paid and trade P2P",
+    status: "GUIDE",
+  },
 ];

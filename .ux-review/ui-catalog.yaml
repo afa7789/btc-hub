@@ -67,6 +67,13 @@ screens:
     confidence: high
     evidence: [src/pages/how-much-i-fucked-up.astro:1]
     states: [default, light, no-js]
+  - id: off-ramp
+    route: /off-ramp
+    component: off-ramp.astro
+    role: public
+    confidence: high
+    evidence: [src/pages/off-ramp.astro:1]
+    states: [default, light]
   - id: not-found
     route: /this-route-does-not-exist
     component: 404.astro

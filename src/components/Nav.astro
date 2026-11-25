@@ -146,11 +146,13 @@ const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
    * que le como bug. Aqui cada grupo e a sua propria linha, entao o corte e
    * sempre 4/4 e nunca depende da largura.
    *
-   * Cada linha e `nowrap` na pratica. Com WALLET-GEN (site irmao, fim da
-   * linha de cima) o grupo mais largo ja com a decoracao "> <" do item ativo
-   * mede 1063px — MEDIDO por busca binaria em todas as rotas da linha de cima,
-   * nao estimado. Por isso o menu colapsa abaixo de 1080px (ver o media query
-   * do fim), e nao em 768 como antes: mexer no breakpoint, nao no agrupamento.
+   * Cada linha e `nowrap` na pratica. Com OFF-RAMP e WALLET-GEN (site irmao,
+   * fim da linha de cima) os rotulos com a decoracao "> <" do item ativo somam
+   * ~1011px, mais 6 gaps — MEDIDO no Playwright, nao estimado. O gap cresce
+   * com 1.1vw, entao o teto dele e de 1rem: com 1.5rem a linha precisava de
+   * 1138px em 1920 e o container so da 1136, quebrando justo na tela larga.
+   * Com o teto, a linha cabe a partir de ~1156px; o menu colapsa abaixo de
+   * 1180px (ver o media query do fim): mexer no breakpoint, nao no agrupamento.
    * O `wrap` fica so como valvula: numa fonte de fallback mais larga o nav
    * quebra em vez de vazar na horizontal.
    */
@@ -166,7 +168,7 @@ const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
     flex-wrap: wrap;
     justify-content: center;
     align-items: baseline;
-    gap: 0.25rem clamp(0.5rem, 1.1vw, 1.5rem);
+    gap: 0.25rem clamp(0.5rem, 1.1vw, 1rem);
   }
 
   .nav__link {
@@ -235,9 +237,10 @@ const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
   }
   
   /* O disclosure sem JS continua igual: o nav__links some e so o :checked o
-     traz de volta — sem script nenhum no caminho. 1079px: a linha de cima
-     precisa de 1063px (comentario do .nav__links); o logo segue em 768px. */
-  @media (max-width: 1079px) {
+     traz de volta — sem script nenhum no caminho. 1179px: a linha de cima
+     so cabe a partir de ~1156px (comentario do .nav__links); o logo segue
+     em 768px. */
+  @media (max-width: 1179px) {
     .nav__links {
       display: none;
       width: 100%;

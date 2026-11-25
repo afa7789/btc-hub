@@ -4,7 +4,7 @@ A collection of Bitcoin-related data visualization tools built with Astro.
 
 ## Tools
 
-Ten static pages, live at **https://afa7789.github.io/btc-hub/**.
+Eleven static pages, live at **https://afa7789.github.io/btc-hub/**.
 
 The shell (nav, layout, copy) is prerendered HTML. Most charts are client-side vanilla
 JS and need JavaScript enabled, with three deliberate exceptions: `/dca` and
@@ -102,6 +102,19 @@ The commands are checked literal against the source text after each build, since
 a mangled character is a broken command in someone's terminal. They live in the
 page frontmatter rather than inline because JSX would read `{` and `$` as
 interpolation.
+
+### `/off-ramp` — OFF-RAMP
+
+The other guide: no dataset, no chart, no commands. A transcription of Eric's
+summary on off-ramping crypto in high-tax countries without a straight exchange
+sale — structured P2P (Peer, p2p.me), crypto credit cards, crypto-backed loans,
+the Telegram exchanger market, and Colossus Pay. Every tax claim stays
+attributed to him; the page reports his take, it does not give tax advice.
+A closing section, marked as ours, links services grouped by use: P2P (Peer,
+RoboSats via its GitHub, since no source confirmed its domain), gift cards and
+travel (Bitrefill, Cake Pay, Piggy Cards, Travala), merchant payments (Flexa,
+CipherPay, BTCPay Server), cards (KAST), crypto payroll (Zebec, Opolis) and
+on-chain companies (MetaLeX). The list lives as data in the page frontmatter.
 
 ### `/how-much-i-fucked-up` — HOW MUCH I FUCKED UP
 
