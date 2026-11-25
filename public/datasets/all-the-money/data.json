@@ -23,12 +23,17 @@
     {
       "id": "bank-failures",
       "name": "Bank Failures",
-      "description": "What a failed bank owed its depositors, and a guarantee fund had to cover."
+      "description": "What a deposit guarantee fund had to cover when a bank failed."
     },
     {
       "id": "entertainment-assets",
       "name": "Entertainment Assets",
       "description": "Valuations of major professional sports teams."
+    },
+    {
+      "id": "betting",
+      "name": "Betting",
+      "description": "What bettors lose to betting houses in a year, and what a listed one is worth."
     },
     {
       "id": "digital-assets",
@@ -1408,6 +1413,466 @@
       "totalCalculation": {
         "includeInTotal": false,
         "reason": "A liability covered by a guarantee fund, not wealth",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "svb-fdic-loss",
+      "slug": "silicon-valley-bank-fdic-loss",
+      "name": "Silicon Valley Bank (FDIC loss)",
+      "categoryId": "bank-failures",
+      "valueBillions": 19.4,
+      "valueFormatted": "19.4 billion",
+      "lastUpdated": "2024-09-30T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "FDIC (official)",
+        "url": "https://www.fdic.gov/financial-reports/2024-annual-report-section1.pdf",
+        "apiEndpoint": null,
+        "notes": "Estimated loss to the US Deposit Insurance Fund from the 10 Mar 2023 failure, after the FDIC covered every deposit, insured or not.",
+        "method": "OFFICIAL (FDIC 2024 Annual Report): estimated cost of the SVB and Signature failures $22.1bn as of 2024-09-30 (SVB $19.4bn, Signature $2.7bn), ~$18.9bn of it from protecting uninsured depositors under the systemic risk exception. NET LOSS after asset recoveries, not gross payout, so not like-for-like with the Banco Master figure (gross amount guaranteed). FDIC special-assessment page later cites ~$16.7bn to recover as of 2025-09-30 for the two banks combined; per-bank split not found there."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "A cost absorbed by a deposit guarantee fund, not wealth",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "signature-bank-fdic-loss",
+      "slug": "signature-bank-fdic-loss",
+      "name": "Signature Bank (FDIC loss)",
+      "categoryId": "bank-failures",
+      "valueBillions": 2.7,
+      "valueFormatted": "2.7 billion",
+      "lastUpdated": "2024-09-30T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "FDIC (official)",
+        "url": "https://www.fdic.gov/financial-reports/2024-annual-report-section1.pdf",
+        "apiEndpoint": null,
+        "notes": "Estimated loss to the US Deposit Insurance Fund from the 12 Mar 2023 failure, with all deposits covered.",
+        "method": "OFFICIAL (FDIC 2024 Annual Report): $2.7bn of the $22.1bn combined SVB + Signature estimate as of 2024-09-30. Net loss after recoveries, not gross payout."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "A cost absorbed by a deposit guarantee fund, not wealth",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "first-republic-fdic-loss",
+      "slug": "first-republic-bank-fdic-loss",
+      "name": "First Republic Bank (FDIC loss)",
+      "categoryId": "bank-failures",
+      "valueBillions": 15.6,
+      "valueFormatted": "15.6 billion",
+      "lastUpdated": "2024-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "FDIC (official)",
+        "url": "https://www.fdic.gov/financial-reports/2024-annual-report-full-report.pdf",
+        "apiEndpoint": null,
+        "notes": "Estimated loss to the US Deposit Insurance Fund from the 1 May 2023 failure and sale to JPMorgan Chase.",
+        "method": "OFFICIAL (FDIC 2024 Annual Report): final estimated loss to the DIF $15.6bn (initial estimate ~$13bn in May 2023). Net loss under the loss-share deal with JPMorgan, not gross payout."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "A cost absorbed by a deposit guarantee fund, not wealth",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "indymac-fdic-loss",
+      "slug": "indymac-bank-fdic-loss",
+      "name": "IndyMac (FDIC loss)",
+      "categoryId": "bank-failures",
+      "valueBillions": 10.7,
+      "valueFormatted": "10.7 billion",
+      "lastUpdated": "2008-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "US Treasury OIG / FDIC",
+        "url": "https://oig.treasury.gov/system/files/Documents/oig09032.pdf",
+        "apiEndpoint": null,
+        "notes": "Estimated loss to the US Deposit Insurance Fund from the 11 Jul 2008 failure, in 2008 dollars.",
+        "method": "OFFICIAL (Treasury OIG material loss review OIG-09-032, FDIC 2008 Annual Report): FDIC estimated loss $10.7bn as of 2008-12-31; first estimate was $4-8bn. Point-in-time estimate, nominal 2008 USD, no later final figure found."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "A cost absorbed by a deposit guarantee fund, not wealth",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "bradford-bingley-fscs",
+      "slug": "bradford-bingley-fscs-cost",
+      "name": "Bradford & Bingley (FSCS cost)",
+      "categoryId": "bank-failures",
+      "valueBillions": 28.3,
+      "valueFormatted": "28.3 billion",
+      "lastUpdated": "2008-09-29T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "FSCS (official)",
+        "url": "https://www.fscs.org.uk/media/press/2018/sep/10-years-after-failures/",
+        "apiEndpoint": null,
+        "notes": "£15.65 billion the UK's FSCS paid to move depositors to Santander when Bradford & Bingley was nationalised on 29 Sep 2008, at about $1.81 per pound.",
+        "method": "OFFICIAL (FSCS, '10 years after failures', Sep 2018): B&B £15.65bn; same release lists Kaupthing Singer & Friedlander £2.58bn, Icesave £1,400.9m, Heritable £464.7m, London Scottish £237.4m. GROSS amount funded by an HM Treasury loan, later repaid from B&B's wind-down. USD conversion is ours at ~1.81 USD/GBP (late Sep 2008), nominal."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "A cost absorbed by a deposit guarantee fund, not wealth",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "brazil-bets-ggr",
+      "slug": "brazil-regulated-betting-ggr",
+      "name": "Brazil betting sites (lost by bettors, 2025)",
+      "categoryId": "betting",
+      "valueBillions": 6.6,
+      "valueFormatted": "6.6 billion",
+      "lastUpdated": "2025-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Secretaria de Prêmios e Apostas (Ministério da Fazenda)",
+        "url": "https://bnldata.com.br/en/bets-registram-receita-bruta-de-r-37-bilhoes-em-2025-aponta-secretaria-de-premios-e-apostas/",
+        "apiEndpoint": null,
+        "notes": "About R$37 billion kept by licensed 'bets' in 2025, the first regulated year: deposits minus what went back to players, at about R$5.6 per dollar.",
+        "method": "OFFICIAL via press (SPA/MF annual balance): GGR ~R$37bn in 2025; R$220.6bn deposited, R$183.7bn returned as prizes/withdrawable bonus; ~25.2m bettors; 188 brands from 85 licensed companies. H1 2025 official release (gov.br/fazenda): GGR R$17.4bn, 17.7m bettors. Licensed market only, illegal sites excluded. USD conversion is ours at ~5.6 BRL/USD (2025 average), rounded."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Annual flow of gambling losses, not a stock of wealth",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "draftkings-market-cap",
+      "slug": "draftkings-market-capitalization",
+      "name": "DraftKings",
+      "categoryId": "betting",
+      "valueBillions": 8.0,
+      "valueFormatted": "8 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/draftkings/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24: $8.02bn per companiesmarketcap.com ($8.01bn per Nasdaq)."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "nubank-market-cap",
+      "slug": "nu-holdings-market-capitalization",
+      "name": "Nubank (Nu Holdings)",
+      "categoryId": "corporations",
+      "valueBillions": 59.65,
+      "valueFormatted": "59.65 billion",
+      "lastUpdated": "2026-11-17T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/nu-holdings/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap at the 17 Nov 2026 close.",
+        "method": "Market cap $59.65bn per companiesmarketcap.com dated 2026-11-17 (Nasdaq: $59.87bn same day). Other trackers show $57-64bn in Nov 2026 depending on share count; no 24 Nov close found."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "kalshi-valuation",
+      "slug": "kalshi-private-valuation",
+      "name": "Kalshi (private valuation)",
+      "categoryId": "corporations",
+      "valueBillions": 40,
+      "valueFormatted": "40 billion",
+      "lastUpdated": "2026-10-29T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CNBC",
+        "url": "https://www.cnbc.com/2026/10/29/kalshi-40-billion-valuation-funding-round.html",
+        "apiEndpoint": null,
+        "notes": "Not listed: valuation of the $1 billion Series G announced 29 Oct 2026.",
+        "method": "NOT LISTED. $1bn Series G co-led by Sequoia and Wellington at $40bn (2026-10-29), up from $22bn earlier in 2026 and $11bn in Nov 2025."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Private valuation, not a traded market cap",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "polymarket-valuation",
+      "slug": "polymarket-private-valuation",
+      "name": "Polymarket (private valuation)",
+      "categoryId": "corporations",
+      "valueBillions": 21,
+      "valueFormatted": "21 billion",
+      "lastUpdated": "2026-09-02T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Yahoo Finance",
+        "url": "https://finance.yahoo.com/markets/crypto/articles/polymarket-valuation-hits-21bn-trump-065100486.html",
+        "apiEndpoint": null,
+        "notes": "Not listed: valuation of the $1 billion round led by 1789 Capital, reported in early Sep 2026.",
+        "method": "NOT LISTED. ~$21bn post-money, $1bn round led by 1789 Capital (reported 2026-09-01/02); $15bn in Apr 2026 round with a $600m ICE investment. Press-reported, not company-confirmed."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Private valuation, not a traded market cap",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "stripe-valuation",
+      "slug": "stripe-private-valuation",
+      "name": "Stripe (private valuation)",
+      "categoryId": "corporations",
+      "valueBillions": 159,
+      "valueFormatted": "159 billion",
+      "lastUpdated": "2026-02-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Stripe",
+        "url": "https://stripe.com/newsroom/news/stripe-2025-update",
+        "apiEndpoint": null,
+        "notes": "Not listed: valuation set by the employee tender offer announced 24 Feb 2026.",
+        "method": "NOT LISTED. Tender offer announced 2026-02-24 at $159bn (Thrive, Coatue, a16z plus company buyback); previous tender $106.7bn (Sep 2025)."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Private valuation, not a traded market cap",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "databricks-valuation",
+      "slug": "databricks-private-valuation",
+      "name": "Databricks (private valuation)",
+      "categoryId": "corporations",
+      "valueBillions": 190,
+      "valueFormatted": "190 billion",
+      "lastUpdated": "2026-08-13T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "SiliconANGLE",
+        "url": "https://siliconangle.com/2026/08/13/databricks-raises-another-5b-annualized-revenue-tops-7b/",
+        "apiEndpoint": null,
+        "notes": "Not listed: valuation of the $5 billion round closed 13 Aug 2026.",
+        "method": "NOT LISTED. $5bn strategic round led by Coatue closed 2026-08-13 at $190bn (announced at $188bn in July); ~$134bn six months earlier."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Private valuation, not a traded market cap",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "revolut-valuation",
+      "slug": "revolut-private-valuation",
+      "name": "Revolut (private valuation)",
+      "categoryId": "corporations",
+      "valueBillions": 115,
+      "valueFormatted": "115 billion",
+      "lastUpdated": "2026-11-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Tech.eu",
+        "url": "https://tech.eu/2026/11/04/revolut-confirms-115bn-valuation-after-completing-secondary-sale/",
+        "apiEndpoint": null,
+        "notes": "Not listed: valuation of the secondary share sale completed in Nov 2026.",
+        "method": "NOT LISTED. Secondary sale started 2026-07-22 at $2,017/share (Bloomberg/Reuters), completion confirmed 2026-11-04 at $115bn; $75bn in Nov 2025."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Private valuation, not a traded market cap",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "broadcom-market-cap",
+      "slug": "broadcom-market-capitalization",
+      "name": "Broadcom",
+      "categoryId": "corporations",
+      "valueBillions": 1496,
+      "valueFormatted": "1496 billion",
+      "lastUpdated": "2026-11-23T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/broadcom/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap at the 23 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-23 per companiesmarketcap.com."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "amd-market-cap",
+      "slug": "amd-market-capitalization",
+      "name": "AMD",
+      "categoryId": "corporations",
+      "valueBillions": 750.5,
+      "valueFormatted": "750.5 billion",
+      "lastUpdated": "2026-11-23T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/amd/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap at the 23 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-23 per companiesmarketcap.com."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "asml-market-cap",
+      "slug": "asml-market-capitalization",
+      "name": "ASML",
+      "categoryId": "corporations",
+      "valueBillions": 533.33,
+      "valueFormatted": "533.33 billion",
+      "lastUpdated": "2026-11-23T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/asml/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap at the 23 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-23 per companiesmarketcap.com. Nasdaq shows the same $533.33bn; the page headline showed $518.17bn at a later crawl."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "intel-market-cap",
+      "slug": "intel-market-capitalization",
+      "name": "Intel",
+      "categoryId": "corporations",
+      "valueBillions": 291.26,
+      "valueFormatted": "291.26 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/intel/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com. Nasdaq: $291.52bn same day."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "deere-market-cap",
+      "slug": "deere-company-market-capitalization",
+      "name": "Deere & Company (John Deere)",
+      "categoryId": "corporations",
+      "valueBillions": 170.68,
+      "valueFormatted": "170.68 billion",
+      "lastUpdated": "2026-11-23T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/deere-company/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap at the 23 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-23 per companiesmarketcap.com. Nasdaq: $170.72bn same day."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "reddit-market-cap",
+      "slug": "reddit-market-capitalization",
+      "name": "Reddit",
+      "categoryId": "corporations",
+      "valueBillions": 17.44,
+      "valueFormatted": "17.44 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/reddit/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com. Range $17.40-17.44bn across the page's sources."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "cargill-revenue",
+      "slug": "cargill-annual-revenue",
+      "name": "Cargill (annual revenue)",
+      "categoryId": "corporations",
+      "valueBillions": 164,
+      "valueFormatted": "164 billion",
+      "lastUpdated": "2026-05-31T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Cargill",
+        "url": "https://www.cargill.com/about/doc/1451394341550/2026-cargill-annual-report.pdf",
+        "apiEndpoint": null,
+        "notes": "Not listed and never valued in a funding round: this is one year of sales (fiscal 2026, ended 31 May), not what the company is worth.",
+        "method": "NOT LISTED, family-owned. Fiscal 2026 revenue $164bn per the 2026 annual report (released Aug 2026), up from $154bn in FY2025 and $160bn in FY2024. REVENUE, not a market cap or valuation; shown for scale as the largest agricultural trader."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Annual revenue, a flow, not a stock of wealth",
         "parentItem": null
       }
     }
