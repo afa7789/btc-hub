@@ -32,10 +32,12 @@ point of the name. Fully network-dependent: no CoinGecko, no list.
 Block visualization of global wealth where **one block = $100 billion USD**. Reads the
 curated `public/datasets/all-the-money/data.json`, which carries `excludeFromTotal`
 rules so aggregates are not double-counted (gold is not summed on top of commodities).
-`public/scripts/all-the-money/script.js` renders the blocks and derives each item's
-color from the **SHA-256 of its slug** via `crypto.subtle`, with a saturation boost —
-deterministic, always vibrant, no hardcoded palette. Supports filtering and a compare
-mode. Static data, no API.
+`public/scripts/all-the-money/script.js` lays each item out as a 40-column grid of
+squares, so height alone compares values, grouped by category under its description
+(after Visual Capitalist's money visualization). Colour carries meaning only: bitcoin,
+ether, gold, fiat money and debt use the site's series tokens, everything else is
+neutral grey, all on the fixed dark chart canvas. Supports filtering, sorting, a flat
+mode, a compare mode and JSON export.
 
 ### `/dca` — DCA CALCULATOR
 

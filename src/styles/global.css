@@ -72,6 +72,10 @@
   --chart-bg: #0a0a0a;
   --chart-ink: #ffffff;
   --chart-grid: #444444;
+  /* Texto secundario e serie sem significado proprio sobre o canvas escuro.
+     Fixos como os tres acima: o canvas nao muda com o tema. */
+  --chart-ink-muted: #9a9a9a;
+  --series-neutral: #8a8a8a;
   /*
    * A legenda do D3 e desenhada abaixo do painel, sobre o fundo da PAGINA, nao
    * sobre o canvas. Por isso ela precisa virar com o tema — ao contrario dos

@@ -305,10 +305,11 @@ do favicon.
 
 - `src/styles/sem-melhores.css` ainda tem seu próprio sistema de cores — é o
   último arquivo fora dos tokens.
-- A paleta do `/all-the-money` deriva cor de SHA-256 do slug, sem limite de
-  luminância e com `Math.random()` no fallback: ouro sai magenta, e um bloco
-  pode cair perto do preto ou do branco. É decisão de produto, não defeito —
-  trocar por rampa categórica curada muda a identidade da página.
+- A paleta do `/all-the-money` derivava cor de SHA-256 do slug (ouro saía
+  magenta, bitcoin azul). **Trocada em 2026-11-25:** cor só onde significa algo,
+  com os tokens de série — bitcoin, ether, ouro, fiduciário (`--series-fiat`) e
+  dívida (`--status-negative`) — e o resto em `--series-neutral`, sobre canvas
+  escuro fixo. Decisão de produto revertida a pedido de legibilidade.
 - O axe reporta `color-contrast` nos títulos de eixo do `/debase`, `/halving` e
   `/rainbow` no tema claro. É falso positivo: ele lê `color` em vez do `fill` do
   SVG. Prova em `.claude/FALSE_POSITIVES.md`. O

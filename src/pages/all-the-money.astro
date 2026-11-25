@@ -32,8 +32,7 @@ const description =
       flex: none;
       width: 20px;
       height: 20px;
-      background: var(--accent-btc);
-      border: 1px solid var(--border-strong);
+      background: var(--series-neutral);
     }
 
     .field-actions {
@@ -128,7 +127,7 @@ const description =
       gap: 1rem;
       margin-bottom: 1rem;
       padding: 0.75rem 1rem;
-      border: var(--border-width) solid var(--border-subtle);
+      border: var(--border-width) solid var(--chart-grid);
       font-size: var(--text-micro);
       font-weight: bold;
       letter-spacing: 1px;
@@ -144,8 +143,7 @@ const description =
     :global(.reference-block) {
       width: 20px;
       height: 20px;
-      background: var(--fg-primary);
-      border: 1px solid var(--border-strong);
+      background: var(--series-neutral);
     }
 
     .loading {
@@ -254,9 +252,17 @@ const description =
      *   25 mil quadrados virava uma malha que brigava com a cor.
      * - Um item por linha, rotulo em texto normal, nota da fonte embaixo.
      */
+    /*
+     * Canvas escuro fixo nos dois temas, como os outros graficos do site
+     * (DESIGN.md 2.2): bitcoin laranja e ouro sobre branco ficariam abaixo de
+     * 3:1. Por isso o texto aqui dentro usa --chart-ink, que nao vira.
+     */
     .visualization {
       margin-bottom: 2em;
       min-height: 500px;
+      padding: 1rem;
+      background: var(--chart-bg);
+      color: var(--chart-ink);
     }
 
     #blocks-container {
@@ -284,7 +290,7 @@ const description =
     }
 
     :global(.block:hover) {
-      outline: 2px solid var(--fg-primary);
+      outline: 2px solid var(--chart-ink);
       outline-offset: 1px;
       z-index: 10;
     }
@@ -295,10 +301,12 @@ const description =
 
     :global(.category-head h2) {
       margin-bottom: 0.4rem;
+      color: var(--chart-ink);
+      border-bottom-color: var(--chart-grid);
     }
 
     :global(.category-note) {
-      color: var(--fg-secondary);
+      color: var(--chart-ink-muted);
     }
 
     :global(.item-label) {
@@ -315,16 +323,17 @@ const description =
       font-size: var(--text-micro);
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: var(--fg-muted);
+      color: var(--chart-ink-muted);
     }
 
     :global(.item-name) {
       font-weight: bold;
-      color: var(--fg-primary);
+      color: var(--chart-ink);
     }
 
+    /* Branco, nao laranja: no grid o laranja agora quer dizer bitcoin. */
     :global(.item-value) {
-      color: var(--accent-btc);
+      color: var(--chart-ink);
       font-variant-numeric: tabular-nums;
     }
 
@@ -332,7 +341,7 @@ const description =
       flex-basis: 100%;
       overflow-wrap: anywhere;
       font-size: var(--text-micro);
-      color: var(--fg-muted);
+      color: var(--chart-ink-muted);
     }
 
     #toggleDataSources {

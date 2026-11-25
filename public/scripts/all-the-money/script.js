@@ -17,53 +17,30 @@ let wealthData = null;
 let filteredItems = [];
 let comparisonItems = [];
 
-// SHA-256 implementation for vanilla JS (simplified)
-async function sha256(message) {
-  const msgUint8 = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return hashHex;
-}
+/*
+ * Cor com significado, nao por hash. Cada item tirava a cor do SHA-256 do slug,
+ * sem controle de luminancia: o Bitcoin saia azul e o ouro magenta, e a pagina
+ * virava um arco-iris sem leitura. Agora a cor so aparece onde diz algo, com
+ * os tokens que o site inteiro ja usa (DESIGN.md 2.1): bitcoin, ether, ouro,
+ * dinheiro fiduciario e divida. O resto do mundo fica no cinza neutro.
+ */
+const ITEM_COLOR = {
+  "bitcoin-market-cap": "--series-btc",
+  "ethereum-market-cap": "--series-eth",
+  "gold-above-ground": "--series-gold",
+  "global-debt": "--status-negative",
+};
+const CATEGORY_COLOR = {
+  "money-supply": "--series-fiat",
+  "central-bank-assets": "--series-fiat",
+};
 
-// Generate crazy vibrant color from slug using SHA-256
-async function generateCrazyColor(slug) {
-  const hash = await sha256(slug);
-
-  // Divide hash into 3 equal parts (each 21-22 chars for 64-char hash)
-  const third = Math.floor(hash.length / 3);
-  const part1 = hash.slice(0, third);
-  const part2 = hash.slice(third, third * 2);
-  const part3 = hash.slice(third * 2);
-
-  // Convert each part to RGB values (use first 2 chars of each part)
-  const r = Number.parseInt(part1.slice(0, 2), 16);
-  const g = Number.parseInt(part2.slice(0, 2), 16);
-  const b = Number.parseInt(part3.slice(0, 2), 16);
-
-  // Make colors more vibrant by boosting saturation
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const boost = 1.5; // Saturation boost
-
-  let newR = r;
-  let newG = g;
-  let newB = b;
-
-  if (max > 0) {
-    newR = min + (r - min) * boost;
-    newG = min + (g - min) * boost;
-    newB = min + (b - min) * boost;
-  }
-
-  // Clamp values to 0-255
-  newR = Math.min(255, Math.max(0, newR));
-  newG = Math.min(255, Math.max(0, newG));
-  newB = Math.min(255, Math.max(0, newB));
-
-  return `rgb(${Math.round(newR)}, ${Math.round(newG)}, ${Math.round(newB)})`;
+function colorFor(item, styles) {
+  const token =
+    ITEM_COLOR[item.id] ||
+    CATEGORY_COLOR[item.categoryId] ||
+    "--series-neutral";
+  return styles.getPropertyValue(token).trim();
 }
 
 // Storage helper functions
@@ -158,13 +135,6 @@ async function loadData() {
       console.log("🔄 Cache complementado com data.json.");
     }
 
-    // Criar cores para os novos itens ou garantir que todos tenham cor
-    for (const item of wealthData.items) {
-      if (!item.color) {
-        item.color = await generateCrazyColor(item.slug);
-      }
-    }
-
     // Re-ordenar (opcional, mas bom para consistência)
     wealthData.items.sort((a, b) => b.valueBillions - a.valueBillions);
 
@@ -223,7 +193,6 @@ async function fetchFreshDataInBackground() {
       console.log("🆕 New data version detected, updating...");
 
       // Generate colors for fresh data
-      await generateColorsForData(freshData);
 
       // Update global data
       wealthData = freshData;
@@ -244,30 +213,6 @@ async function fetchFreshDataInBackground() {
     }
   } catch (error) {
     console.warn("⚠️ Background data refresh failed:", error);
-  }
-}
-
-// Extract color generation to reusable function
-async function generateColorsForData(data) {
-  // Generate crazy colors for categories based on their slugs
-  for (const category of data.categories) {
-    try {
-      category.color = await generateCrazyColor(category.id);
-      console.log(`🎨 Generated color for ${category.name}: ${category.color}`);
-    } catch (error) {
-      console.error(`Failed to generate color for ${category.name}:`, error);
-      category.color = `#${Math.floor(Math.random() * 16777215).toString(16)}`; // Fallback random color
-    }
-  }
-
-  // Generate colors for individual items based on their slugs too
-  for (const item of data.items) {
-    try {
-      item.color = await generateCrazyColor(item.slug);
-    } catch (error) {
-      console.error(`Failed to generate color for ${item.name}:`, error);
-      item.color = `#${Math.floor(Math.random() * 16777215).toString(16)}`; // Fallback random color
-    }
   }
 }
 
@@ -368,7 +313,6 @@ async function getHardcodedFallbackData() {
   };
 
   // Generate crazy colors for categories and items using the shared function
-  await generateColorsForData(fallbackData);
 
   return fallbackData;
 }
@@ -585,13 +529,13 @@ function createVisualization() {
   }
 
   let blockIndex = 0;
+  const styles = getComputedStyle(document.documentElement);
   const groupByCategory = wrapped && sortBy === "category";
   let lastCategoryId = null;
 
   for (const item of items) {
     const itemValue = parseValue(item);
-    // Use item's own color instead of category color
-    const itemColor = item.color || "#999999";
+    const itemColor = colorFor(item, styles);
 
     // Calculate blocks needed - use exact division, not ceiling
     const exactBlocks = itemValue / currentScale;
@@ -824,7 +768,6 @@ function mergeDataIntelligently(cachedData, jsonData) {
         valueBillions: cachedItem.valueBillions, // Keep cached value
         valueFormatted: cachedItem.valueFormatted, // Keep cached format
         lastUpdated: cachedItem.lastUpdated, // Keep cached timestamp
-        color: cachedItem.color, // Keep cached color
       };
       merged.items.push(mergedItem);
       console.log(
@@ -1233,12 +1176,6 @@ document.addEventListener("astro:page-load", async () => {
   const loadSuccess = await loadData();
 
   if (wealthData) {
-    // Initialize sample block color
-    const sampleBlock = document.querySelector(".sample-block");
-    if (sampleBlock && wealthData.items.length > 0) {
-      sampleBlock.style.backgroundColor = wealthData.items[0].color;
-    }
-
     // Initialize all controls and features
     initializeControls();
     // Os atalhos ficam pendurados no document, que sobrevive a troca de
