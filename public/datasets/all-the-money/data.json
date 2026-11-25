@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "lastUpdated": "2026-09-07T12:07:00Z",
+    "lastUpdated": "2026-11-25T00:00:00Z",
     "dataVersion": "2.0",
     "currency": "USD",
     "baseUnit": "billions",
@@ -19,6 +19,11 @@
       "id": "individual-wealth",
       "name": "Individual Wealth",
       "description": "The net worth of specific individuals or groups of wealthy people."
+    },
+    {
+      "id": "bank-failures",
+      "name": "Bank Failures",
+      "description": "What a failed bank owed its depositors, and a guarantee fund had to cover."
     },
     {
       "id": "entertainment-assets",
@@ -126,15 +131,16 @@
       "slug": "cryptocurrency-total-market-cap",
       "name": "Cryptocurrency (Market Cap)",
       "categoryId": "digital-assets",
-      "valueBillions": 2690,
-      "valueFormatted": "2.69 trillion",
-      "lastUpdated": "2026-09-07T00:00:00Z",
+      "valueBillions": 2088.3,
+      "valueFormatted": "2.09 trillion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "CoinGecko",
-        "url": "https://www.coingecko.com/",
+        "url": "https://api.coingecko.com/api/v3/global",
         "apiEndpoint": "https://api.coingecko.com/api/v3/global",
-        "notes": "CoinGecko /api/v3/global total_market_cap.usd"
+        "notes": "All cryptocurrencies, 25 Nov 2026 (CoinGecko).",
+        "method": "CoinGecko /global total_market_cap.usd, updated_at 2026-11-25 19:57 UTC."
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -150,15 +156,16 @@
       "slug": "bitcoin-total-market-cap",
       "name": "Bitcoin (Market Cap)",
       "categoryId": "digital-assets",
-      "valueBillions": 1591,
-      "valueFormatted": "1.59 trillion",
-      "lastUpdated": "2026-09-07T00:00:00Z",
+      "valueBillions": 1206.9,
+      "valueFormatted": "1.21 trillion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "CoinGecko",
-        "url": "https://www.coingecko.com/en/coins/bitcoin",
+        "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_market_cap=true",
         "apiEndpoint": "https://api.coingecko.com/api/v3/coins/bitcoin",
-        "notes": "59.13% BTC dominance of CoinGecko global total market cap"
+        "notes": "At $59,992 per bitcoin, 25 Nov 2026 (CoinGecko).",
+        "method": "BTC $59,992; market cap 2026-11-25 19:56 UTC (BTC dominance 57.77%)."
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -179,15 +186,16 @@
       "slug": "ethereum-total-market-cap",
       "name": "Ethereum (Market Cap)",
       "categoryId": "digital-assets",
-      "valueBillions": 303,
-      "valueFormatted": "303 billion",
-      "lastUpdated": "2026-09-07T00:00:00Z",
+      "valueBillions": 206.1,
+      "valueFormatted": "206.1 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "CoinGecko",
-        "url": "https://www.coingecko.com/en/coins/ethereum",
+        "url": "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_market_cap=true",
         "apiEndpoint": "https://api.coingecko.com/api/v3/coins/ethereum",
-        "notes": "11.27% ETH dominance of CoinGecko global total market cap"
+        "notes": "At $1,686 per ether, 25 Nov 2026 (CoinGecko).",
+        "method": "ETH $1,686.16; market cap 2026-11-25 19:56 UTC (ETH dominance 9.87%)."
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -208,15 +216,16 @@
       "slug": "cryptocurrency-rest-market-cap",
       "name": "Other Cryptocurrencies (Market Cap)",
       "categoryId": "digital-assets",
-      "valueBillions": 800,
-      "valueFormatted": "800 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 675.3,
+      "valueFormatted": "675.3 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
       "dataSource": {
         "type": "calculated",
         "provider": "CoinGecko",
-        "url": "https://www.coingecko.com/",
+        "url": "https://api.coingecko.com/api/v3/global",
         "apiEndpoint": null,
-        "notes": "Total crypto market cap minus Bitcoin and Ethereum"
+        "notes": "Total crypto market cap minus bitcoin and ether, 25 Nov 2026.",
+        "method": "Derived: CoinGecko total 2088.3 - BTC 1206.9 - ETH 206.1, same snapshot 2026-11-25 ~19:57 UTC."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -254,15 +263,16 @@
       "slug": "russia-gross-domestic-product",
       "name": "Russia GDP",
       "categoryId": "national-economy",
-      "valueBillions": 2561.3,
-      "valueFormatted": "2.56 trillion",
-      "lastUpdated": "2026-07-13T00:00:00Z",
+      "valueBillions": 2572.315,
+      "valueFormatted": "2.57 trillion",
+      "lastUpdated": "2026-10-13T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "World Bank",
-        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=RU",
+        "provider": "IMF World Economic Outlook (Oct 2026 vintage)",
+        "url": "https://www.imf.org/external/datamapper/api/v1/NGDPD/RUS?periods=2025,2026",
         "apiEndpoint": "https://api.worldbank.org/v2/country/RU/indicator/NY.GDP.MKTP.CD",
-        "notes": "NY.GDP.MKTP.CD, 2025 estimate; WB database release 2026-07-13"
+        "notes": "2025 GDP in current US dollars (IMF, Oct 2026).",
+        "method": "IMF WEO NGDPD current-price USD via DataMapper API; identical to IMF SDMX WEO dataflow whose PUBLICATION_DATE = 2026-10-13. Year 2025 = 2572.315; 2026 projection = 2861.156. Stored value is World Bank NY.GDP.MKTP.CD 2025 (2561.3). Stored 2561.3 is nominal, not PPP: it equals WB NY.GDP.MKTP.CD (GDP, current US$) for 2025; PPP is a separate series (NY.GDP.MKTP.PP.CD)."
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -278,15 +288,16 @@
       "slug": "annual-military-spending-global",
       "name": "Annual Military Spending (Global)",
       "categoryId": "government-spending",
-      "valueBillions": 2443,
-      "valueFormatted": "2.44 trillion",
-      "lastUpdated": "2024-04-22T00:00:00Z",
+      "valueBillions": 2887,
+      "valueFormatted": "2.89 trillion",
+      "lastUpdated": "2026-04-27T00:00:00Z",
       "dataSource": {
         "type": "manual",
         "provider": "SIPRI",
-        "url": "https://www.sipri.org/databases/milex",
+        "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
         "apiEndpoint": null,
-        "notes": "2023 data from SIPRI Military Expenditure Database"
+        "notes": "World military spending in 2025 (SIPRI, Apr 2026).",
+        "method": "World military expenditure 2025 = $2,887bn (+2.9% real); SIPRI fact sheet April 2026, released 2026-04-27."
       },
       "isLiveUpdatable": false
     },
@@ -295,15 +306,16 @@
       "slug": "annual-military-spending-usa",
       "name": "USA Military Spending (Annual)",
       "categoryId": "government-spending",
-      "valueBillions": 877,
-      "valueFormatted": "877 billion",
-      "lastUpdated": "2024-04-22T00:00:00Z",
+      "valueBillions": 954,
+      "valueFormatted": "954 billion",
+      "lastUpdated": "2026-04-27T00:00:00Z",
       "dataSource": {
         "type": "manual",
         "provider": "SIPRI",
-        "url": "https://www.sipri.org/databases/milex",
+        "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
         "apiEndpoint": null,
-        "notes": "2023 data from SIPRI Military Expenditure Database - USA accounts for ~36% of global military spending"
+        "notes": "US military spending in 2025, a third of the world total (SIPRI).",
+        "method": "US military expenditure 2025 = $954bn (-7.5% vs 2024), 33% of world total; SIPRI fact sheet April 2026."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -334,32 +346,34 @@
       "slug": "gold-all-above-ground-reserves",
       "name": "Gold (All above-ground reserves)",
       "categoryId": "precious-metals",
-      "valueBillions": 15000,
-      "valueFormatted": "15 trillion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 25635.2,
+      "valueFormatted": "25.64 trillion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
       "dataSource": {
         "type": "calculated",
-        "provider": "World Gold Council + Market Data",
+        "provider": "World Gold Council + gold-api.com spot",
         "url": "https://www.gold.org/goldhub/data/above-ground-stocks",
         "apiEndpoint": null,
-        "notes": "~208,000 tonnes at current gold prices (~$2,350/oz)"
+        "notes": "224,200 t above ground (World Gold Council, Q3 2026) at $3,556/oz, 25 Nov 2026.",
+        "method": "WGC above-ground stock end-Q3 2026 = 224,200 t (page dated 2026-11-03) x spot $3,551.20/oz (https://api.gold-api.com/price/XAU, 2026-11-25 20:04 UTC; spot, not LBMA; COMEX Dec future GC=F $3,577.4 same time). Tonnes x 32,150.7466 oz/t x price. WGC's own valuation at end-Q3 LBMA PM = US$30.0tn. Stored note used stale ~$2,350/oz."
       },
       "isLiveUpdatable": false
     },
     {
       "id": "billionaires-total",
       "slug": "billionaires-all-globally",
-      "name": "Billionaires (All 2,781 globally)",
+      "name": "Billionaires (All 3,428 globally)",
       "categoryId": "individual-wealth",
-      "valueBillions": 14200,
-      "valueFormatted": "14.2 trillion",
-      "lastUpdated": "2025-04-01T00:00:00Z",
+      "valueBillions": 20100,
+      "valueFormatted": "20.1 trillion",
+      "lastUpdated": "2026-03-01T00:00:00Z",
       "dataSource": {
         "type": "manual",
         "provider": "Forbes",
-        "url": "https://www.forbes.com/billionaires/",
+        "url": "https://www.forbes.com/sites/chasewithorn/2026/03/10/2026-worlds-billionaires-list-facts-and-figures/",
         "apiEndpoint": null,
-        "notes": "2025 Forbes Billionaires List aggregate"
+        "notes": "Forbes 2026 list: 3,428 billionaires, net worth as of 1 Mar 2026.",
+        "method": "Forbes 2026 World's Billionaires list (published 2026-03-10, net worths as of 2026-03-01): 3,428 billionaires worth $20.1tn. Rename item to 'Billionaires (All 3,428 globally)'. Stored 14.2T/2,781 is the 2024 list mislabeled as 2025 (2025 list: 3,028 / $16.1tn)."
       },
       "isLiveUpdatable": false
     },
@@ -368,15 +382,16 @@
       "slug": "central-bank-assets-major",
       "name": "Central Bank Assets (Fed, BoJ, ECB, PBoC)",
       "categoryId": "central-bank-assets",
-      "valueBillions": 31000,
-      "valueFormatted": "31 trillion",
-      "lastUpdated": "2024-12-31T00:00:00Z",
+      "valueBillions": 24775.1,
+      "valueFormatted": "24.78 trillion",
+      "lastUpdated": "2026-06-30T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "Multiple Central Banks",
-        "url": "https://fred.stlouisfed.org/",
+        "provider": "BIS central bank total assets (WS_CBTA)",
+        "url": "https://stats.bis.org/api/v2/data/dataflow/BIS/WS_CBTA/1.0/*?startPeriod=2026-06&c%5BREF_AREA%5D=CN,US,XM,JP",
         "apiEndpoint": null,
-        "notes": "Aggregate of major central bank balance sheets"
+        "notes": "Fed, ECB, PBoC and BoJ balance sheets, end-June 2026 (BIS).",
+        "method": "End-June 2026, USD bn at BIS market FX: Fed 6,735.6 + Eurosystem 6,817.0 + PBoC 7,285.2 (CNY 49.43tn) + BoJ 3,937.2. June is latest month with all four. Newer partials: Fed WALCL $6,741bn (2026-11-18), Eurosystem EUR 5,923bn (2026-11-20), BoJ JPY 626.2tn (Oct 2026). BIS end-2024 sum was ~24,349, so stored 31,000 was ~27% too high."
       },
       "isLiveUpdatable": true
     },
@@ -385,15 +400,16 @@
       "slug": "sp500-total-market-cap",
       "name": "S&P 500 Market Cap",
       "categoryId": "stock-markets",
-      "valueBillions": 45000,
-      "valueFormatted": "45 trillion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 67879.3,
+      "valueFormatted": "67.88 trillion",
+      "lastUpdated": "2026-10-30T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "Financial Data Providers",
-        "url": "https://finance.yahoo.com/",
+        "provider": "S&P Dow Jones Indices (factsheet)",
+        "url": "https://topforeignstocks.com/wp-content/uploads/2026/11/SP-500-Factsheet-Oct-31-2026.pdf",
         "apiEndpoint": null,
-        "notes": "Current S&P 500 total market capitalization"
+        "notes": "Total market cap of the 503 constituents, 30 Oct 2026 (S&P DJI).",
+        "method": "S&P 500 factsheet 'AS OF OCTOBER 30, 2026': 503 constituents, total market cap $67,879,335.33M (mean $134,948.98M). S&P DJI factsheet re-hosted by topforeignstocks.com (spglobal.com blocked automated fetch)."
       },
       "isLiveUpdatable": true,
       "totalCalculation": {
@@ -407,15 +423,16 @@
       "slug": "china-gross-domestic-product",
       "name": "China GDP",
       "categoryId": "national-economy",
-      "valueBillions": 19498,
-      "valueFormatted": "19.5 trillion",
-      "lastUpdated": "2026-07-13T00:00:00Z",
+      "valueBillions": 19626.191,
+      "valueFormatted": "19.63 trillion",
+      "lastUpdated": "2026-10-13T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "World Bank",
-        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=CN",
+        "provider": "IMF World Economic Outlook (Oct 2026 vintage)",
+        "url": "https://www.imf.org/external/datamapper/api/v1/NGDPD/CHN?periods=2025,2026",
         "apiEndpoint": "https://api.worldbank.org/v2/country/CN/indicator/NY.GDP.MKTP.CD",
-        "notes": "NY.GDP.MKTP.CD, 2025 estimate; WB database release 2026-07-13"
+        "notes": "2025 GDP in current US dollars (IMF, Oct 2026).",
+        "method": "IMF WEO NGDPD current-price USD via DataMapper API; identical to IMF SDMX WEO dataflow whose PUBLICATION_DATE = 2026-10-13. Year 2025 = 19626.191; 2026 projection = 21546.403. Stored value is World Bank NY.GDP.MKTP.CD 2025 (19498)."
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -431,15 +448,16 @@
       "slug": "united-states-gross-domestic-product",
       "name": "U.S. GDP",
       "categoryId": "national-economy",
-      "valueBillions": 30769.7,
-      "valueFormatted": "30.77 trillion",
-      "lastUpdated": "2026-07-13T00:00:00Z",
+      "valueBillions": 30861.3,
+      "valueFormatted": "30.86 trillion",
+      "lastUpdated": "2026-10-13T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "World Bank",
-        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=US",
+        "provider": "IMF World Economic Outlook (Oct 2026 vintage)",
+        "url": "https://www.imf.org/external/datamapper/api/v1/NGDPD/USA?periods=2025,2026",
         "apiEndpoint": "https://api.worldbank.org/v2/country/US/indicator/NY.GDP.MKTP.CD",
-        "notes": "NY.GDP.MKTP.CD, 2025 estimate; WB database release 2026-07-13"
+        "notes": "2025 GDP in current US dollars (IMF, Oct 2026).",
+        "method": "IMF WEO NGDPD current-price USD via DataMapper API; identical to IMF SDMX WEO dataflow whose PUBLICATION_DATE = 2026-10-13. Year 2025 = 30861.3; 2026 projection = 32642.373. Stored value is World Bank NY.GDP.MKTP.CD 2025 (30769.7)."
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -455,15 +473,16 @@
       "slug": "narrow-money-supply-major-economies",
       "name": "Narrow Money Supply (US, China, Euro Area, Japan)",
       "categoryId": "money-supply",
-      "valueBillions": 55000,
-      "valueFormatted": "55 trillion",
-      "lastUpdated": "2024-12-31T00:00:00Z",
+      "valueBillions": 56835.2,
+      "valueFormatted": "56.84 trillion",
+      "lastUpdated": "2026-10-31T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "Multiple Central Banks",
+        "provider": "Fed, ECB, PBoC, BoJ",
         "url": "https://fred.stlouisfed.org/series/M1SL",
         "apiEndpoint": null,
-        "notes": "Aggregate M1 money supply for major economies"
+        "notes": "M1 of the US, euro area, China and Japan, Oct 2026.",
+        "method": "Sum of M1: US 20,166.9 (FRED M1SL Oct 2026, https://fred.stlouisfed.org/series/M1SL) + EA EUR 11,333.7bn (ECB M1 Sep 2026 provisional, https://data.ecb.europa.eu/data/datasets/BSI/BSI.M.U2.Y.V.M10.X.1.U2.2300.Z01.E) + CN CNY 116.9tn end-Oct 2026 (https://www.pbc.gov.cn/en/3688247/3688978/3709137/2026111713594664567/index.html) + JP JPY 1,077.6tn Oct 2026 avg prelim (https://www.boj.or.jp/en/statistics/money/ms/ms2610.pdf). ECB euro reference rates 2026-11-25: USD/EUR 1.0935, JPY/EUR 174.22, CNY/EUR 7.2999 (cross USD/JPY 159.32, USD/CNY 6.6757); https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A"
       },
       "isLiveUpdatable": true,
       "totalCalculation": {
@@ -477,15 +496,16 @@
       "slug": "broad-money-supply-major-economies",
       "name": "Broad Money Supply (US, China, Euro Area, Japan)",
       "categoryId": "money-supply",
-      "valueBillions": 89000,
-      "valueFormatted": "89 trillion",
-      "lastUpdated": "2024-12-31T00:00:00Z",
+      "valueBillions": 106943.4,
+      "valueFormatted": "106.94 trillion",
+      "lastUpdated": "2026-10-31T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "Multiple Central Banks",
+        "provider": "Fed, ECB, PBoC, BoJ",
         "url": "https://fred.stlouisfed.org/series/M2SL",
         "apiEndpoint": null,
-        "notes": "Aggregate M2/M3 money supply for major economies"
+        "notes": "M2/M3 of the US, euro area, China and Japan, Oct 2026.",
+        "method": "Sum: US M2 23,532.8 (Oct 2026) + EA M3 19,373.8 (Sep 2026) + CN M2 53,786.0 (end-Oct 2026) + JP M3 10,250.9 (Oct 2026 avg); sources = the four money-supply items' URLs. Stored 89,000 did not equal its own stored components (94,689). ECB euro reference rates 2026-11-25: USD/EUR 1.0935, JPY/EUR 174.22, CNY/EUR 7.2999 (cross USD/JPY 159.32, USD/CNY 6.6757); https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A"
       },
       "isLiveUpdatable": true
     },
@@ -494,15 +514,16 @@
       "slug": "usd-money-supply-circulation",
       "name": "USD Money Supply (M2)",
       "categoryId": "money-supply",
-      "valueBillions": 23218,
-      "valueFormatted": "23.22 trillion",
-      "lastUpdated": "2026-08-25T00:00:00Z",
+      "valueBillions": 23532.8,
+      "valueFormatted": "23.53 trillion",
+      "lastUpdated": "2026-10-31T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "Federal Reserve (FRED)",
         "url": "https://fred.stlouisfed.org/series/M2SL",
         "apiEndpoint": null,
-        "notes": "US M2 money supply, FRED M2SL, Jul 2026 observation (released 2026-08-25)"
+        "notes": "US M2, Oct 2026 (Federal Reserve).",
+        "method": "FRED M2SL, Oct 2026 observation (H.6 released Nov 2026). Jul 2026 now revised to 23,177.3 (stored 23,218)."
       },
       "isLiveUpdatable": true,
       "totalCalculation": {
@@ -516,15 +537,16 @@
       "slug": "eur-money-supply-circulation",
       "name": "EUR Money Supply (M3)",
       "categoryId": "money-supply",
-      "valueBillions": 20471,
-      "valueFormatted": "20.47 trillion",
-      "lastUpdated": "2026-09-07T00:00:00Z",
+      "valueBillions": 19373.8,
+      "valueFormatted": "19.37 trillion",
+      "lastUpdated": "2026-09-30T00:00:00Z",
       "dataSource": {
         "type": "api",
         "provider": "European Central Bank",
         "url": "https://data.ecb.europa.eu/data/datasets/BSI/BSI.M.U2.Y.V.M30.X.1.U2.2300.Z01.E",
         "apiEndpoint": "https://sdw-wsrest.ecb.europa.eu/service/data/BSI",
-        "notes": "Euro area M3, Jul 2026 = EUR 17,614.0bn, converted at ECB reference rate 1.1622 USD/EUR (2026-09-04)"
+        "notes": "Euro area M3, Sep 2026, at 1.0935 USD per euro.",
+        "method": "Euro area M3 Sep 2026 = EUR 17,717.3bn (provisional), x 1.0935 USD/EUR (ECB reference rate 2026-11-25). Euro fell from 1.1622 used in stored value."
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -545,15 +567,16 @@
       "slug": "cny-money-supply-circulation",
       "name": "CNY Money Supply (M2)",
       "categoryId": "money-supply",
-      "valueBillions": 35000,
-      "valueFormatted": "35 trillion",
-      "lastUpdated": "2024-12-31T00:00:00Z",
+      "valueBillions": 53786.0,
+      "valueFormatted": "53.79 trillion",
+      "lastUpdated": "2026-10-31T00:00:00Z",
       "dataSource": {
         "type": "manual",
         "provider": "People's Bank of China",
-        "url": "http://www.pbc.gov.cn/en/3688110/index.html",
+        "url": "https://www.pbc.gov.cn/en/3688247/3688978/3709137/2026111713594664567/index.html",
         "apiEndpoint": null,
-        "notes": "China M2 money supply (estimated)"
+        "notes": "China M2, end-Oct 2026, at 6.68 yuan per dollar.",
+        "method": "PBoC Financial Statistics Report (Oct 2026): M2 CNY 359.06tn end-Oct 2026, / 6.6757 CNY/USD (ECB cross 2026-11-25). Stored 35,000 was ~35% too low."
       },
       "isLiveUpdatable": false
     },
@@ -562,15 +585,16 @@
       "slug": "jpy-money-supply-circulation",
       "name": "JPY Money Supply (M3)",
       "categoryId": "money-supply",
-      "valueBillions": 16000,
-      "valueFormatted": "16 trillion",
-      "lastUpdated": "2024-12-31T00:00:00Z",
+      "valueBillions": 10250.9,
+      "valueFormatted": "10.25 trillion",
+      "lastUpdated": "2026-10-31T00:00:00Z",
       "dataSource": {
         "type": "manual",
         "provider": "Bank of Japan",
-        "url": "https://www.boj.or.jp/en/statistics/money/index.htm",
+        "url": "https://www.boj.or.jp/en/statistics/money/ms/ms2610.pdf",
         "apiEndpoint": null,
-        "notes": "Japan M3 money supply (estimated)"
+        "notes": "Japan M3, Oct 2026, at 159.3 yen per dollar.",
+        "method": "BoJ Money Stock (prelim, released 2026-11-11): M3 Oct 2026 average outstanding JPY 1,633.2tn, / 159.32 JPY/USD (ECB cross 2026-11-25). Stored 16,000 was ~56% too high."
       },
       "isLiveUpdatable": false
     },
@@ -579,15 +603,16 @@
       "slug": "global-equities-total-market-cap",
       "name": "Global Equities",
       "categoryId": "stock-markets",
-      "valueBillions": 110000,
-      "valueFormatted": "110 trillion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 169104.4,
+      "valueFormatted": "169.1 trillion",
+      "lastUpdated": "2026-09-30T00:00:00Z",
       "dataSource": {
         "type": "manual",
         "provider": "World Federation of Exchanges",
-        "url": "https://www.world-exchanges.org/our-work/statistics",
+        "url": "https://focus.world-exchanges.org/issue/november-2026/market-statistics",
         "apiEndpoint": null,
-        "notes": "Global stock market capitalization"
+        "notes": "Domestic market cap of listed companies worldwide, Sep 2026 (WFE).",
+        "method": "WFE FOCUS Nov 2026, domestic market cap Sept 2026: Americas 86,172,443.94 + APAC 57,502,199.96 + EMEA 25,429,782.60 USD m (sum of WFE regional totals; WFE prints no grand total). WFE end-2025 = $151.94tn, so stored 110,000 was stale."
       },
       "isLiveUpdatable": false
     },
@@ -596,15 +621,16 @@
       "slug": "global-debt-total",
       "name": "Global Debt",
       "categoryId": "debt",
-      "valueBillions": 315000,
-      "valueFormatted": "315 trillion",
-      "lastUpdated": "2024-09-30T00:00:00Z",
+      "valueBillions": 365000,
+      "valueFormatted": "365 trillion",
+      "lastUpdated": "2026-06-30T00:00:00Z",
       "dataSource": {
         "type": "manual",
         "provider": "Institute of International Finance",
-        "url": "https://www.iif.com/Research/Capital-Flows-and-Debt/Global-Debt-Monitor",
+        "url": "https://www.iif.com/Products/Global-Debt-Monitor",
         "apiEndpoint": null,
-        "notes": "Q3 2024 IIF Global Debt Monitor"
+        "notes": "Government, household and corporate debt, H1 2026 (IIF Global Debt Monitor).",
+        "method": "IIF Global Debt Monitor 2026-09-23 ('A Debt-intensive Future'): global debt 'surpassed $365 trillion' in H1 2026. Only the headline is public; exact figure is member-only. Earlier: $348tn end-2025, ~$353tn Q1 2026."
       },
       "isLiveUpdatable": false
     },
@@ -613,15 +639,16 @@
       "slug": "global-real-estate-total-value",
       "name": "Global Real Estate",
       "categoryId": "real-assets",
-      "valueBillions": 380000,
-      "valueFormatted": "380 trillion",
-      "lastUpdated": "2024-12-31T00:00:00Z",
+      "valueBillions": 393300,
+      "valueFormatted": "393.3 trillion",
+      "lastUpdated": "2025-01-01T00:00:00Z",
       "dataSource": {
         "type": "manual",
         "provider": "Savills Research",
-        "url": "https://www.savills.com/impacts/market-trends/the-total-value-of-global-real-estate.html",
+        "url": "https://www.savills.us/insight-and-opinion/savills-news/224715/savills--world-s-real-estate-worth-almost-$393.3-trillion--remains-the-world-s-largest-store-of-wealth--despite-drop-of-0.5--year-on-year",
         "apiEndpoint": null,
-        "notes": "2024 global real estate valuation"
+        "notes": "Residential, commercial and farmland, end-2024 (Savills, Sep 2025).",
+        "method": "CORRECTION, not a newer period: Savills (published 2025-09-29) values global real estate at $393.3tn 'as of the start of 2025'. Stored 380,000 matches an older Savills edition, not the 2024 figure it claims. No 2026 Savills update found."
       },
       "isLiveUpdatable": false
     },
@@ -630,15 +657,16 @@
       "slug": "global-private-wealth-total",
       "name": "Global Private Wealth",
       "categoryId": "private-wealth",
-      "valueBillions": 550000,
-      "valueFormatted": "550 trillion",
-      "lastUpdated": "2024-12-31T00:00:00Z",
+      "valueBillions": 517690,
+      "valueFormatted": "517.69 trillion",
+      "lastUpdated": "2025-12-31T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "UBS Global Wealth Report",
-        "url": "https://www.ubs.com/global/en/wealth-management/insights/global-wealth-report.html",
+        "provider": "UBS Global Wealth Report 2026 (56-market sample, not global)",
+        "url": "https://advisors.ubs.com/mediahandler/media/817144/global-wealth-report-en-2026.pdf",
         "apiEndpoint": null,
-        "notes": "2024 UBS Global Wealth Report"
+        "notes": "Household wealth at end-2025, summed from the UBS Global Wealth Report 2026 wealth bands.",
+        "method": "UBS GWR 2026 (published 2026-06-30), end-2025: wealth-pyramid band totals 250.59+200.72+63.16+3.22 tn = 517.69tn for UBS's 56-market sample (>92% of global wealth). UBS prints no single global headline. Its p.37 regional table sums to 492.4tn, but its printed shares (EMEA 26.6%, APAC 32.8%) imply ~517.7tn, so the Americas row (185,040 = '40.6%') is the inconsistent cell (checked on rendered PDF pages 23 and 37). Stored 550,000 'for 2024' exceeds UBS's own end-2025 total, so it was not a UBS figure."
       },
       "isLiveUpdatable": false
     },
@@ -647,15 +675,16 @@
       "slug": "derivatives-total-market-value",
       "name": "Derivatives (Market Value)",
       "categoryId": "financial-instruments",
-      "valueBillions": 18000,
-      "valueFormatted": "18 trillion",
-      "lastUpdated": "2024-06-30T00:00:00Z",
+      "valueBillions": 22802.4,
+      "valueFormatted": "22.8 trillion",
+      "lastUpdated": "2025-12-31T00:00:00Z",
       "dataSource": {
         "type": "manual",
         "provider": "Bank for International Settlements",
-        "url": "https://stats.bis.org/statx/toc/DER.html",
+        "url": "https://stats.bis.org/api/v2/data/dataflow/BIS/WS_OTC_DERIV2/1.0/H.D.A.A.5J.A.5J.A.TO1.TO1.A.A.3.C?startPeriod=2024",
         "apiEndpoint": null,
-        "notes": "BIS semi-annual OTC derivatives statistics"
+        "notes": "Gross market value of OTC derivatives, end-2025 (BIS).",
+        "method": "BIS OTC derivatives, all contracts, gross market value, end-Dec 2025 (2025-S2) = $22,802bn. End-June 2026 not yet released."
       },
       "isLiveUpdatable": false
     },
@@ -664,15 +693,16 @@
       "slug": "derivatives-total-notional-value",
       "name": "Derivatives (Notional Value)",
       "categoryId": "financial-instruments",
-      "valueBillions": 715000,
-      "valueFormatted": "715 trillion",
-      "lastUpdated": "2024-06-30T00:00:00Z",
+      "valueBillions": 844577.8,
+      "valueFormatted": "844.58 trillion",
+      "lastUpdated": "2025-12-31T00:00:00Z",
       "dataSource": {
         "type": "manual",
         "provider": "Bank for International Settlements",
-        "url": "https://stats.bis.org/statx/toc/DER.html",
+        "url": "https://stats.bis.org/api/v2/data/dataflow/BIS/WS_OTC_DERIV2/1.0/H.A.A.A.5J.A.5J.A.TO1.TO1.A.A.3.C?startPeriod=2024",
         "apiEndpoint": null,
-        "notes": "BIS semi-annual OTC derivatives statistics - notional outstanding"
+        "notes": "Notional outstanding of OTC derivatives, end-2025 (BIS).",
+        "method": "BIS OTC derivatives, all contracts, notional outstanding, end-Dec 2025 (2025-S2) = $844,578bn (end-June 2025: $845,690bn)."
       },
       "isLiveUpdatable": false
     },
@@ -681,15 +711,16 @@
       "slug": "elon-musk-net-worth",
       "name": "Elon Musk",
       "categoryId": "individual-wealth",
-      "valueBillions": 240,
-      "valueFormatted": "240 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 822.4,
+      "valueFormatted": "822.4 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
       "dataSource": {
         "type": "manual",
         "provider": "Forbes Real-Time",
         "url": "https://www.forbes.com/profile/elon-musk/",
         "apiEndpoint": null,
-        "notes": "Forbes real-time billionaire tracking"
+        "notes": "Forbes real-time net worth, 25 Nov 2026; mostly SpaceX stock since its June IPO.",
+        "method": "Forbes real-time net worth 'as of 11/25/26' (intraday), #1. Now largely SpaceX stock (public since June 2026)."
       },
       "isLiveUpdatable": false
     },
@@ -698,15 +729,16 @@
       "slug": "larry-ellison-net-worth",
       "name": "Larry Ellison",
       "categoryId": "individual-wealth",
-      "valueBillions": 180,
-      "valueFormatted": "180 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 141.8,
+      "valueFormatted": "141.8 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
       "dataSource": {
         "type": "manual",
         "provider": "Forbes Real-Time",
         "url": "https://www.forbes.com/profile/larry-ellison/",
         "apiEndpoint": null,
-        "notes": "Forbes real-time billionaire tracking"
+        "notes": "Forbes real-time net worth, 25 Nov 2026.",
+        "method": "Forbes real-time net worth 'as of 11/25/26' (intraday), #12."
       },
       "isLiveUpdatable": false
     },
@@ -715,15 +747,16 @@
       "slug": "jeff-bezos-net-worth",
       "name": "Jeff Bezos",
       "categoryId": "individual-wealth",
-      "valueBillions": 195,
-      "valueFormatted": "195 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 365.9,
+      "valueFormatted": "365.9 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
       "dataSource": {
         "type": "manual",
         "provider": "Forbes Real-Time",
         "url": "https://www.forbes.com/profile/jeff-bezos/",
         "apiEndpoint": null,
-        "notes": "Forbes real-time billionaire tracking"
+        "notes": "Forbes real-time net worth, 25 Nov 2026.",
+        "method": "Forbes real-time net worth 'as of 11/25/26' (intraday), #2."
       },
       "isLiveUpdatable": false
     },
@@ -756,15 +789,16 @@
       "slug": "nigeria-gross-domestic-product",
       "name": "Nigeria GDP",
       "categoryId": "national-economy",
-      "valueBillions": 290.8,
-      "valueFormatted": "290.8 billion",
-      "lastUpdated": "2026-07-13T00:00:00Z",
+      "valueBillions": 290.491,
+      "valueFormatted": "290.5 billion",
+      "lastUpdated": "2026-10-13T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "World Bank",
-        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=NG",
+        "provider": "IMF World Economic Outlook (Oct 2026 vintage)",
+        "url": "https://www.imf.org/external/datamapper/api/v1/NGDPD/NGA?periods=2025,2026",
         "apiEndpoint": "https://api.worldbank.org/v2/country/NG/indicator/NY.GDP.MKTP.CD",
-        "notes": "NY.GDP.MKTP.CD, 2025 estimate; USD drop vs prior vintage is naira devaluation, not real contraction"
+        "notes": "2025 GDP in current US dollars (IMF, Oct 2026).",
+        "method": "IMF WEO NGDPD current-price USD via DataMapper API; identical to IMF SDMX WEO dataflow whose PUBLICATION_DATE = 2026-10-13. Year 2025 = 290.491; 2026 projection = 386.671. Stored value is World Bank NY.GDP.MKTP.CD 2025 (290.8)."
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -780,15 +814,16 @@
       "slug": "australia-gross-domestic-product",
       "name": "Australia GDP",
       "categoryId": "national-economy",
-      "valueBillions": 1798.5,
-      "valueFormatted": "1.8 trillion",
-      "lastUpdated": "2026-07-13T00:00:00Z",
+      "valueBillions": 1840.755,
+      "valueFormatted": "1.84 trillion",
+      "lastUpdated": "2026-10-13T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "World Bank",
-        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=AU",
+        "provider": "IMF World Economic Outlook (Oct 2026 vintage)",
+        "url": "https://www.imf.org/external/datamapper/api/v1/NGDPD/AUS?periods=2025,2026",
         "apiEndpoint": "https://api.worldbank.org/v2/country/AU/indicator/NY.GDP.MKTP.CD",
-        "notes": "NY.GDP.MKTP.CD, 2025 estimate; WB database release 2026-07-13"
+        "notes": "2025 GDP in current US dollars (IMF, Oct 2026).",
+        "method": "IMF WEO NGDPD current-price USD via DataMapper API; identical to IMF SDMX WEO dataflow whose PUBLICATION_DATE = 2026-10-13. Year 2025 = 1840.755; 2026 projection = 2110.657. Stored value is World Bank NY.GDP.MKTP.CD 2025 (1798.5)."
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -804,15 +839,16 @@
       "slug": "germany-gross-domestic-product",
       "name": "Germany GDP",
       "categoryId": "national-economy",
-      "valueBillions": 5050.9,
-      "valueFormatted": "5.05 trillion",
-      "lastUpdated": "2026-07-13T00:00:00Z",
+      "valueBillions": 5115.594,
+      "valueFormatted": "5.12 trillion",
+      "lastUpdated": "2026-10-13T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "World Bank",
-        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=DE",
+        "provider": "IMF World Economic Outlook (Oct 2026 vintage)",
+        "url": "https://www.imf.org/external/datamapper/api/v1/NGDPD/DEU?periods=2025,2026",
         "apiEndpoint": "https://api.worldbank.org/v2/country/DE/indicator/NY.GDP.MKTP.CD",
-        "notes": "NY.GDP.MKTP.CD, 2025 estimate; WB database release 2026-07-13"
+        "notes": "2025 GDP in current US dollars (IMF, Oct 2026).",
+        "method": "IMF WEO NGDPD current-price USD via DataMapper API; identical to IMF SDMX WEO dataflow whose PUBLICATION_DATE = 2026-10-13. Year 2025 = 5115.594; 2026 projection = 5471.299. Stored value is World Bank NY.GDP.MKTP.CD 2025 (5050.9)."
       },
       "isLiveUpdatable": true,
       "apiConfig": {
@@ -828,15 +864,16 @@
       "slug": "apple-inc-market-capitalization",
       "name": "Apple Inc.",
       "categoryId": "corporations",
-      "valueBillions": 3500,
-      "valueFormatted": "3.5 trillion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 5145,
+      "valueFormatted": "5.14 trillion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "Alpha Vantage",
-        "url": "https://www.alphavantage.co/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/apple/marketcap/",
         "apiEndpoint": null,
-        "notes": "Apple real-time market capitalization"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -850,15 +887,16 @@
       "slug": "microsoft-corporation-market-capitalization",
       "name": "Microsoft Corporation",
       "categoryId": "corporations",
-      "valueBillions": 3400,
-      "valueFormatted": "3.4 trillion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 3684,
+      "valueFormatted": "3.68 trillion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "Alpha Vantage",
-        "url": "https://www.alphavantage.co/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/microsoft/marketcap/",
         "apiEndpoint": null,
-        "notes": "Microsoft real-time market capitalization"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -872,15 +910,16 @@
       "slug": "nvidia-corporation-market-capitalization",
       "name": "NVIDIA Corporation",
       "categoryId": "corporations",
-      "valueBillions": 3200,
-      "valueFormatted": "3.2 trillion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 3751,
+      "valueFormatted": "3.75 trillion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "api",
-        "provider": "Alpha Vantage",
-        "url": "https://www.alphavantage.co/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/nvidia/marketcap/",
         "apiEndpoint": null,
-        "notes": "NVIDIA real-time market capitalization"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com. Nasdaq figure same day: $3,686bn."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -894,15 +933,16 @@
       "slug": "alphabet-google-market-capitalization",
       "name": "Alphabet (Google)",
       "categoryId": "corporations",
-      "valueBillions": 2100,
-      "valueFormatted": "2.1 trillion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 3400,
+      "valueFormatted": "3.4 trillion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "Yahoo Finance",
-        "url": "https://finance.yahoo.com/quote/GOOGL/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/alphabet-google/marketcap/",
         "apiEndpoint": null,
-        "notes": "Alphabet (Google) market capitalization"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -916,15 +956,16 @@
       "slug": "amazon-com-market-capitalization",
       "name": "Amazon.com Inc.",
       "categoryId": "corporations",
-      "valueBillions": 1800,
-      "valueFormatted": "1.8 trillion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 2728,
+      "valueFormatted": "2.73 trillion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "Yahoo Finance",
-        "url": "https://finance.yahoo.com/quote/AMZN/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/amazon/marketcap/",
         "apiEndpoint": null,
-        "notes": "Amazon market capitalization"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -938,15 +979,16 @@
       "slug": "tesla-inc-market-capitalization",
       "name": "Tesla Inc.",
       "categoryId": "corporations",
-      "valueBillions": 800,
-      "valueFormatted": "800 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 1520,
+      "valueFormatted": "1.52 trillion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "Yahoo Finance",
-        "url": "https://finance.yahoo.com/quote/TSLA/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/tesla/marketcap/",
         "apiEndpoint": null,
-        "notes": "Tesla market capitalization"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -960,15 +1002,16 @@
       "slug": "meta-facebook-market-capitalization",
       "name": "Meta (Facebook)",
       "categoryId": "corporations",
-      "valueBillions": 1300,
-      "valueFormatted": "1.3 trillion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 1507,
+      "valueFormatted": "1.51 trillion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "Yahoo Finance",
-        "url": "https://finance.yahoo.com/quote/META/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/meta-platforms/marketcap/",
         "apiEndpoint": null,
-        "notes": "Meta (Facebook) market capitalization"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -982,15 +1025,16 @@
       "slug": "saudi-aramco-market-capitalization",
       "name": "Saudi Aramco",
       "categoryId": "corporations",
-      "valueBillions": 2000,
-      "valueFormatted": "2 trillion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 1693.3,
+      "valueFormatted": "1.69 trillion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "Tadawul (Saudi Stock Exchange)",
-        "url": "https://www.saudiexchange.sa/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/saudi-aramco/marketcap/",
         "apiEndpoint": null,
-        "notes": "Saudi Aramco market capitalization"
+        "notes": "Market cap on 25 Nov 2026.",
+        "method": "Page prints no end-of-day row; value as printed 2026-11-25 ~20:00 UTC, i.e. after that day's Tadawul close (SAR 26.26). End-2025 per same page: $1,527bn; end-2024: $1,805bn."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -1004,15 +1048,16 @@
       "slug": "exxonmobil-corporation-market-capitalization",
       "name": "ExxonMobil Corporation",
       "categoryId": "corporations",
-      "valueBillions": 450,
-      "valueFormatted": "450 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 645.5,
+      "valueFormatted": "645.5 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "Yahoo Finance",
-        "url": "https://finance.yahoo.com/quote/XOM/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/exxon-mobil/marketcap/",
         "apiEndpoint": null,
-        "notes": "ExxonMobil market capitalization"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -1026,15 +1071,16 @@
       "slug": "chevron-corporation-market-capitalization",
       "name": "Chevron Corporation",
       "categoryId": "corporations",
-      "valueBillions": 320,
-      "valueFormatted": "320 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 407.3,
+      "valueFormatted": "407.3 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "Yahoo Finance",
-        "url": "https://finance.yahoo.com/quote/CVX/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/chevron/marketcap/",
         "apiEndpoint": null,
-        "notes": "Chevron market capitalization"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -1048,15 +1094,16 @@
       "slug": "shell-plc-market-capitalization",
       "name": "Shell plc",
       "categoryId": "corporations",
-      "valueBillions": 230,
-      "valueFormatted": "230 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 263.5,
+      "valueFormatted": "263.5 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "London Stock Exchange",
-        "url": "https://www.londonstockexchange.com/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/shell/marketcap/",
         "apiEndpoint": null,
-        "notes": "Shell plc market capitalization"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -1070,15 +1117,16 @@
       "slug": "totalenergies-se-market-capitalization",
       "name": "TotalEnergies SE",
       "categoryId": "corporations",
-      "valueBillions": 160,
-      "valueFormatted": "160 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 186.6,
+      "valueFormatted": "186.6 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "Euronext Paris",
-        "url": "https://www.euronext.com/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/totalenergies/marketcap/",
         "apiEndpoint": null,
-        "notes": "TotalEnergies SE market capitalization"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -1092,15 +1140,16 @@
       "slug": "berkshire-hathaway-market-capitalization",
       "name": "Berkshire Hathaway",
       "categoryId": "corporations",
-      "valueBillions": 900,
-      "valueFormatted": "900 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 1231.0,
+      "valueFormatted": "1.23 trillion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "Yahoo Finance",
-        "url": "https://finance.yahoo.com/quote/BRK-A/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/berkshire-hathaway/marketcap/",
         "apiEndpoint": null,
-        "notes": "Berkshire Hathaway market capitalization"
+        "notes": "Market cap on 25 Nov 2026.",
+        "method": "Page prints no end-of-day row; value as printed 2026-11-25 ~20:00 UTC (intraday, NYSE open). End-2024 per same page: $983.9bn, so stored 900 was already below end-2024."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -1114,15 +1163,16 @@
       "slug": "tsmc-taiwan-semiconductor-market-capitalization",
       "name": "TSMC (Taiwan Semiconductor)",
       "categoryId": "corporations",
-      "valueBillions": 550,
-      "valueFormatted": "550 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 1811,
+      "valueFormatted": "1.81 trillion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "Taiwan Stock Exchange",
-        "url": "https://www.twse.com.tw/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/tsmc/marketcap/",
         "apiEndpoint": null,
-        "notes": "TSMC market capitalization"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -1136,15 +1186,16 @@
       "slug": "bhp-group-market-capitalization",
       "name": "BHP Group",
       "categoryId": "corporations",
-      "valueBillions": 150,
-      "valueFormatted": "150 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 176.9,
+      "valueFormatted": "176.9 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "ASX (Australian Securities Exchange)",
-        "url": "https://www.asx.com.au/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/bhp-group/marketcap/",
         "apiEndpoint": null,
-        "notes": "BHP Group market capitalization - world's largest mining company"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
@@ -1158,21 +1209,206 @@
       "slug": "vale-sa-market-capitalization",
       "name": "Vale S.A.",
       "categoryId": "corporations",
-      "valueBillions": 60,
-      "valueFormatted": "60 billion",
-      "lastUpdated": "2025-07-04T00:00:00Z",
+      "valueBillions": 39.9,
+      "valueFormatted": "39.9 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
       "dataSource": {
         "type": "manual",
-        "provider": "B3 (Brazil Stock Exchange)",
-        "url": "https://www.b3.com.br/",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/vale/marketcap/",
         "apiEndpoint": null,
-        "notes": "Vale market capitalization - largest iron ore producer globally"
+        "notes": "Market cap at the 24 Nov 2026 close.",
+        "method": "End-of-day market cap 2026-11-24 per companiesmarketcap.com. Down ~26% YTD per companiesmarketcap."
       },
       "isLiveUpdatable": false,
       "totalCalculation": {
         "includeInTotal": false,
         "reason": "Individual corporation included in 'Global Equities' total",
         "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "anthropic-market-cap",
+      "slug": "anthropic-market-capitalization",
+      "name": "Anthropic",
+      "categoryId": "corporations",
+      "valueBillions": 1094.0,
+      "valueFormatted": "1.09 trillion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap; SEC EDGAR",
+        "url": "https://companiesmarketcap.com/anthropic/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Listed on Nasdaq (ANT) on 19 Nov 2026 at $83; market cap at the 24 Nov close.",
+        "method": "LISTED: Anthropic, PBC IPO'd on Nasdaq (ticker ANT) at $83/share, 424B4 filed 2026-11-19 (https://www.sec.gov/Archives/edgar/data/2130357/000162828026074944/anthropicpbc-424b4.htm); 2026-11-24 close $81.91 x 13.367bn shares (prospectus post-IPO count incl. full over-allotment) = ~$1,095bn; Nasdaq shows $1,064bn."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "spacex-market-cap",
+      "slug": "spacex-market-capitalization",
+      "name": "SpaceX",
+      "categoryId": "corporations",
+      "valueBillions": 1708.0,
+      "valueFormatted": "1.71 trillion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap; SEC EDGAR",
+        "url": "https://companiesmarketcap.com/spacex/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Listed on Nasdaq (SPCX) on 12 Jun 2026 at $135, with xAI and X merged in; market cap at the 24 Nov close.",
+        "method": "LISTED: Space Exploration Technologies Corp. IPO'd on Nasdaq and Nasdaq Texas (ticker SPCX) at $135/share, 424B4 filed 2026-06-12 (https://www.sec.gov/Archives/edgar/data/1181412/000162828026042639/spaceexplorationtechnologi.htm); 2026-11-24 close $125.81 x 13.581bn shares (10-Q cover, 2026-10-15) = $1,709bn; Nasdaq shows $1,718bn."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "openai-valuation",
+      "slug": "openai-private-valuation",
+      "name": "OpenAI (private valuation)",
+      "categoryId": "corporations",
+      "valueBillions": 852.0,
+      "valueFormatted": "852 billion",
+      "lastUpdated": "2026-03-31T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "OpenAI",
+        "url": "https://openai.com/index/accelerating-the-next-phase-ai/",
+        "apiEndpoint": null,
+        "notes": "Not listed: post-money valuation of the $122 billion round closed 31 Mar 2026.",
+        "method": "NOT LISTED: no public S-1/424B for an OpenAI issuer on SEC EDGAR as of 2026-11-25 (only third-party SPVs; press says a confidential filing was made in June 2026). Valuation from the $122bn round closed 2026-03-31 at $852bn post-money; an Aug 2026 ~$7bn employee tender reportedly held $852bn."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Private valuation, not a traded market cap",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "stablecoins-market-cap",
+      "slug": "stablecoins-total-market-cap",
+      "name": "Stablecoins (Market Cap)",
+      "categoryId": "digital-assets",
+      "valueBillions": 284.2,
+      "valueFormatted": "284.2 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "DefiLlama",
+        "url": "https://stablecoins.llama.fi/stablecoincharts/all",
+        "apiEndpoint": null,
+        "notes": "Every stablecoin in circulation, 25 Nov 2026 (DefiLlama); nearly all are pegged to the dollar.",
+        "method": "DefiLlama total circulating 2026-11-25, all pegs = $284.2bn, of which USD-pegged $282.5bn; CoinGecko 'Stablecoins' category = $279.3bn same day."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Part of the total crypto market cap",
+        "parentItem": "crypto-market-cap"
+      }
+    },
+    {
+      "id": "btc-public-companies",
+      "slug": "bitcoin-held-by-public-companies",
+      "name": "Bitcoin held by public companies",
+      "categoryId": "digital-assets",
+      "valueBillions": 74.3,
+      "valueFormatted": "74.3 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "BitcoinTreasuries.net",
+        "url": "https://bitcointreasuries.net/",
+        "apiEndpoint": null,
+        "notes": "1,239,002 BTC held by 196 listed companies, 25 Nov 2026.",
+        "method": "1,239,002 BTC across 196 public companies = $74.32bn at $59,984/BTC on 2026-11-25; CoinGecko public-treasury count is 1,287,588 BTC / $77.26bn (Strategy alone 851,305 BTC)."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Part of the bitcoin market cap",
+        "parentItem": "bitcoin-market-cap"
+      }
+    },
+    {
+      "id": "us-spot-btc-etfs",
+      "slug": "us-spot-bitcoin-etfs",
+      "name": "US spot Bitcoin ETFs",
+      "categoryId": "digital-assets",
+      "valueBillions": 77.0,
+      "valueFormatted": "77 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "BitcoinTreasuries.net",
+        "url": "https://bitcointreasuries.net/etfs-and-exchanges",
+        "apiEndpoint": null,
+        "notes": "1,284,144 BTC across 13 US spot ETFs, 25 Nov 2026.",
+        "method": "Sum of IBIT, FBTC, GBTC, BTC, BITB, ARKB, HODL, MSBT, BRRR, EZBC, BTCO, BTCW, DEFI rows = 1,284,144 BTC / $76.99bn on 2026-11-25; Cointelegraph (SoSoValue data) reported $77.7bn net assets at the 2026-11-18 close."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Part of the bitcoin market cap",
+        "parentItem": "bitcoin-market-cap"
+      }
+    },
+    {
+      "id": "us-federal-debt",
+      "slug": "us-federal-debt-total",
+      "name": "U.S. Federal Debt",
+      "categoryId": "debt",
+      "valueBillions": 40727.4,
+      "valueFormatted": "40.73 trillion",
+      "lastUpdated": "2026-11-23T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "U.S. Treasury (Fiscal Data)",
+        "url": "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny?sort=-record_date&page[size]=1",
+        "apiEndpoint": null,
+        "notes": "Total public debt outstanding, 23 Nov 2026 (US Treasury, Debt to the Penny).",
+        "method": "Total public debt outstanding $40,727,354,329,919.53 on 2026-11-23 (held by public $32.90tn, intragovernmental $7.82tn)."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Part of global debt",
+        "parentItem": "global-debt"
+      }
+    },
+    {
+      "id": "banco-master-fgc",
+      "slug": "banco-master-fgc-guarantee",
+      "name": "Banco Master (FGC guarantee)",
+      "categoryId": "bank-failures",
+      "valueBillions": 7.55,
+      "valueFormatted": "7.5 billion",
+      "lastUpdated": "2026-01-17T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "FGC (official)",
+        "url": "https://www.fgc.org.br/documents/55449/55491/11_09_2026+FGC+Release+Relat%C3%B3rio+Semestral+2026.pdf/8839ec86-5f66-0432-bf74-8bc722eafa50?version=1.0&download=true",
+        "apiEndpoint": null,
+        "notes": "R$40.6 billion the FGC had to guarantee after Brazil's Central Bank liquidated Banco Master on 18 Nov 2025, at R$5.38 per dollar; R$40.2 billion paid by Sep 2026.",
+        "method": "OFFICIAL (FGC): BCB liquidated Banco Master, Master de Investimento, Letsbank and Master Corretora by Atos do Presidente 1.369/1.371/1.372/1.373 of 2025-11-18. FGC total to pay R$40.6bn (17 Jan 2026 statement, revised from R$41.3bn; ~800k creditors); paid R$40.2bn (98.82%) to 722k creditors by 2026-09-10. Related separate liquidations: Will Bank R$5.9bn + R$0.14bn paid, Banco Pleno R$4.6bn; FGC estimate for all three R$51.7bn (2026-04-28). No official total-liabilities figure found (BCB open-data dataset ir-33923798000100 holds only Pillar 3 links; BCB note cited 0.57% of SFN assets, via press). Banco Master Multiplo (liquidated 2026-03-17 after RAET since 2025-11-18, per press) is outside the FGC table's stated scope. Convert with PTAX yourself."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "A liability covered by a guarantee fund, not wealth",
+        "parentItem": null
       }
     }
   ]

@@ -26,13 +26,18 @@ let comparisonItems = [];
  */
 const ITEM_COLOR = {
   "bitcoin-market-cap": "--series-btc",
+  "btc-public-companies": "--series-btc",
+  "us-spot-btc-etfs": "--series-btc",
   "ethereum-market-cap": "--series-eth",
+  // Stablecoin e dolar on-chain: lado fiduciario, mesma cor do M2.
+  "stablecoins-market-cap": "--series-fiat",
   "gold-above-ground": "--series-gold",
-  "global-debt": "--status-negative",
 };
 const CATEGORY_COLOR = {
   "money-supply": "--series-fiat",
   "central-bank-assets": "--series-fiat",
+  debt: "--status-negative",
+  "bank-failures": "--status-negative",
 };
 
 function colorFor(item, styles) {
@@ -122,17 +127,7 @@ async function loadData() {
       console.log("📦 Dados base carregados de data.json.");
       success = true;
     } else {
-      // Merge: Adicionar itens do JSON que não estão no cache
-      const cachedItemIds = new Set(wealthData.items.map((item) => item.id));
-      for (const jsonItem of jsonData.items) {
-        if (!cachedItemIds.has(jsonItem.id)) {
-          wealthData.items.push(jsonItem);
-          console.log(`➕ Item "${jsonItem.name}" adicionado do data.json.`);
-        }
-      }
-      // O metadata do JSON é o mais "estático", então pode sobrescrever ou ser a base
-      wealthData.metadata = jsonData.metadata;
-      console.log("🔄 Cache complementado com data.json.");
+      wealthData = mergeDataIntelligently(wealthData, jsonData);
     }
 
     // Re-ordenar (opcional, mas bom para consistência)
@@ -744,52 +739,29 @@ function createDataSources() {
 }
 
 // Intelligently merge cached data with JSON data
+/*
+ * O mais novo vence, item a item. Antes, quem ja tinha visitado carregava o
+ * cache inteiro (valores, nomes e categorias) e o data.json so acrescentava
+ * item que faltava: atualizar o arquivo nunca chegava a essas pessoas, e item
+ * removido ficava para sempre. Agora a estrutura vem sempre do JSON, e o valor
+ * do cache so fica quando a data dele e mais recente que a do JSON.
+ */
 function mergeDataIntelligently(cachedData, jsonData) {
-  const merged = {
-    metadata: jsonData.metadata, // Always use latest metadata
-    categories: [...jsonData.categories], // Always use latest categories
-    items: [],
-  };
-
-  // Create maps for easy lookup
-  const cachedItemsMap = new Map(
-    cachedData.items.map((item) => [item.id, item]),
-  );
-  const jsonItemsMap = new Map(jsonData.items.map((item) => [item.id, item]));
-
-  // Start with all JSON items as base
-  for (const jsonItem of jsonData.items) {
-    const cachedItem = cachedItemsMap.get(jsonItem.id);
-
-    if (cachedItem) {
-      // Item exists in cache - keep cached values but update metadata
-      const mergedItem = {
-        ...jsonItem, // Use JSON structure and metadata
-        valueBillions: cachedItem.valueBillions, // Keep cached value
-        valueFormatted: cachedItem.valueFormatted, // Keep cached format
-        lastUpdated: cachedItem.lastUpdated, // Keep cached timestamp
-      };
-      merged.items.push(mergedItem);
-      console.log(
-        `🔄 Kept cached value for ${jsonItem.name}: $${cachedItem.valueFormatted}`,
-      );
-    } else {
-      // New item from JSON
-      merged.items.push(jsonItem);
-      console.log(`🆕 Added new item from JSON: ${jsonItem.name}`);
-    }
-  }
-
-  // Add any cached items that aren't in JSON (rare case)
-  for (const cachedItem of cachedData.items) {
-    if (!jsonItemsMap.has(cachedItem.id)) {
-      merged.items.push(cachedItem);
-      console.log(`💾 Kept cache-only item: ${cachedItem.name}`);
-    }
-  }
-
-  console.log(`✅ Merged data: ${merged.items.length} items total`);
-  return merged;
+  const cachedById = new Map(cachedData.items.map((item) => [item.id, item]));
+  const items = jsonData.items.map((jsonItem) => {
+    const cached = cachedById.get(jsonItem.id);
+    const cacheIsNewer =
+      cached &&
+      Date.parse(cached.lastUpdated) > Date.parse(jsonItem.lastUpdated);
+    if (!cacheIsNewer) return jsonItem;
+    return {
+      ...jsonItem,
+      valueBillions: cached.valueBillions,
+      valueFormatted: cached.valueFormatted,
+      lastUpdated: cached.lastUpdated,
+    };
+  });
+  return { ...jsonData, items };
 }
 
 // Comparison functionality
