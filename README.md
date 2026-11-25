@@ -90,6 +90,18 @@ every halving from `/datasets/halvings.txt` against price, and states the curren
 schedule is read as a reason to buy, and why that reading can fail — instead of
 presenting the cycle as a forecast.
 
+The page also draws Bitcoin's 4-year polar cycle, after Sebastián Serrano's
+chart at polar.sserrano.com. One clockwise turn is four years of calendar time,
+with 1 January of every year divisible by four at three o'clock; distance from
+the centre is the daily close on a log scale, and the line's colour marks
+progress from one halving (0%) to the next (100%). Rings mark the halvings,
+small dots the all-time-high closes, a large dot the latest close, with days
+since the high, drawdown and the 1-month, 1-year and 4-year changes above it.
+It is inline SVG computed at build time in `src/utils/polar.ts`, so it renders
+without JavaScript. The copy says how to read it, then argues the other side:
+four turns is a small sample, a log scale shrinks large drawdowns, and the
+angle lines up with the halvings only because they come about every four years.
+
 ### `/rainbow` — RAINBOW
 
 Logarithmic regression on the full daily BTC series with bands at multiples of the

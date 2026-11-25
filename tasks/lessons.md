@@ -107,3 +107,13 @@ This file tracks lessons learned during the BTC_Things project.
   "Priced in Gold". O dono notou a sobreposicao; o grafico duplicado saiu e so
   a tabela de ciclos e as leituras entraram no /debase. Antes de propor pagina
   nova, `grep -rni` pela metrica em src/pages e public/scripts.
+- **2026-11-24**: Regras `article :global(svg …)` escritas para o grafico D3 do
+  /halving pegavam qualquer SVG estatico adicionado depois na mesma pagina (o
+  ciclo polar herdou max-height e caixa alta). Seletor para grafico desenhado em
+  runtime ancora no container dele (`#halving-chart :global(svg)`), nunca no
+  `article`. O mesmo vale para o draw-check: com dois SVGs, `svg path` na
+  pagina toda passava com o D3 morto.
+- **2026-11-24**: Para gatear um commit parcial, exportar o indice
+  (`git archive $(git write-tree)`) e rodar `bun run check` la. Com
+  `node_modules` em symlink o Astro falha ("No cached compile metadata"), porque
+  resolve o caminho real; `bun install --frozen-lockfile` na copia leva ~2s.

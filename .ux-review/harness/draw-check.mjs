@@ -20,7 +20,10 @@ const SCREENS = [
   { path: "/debase/", sel: "svg path", min: 60 },
   { path: "/rainbow/", sel: ".band-label", min: 9 },
   { path: "/big-mac/", sel: "svg path", min: 5 },
-  { path: "/halving/", sel: "svg path", min: 11 },
+  // Dois graficos e dois seletores: o polar e SVG do build e existe com ou
+  // sem JS, entao um "svg path" na pagina toda (199) passaria com o D3 morto.
+  { path: "/halving/", sel: "#halving-chart svg path", min: 11 },
+  { path: "/halving/", sel: "#polar-cycle path", min: 150 },
   { path: "/all-the-money/", sel: ".block", min: 25000 },
   { path: "/sem-melhores/", sel: "table tr", min: 5, wait: 3000 },
   { path: "/dca/", sel: "svg", min: 1 },

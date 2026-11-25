@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { withBase } from "../utils/base";
+import { GRADIENT, buildPolar } from "../utils/polar";
 import { closestPrice, loadPrices, usd } from "../utils/prerender";
 
 const title = "Halving";
@@ -244,6 +245,58 @@ const lateTops = cycles
   .map((cycle) => cycle.daysTopAfterHalving)
   .filter((days): days is number => days !== null && days > WINDOW_DAYS)
   .map((days) => days - WINDOW_DAYS);
+
+/*
+ * ---------------------------------------------------------------------------
+ * Ciclo polar: SVG inline calculado aqui, renderiza sem JavaScript. As datas
+ * de halving vem de loadHalvings(); a estimativa do proximo e a desta pagina.
+ * ---------------------------------------------------------------------------
+ */
+const polar = buildPolar({ nextHalvingMs: nextHalving.getTime() });
+const ps = polar.stats;
+const isoLong = (date: string): string =>
+  longDate(new Date(`${date}T00:00:00Z`));
+const times = (value: number): string =>
+  `×${value >= 10 ? value.toFixed(0) : value.toFixed(1)}`;
+
+const polarStats = [
+  { label: "Since ATH", value: `${ps.daysSinceAth} days` },
+  { label: "From ATH", value: pct(ps.athPrice, ps.price) },
+  { label: "1 BTC", value: usd(ps.price, 0) },
+  { label: "1 month", value: pct(1, 1 + ps.change1m) },
+  { label: "1 year", value: times(ps.multiple1y) },
+  { label: "4 years", value: times(ps.multiple4y) },
+  { label: "Last close", value: isoLong(ps.lastDate) },
+];
+
+/* Quanto o recuo desde o topo anda para dentro, em aneis (1 anel = 10x). */
+const drawdownRings = Math.log10(ps.athPrice / ps.price);
+const halvingDegrees = polar.halvings.map((h) => `${Math.round(h.degrees)}°`);
+const drawdownPct = `${Math.round(-ps.drawdown * 100)}%`;
+/* 90 graus por ano, logo 7,5 graus por mes. */
+const halvingDriftMonths = Math.round(
+  ((polar.halvings[0]?.degrees ?? 0) -
+    (polar.halvings[polar.halvings.length - 1]?.degrees ?? 0)) /
+    7.5,
+);
+const turnsOfData =
+  (Date.parse(ps.lastDate) - Date.parse(polar.firstDate)) / (1461 * DAY_MS);
+
+/* O veredito sai da contagem: se um dia algum ponto ficar para dentro da
+   volta anterior, a frase muda sozinha no proximo build. */
+const { turns } = polar;
+const comparedCount = turns.compared.toLocaleString("en-US");
+const turnsVerdict =
+  turns.higher === turns.compared
+    ? `So far it always has: all ${comparedCount} daily closes that have one a turn before them are higher, the closest call being ${isoLong(turns.worstDate)}, at ${times(turns.worst)}.`
+    : `It held on ${turns.higher.toLocaleString("en-US")} of the ${comparedCount} daily closes that have one a turn before them; the worst was ${isoLong(turns.worstDate)}, at ${times(turns.worst)}.`;
+
+const polarLabel = [
+  `Polar chart of Bitcoin's daily close from ${polar.firstDate} to ${ps.lastDate}.`,
+  "One clockwise turn is four years; distance from the centre is the price on a log scale.",
+  `Last close ${usd(ps.price, 0)}, ${drawdownPct} below the all-time-high close of ${usd(ps.athPrice, 0)} on ${ps.athDate}, ${ps.daysSinceAth} days earlier.`,
+  `Halvings marked on ${polar.halvings.map((h) => h.date).join(", ")}.`,
+].join(" ");
 ---
 
 
@@ -338,7 +391,10 @@ const lateTops = cycles
       white-space: nowrap;
     }
 
-    article :global(svg) {
+    /* Regras do grafico D3 ancoradas no container dele, nao em `article`: o
+       ciclo polar e outro SVG dentro do mesmo article, e um `article svg`
+       aplicava nele o max-height de 400px e o texto em caixa alta. */
+    #halving-chart :global(svg) {
       width: 100%;
       height: auto;
       display: block;
@@ -347,7 +403,7 @@ const lateTops = cycles
       max-height: 400px;
     }
 
-    article :global(svg text) {
+    #halving-chart :global(svg text) {
       font-size: 16px;
       font-family: monospace;
       fill: var(--chart-ink);
@@ -355,36 +411,199 @@ const lateTops = cycles
       text-transform: uppercase;
     }
 
-    article :global(svg .domain) {
+    #halving-chart :global(svg .domain) {
       stroke: var(--chart-ink);
       stroke-width: 3px;
     }
 
-    article :global(svg .tick line) {
+    #halving-chart :global(svg .tick line) {
       stroke: var(--chart-ink);
       stroke-width: 2px;
     }
 
-    article :global(svg .tick text) {
+    #halving-chart :global(svg .tick text) {
       fill: var(--chart-ink);
       font-weight: bold;
       font-size: 14px;
     }
 
     /* Fora do painel escuro: acompanha o tema, ou some no claro. */
-    article :global(.legend text) {
+    #halving-chart :global(.legend text) {
       font-family: monospace;
       fill: var(--chart-legend-ink);
     }
 
     @media (max-width: 600px) {
-      article :global(svg text) {
+      #halving-chart :global(svg text) {
         font-size: 26px;
       }
 
-      article :global(svg .tick text) {
+      #halving-chart :global(svg .tick text) {
         font-size: 22px;
       }
+    }
+
+    /* Ciclo polar. Os numeros ficam fora do painel, na tinta da pagina; o que
+       esta dentro do painel escuro usa --chart-ink nos dois temas. */
+    .polar-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 2rem;
+      margin: 1em 0 0;
+    }
+
+    .polar-stats dt {
+      font-size: var(--text-micro);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--fg-secondary);
+    }
+
+    .polar-stats dd {
+      margin: 0;
+      font-size: var(--text-card);
+      font-weight: bold;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .polar {
+      margin: 20px 0;
+      padding: 16px;
+      background: var(--chart-bg);
+      color: var(--chart-ink);
+    }
+
+    .polar-svg {
+      display: block;
+      width: 100%;
+      max-width: 640px;
+      height: auto;
+      margin: 0 auto;
+      font-family: var(--font);
+    }
+
+    /*
+     * O viewBox tem 640 de lado, entao o texto escala junto: a 320px de tela o
+     * SVG mede ~256px e 15 unidades virariam 6px. Abaixo de 600px a fonte sobe
+     * para o texto renderizado passar de 11px. O contorno na cor do canvas
+     * separa o rotulo do anel que passa por baixo.
+     */
+    .polar-svg text {
+      fill: var(--chart-ink);
+      font-size: 15px;
+      font-weight: bold;
+      paint-order: stroke;
+      stroke: var(--chart-bg);
+      stroke-width: 4px;
+      stroke-linejoin: round;
+    }
+
+    @media (max-width: 600px) {
+      .polar-svg text {
+        font-size: 30px;
+        stroke-width: 7px;
+      }
+    }
+
+    /*
+     * non-scaling-stroke em tudo que e linha ou marcador: a espessura fica em
+     * pixels de tela, entao o traco e os pontos tem o mesmo tamanho a 320px e
+     * a 1440px. Os marcadores sao subcaminhos de comprimento zero com ponta
+     * redonda, ou seja, pontos cujo diametro e o stroke-width.
+     */
+    .polar path,
+    .polar circle {
+      fill: none;
+      vector-effect: non-scaling-stroke;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .polar-ring {
+      stroke: var(--chart-grid);
+      stroke-width: 1px;
+    }
+
+    .polar-ring.strong {
+      stroke: var(--chart-ink);
+      stroke-opacity: 0.35;
+    }
+
+    .polar-line path {
+      stroke-width: 2px;
+    }
+
+    .polar-ath {
+      stroke: var(--chart-ink);
+      stroke-width: 4px;
+    }
+
+    .polar-halving-ring {
+      stroke: var(--chart-ink);
+      stroke-width: 15px;
+    }
+
+    .polar-halving-hole {
+      stroke: var(--chart-bg);
+      stroke-width: 9px;
+    }
+
+    .polar-latest-halo {
+      stroke: var(--chart-bg);
+      stroke-width: 19px;
+    }
+
+    .polar-latest {
+      stroke: var(--chart-ink);
+      stroke-width: 13px;
+    }
+
+    .polar-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem 2rem;
+      margin-top: 12px;
+    }
+
+    .polar-ramp {
+      display: grid;
+      gap: 4px;
+      width: 15rem;
+      max-width: 100%;
+    }
+
+    .polar-ramp-bar {
+      height: 10px;
+    }
+
+    .polar-ramp-ends {
+      display: flex;
+      justify-content: space-between;
+      gap: 1ch;
+      font-size: var(--text-micro);
+    }
+
+    .polar-keys {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.25rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .polar-keys li {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+    }
+
+    .polar-keys svg {
+      width: 20px;
+      height: 20px;
+      flex: none;
     }
   </style>
 
@@ -494,6 +713,119 @@ const lateTops = cycles
         repeating a fifth time, with a sample of four and no mechanism forcing
         it — the supply cut is scheduled, the price response is not. Size it
         like a bet you can be wrong about, not like a plan.
+      </p>
+    </section>
+
+    <section class="section" aria-labelledby="polar-title">
+      <h2 id="polar-title">The Polar Cycle</h2>
+      <p>
+        Sebastián Serrano (@sserrano44) draws the whole price history as a
+        spiral at
+        {" "}<a href="https://polar.sserrano.com" target="_blank" rel="noopener">polar.sserrano.com</a>.
+        This is our version of his idea, computed from this page's dataset when
+        the site is built. Each turn is four years: the angle is the calendar,
+        clockwise, one year per quarter, with 1 January of
+        {" "}{polar.years[0]?.label} at three o'clock. Distance from the centre
+        is the price on a log scale, each ring ten times the one inside it. The
+        colour is how far each day sits between one halving (0%) and the next
+        (100%; for the running cycle, the {longDate(nextHalving)} estimate
+        above).
+      </p>
+      <dl class="polar-stats">
+        {polarStats.map((stat) => (
+          <div>
+            <dt>{stat.label}</dt>
+            <dd>{stat.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <figure class="polar">
+        <svg
+          id="polar-cycle"
+          class="polar-svg"
+          viewBox={`0 0 ${polar.size} ${polar.size}`}
+          role="img"
+          aria-label={polarLabel}
+        >
+          {polar.rings.map((ring) => (
+            <circle
+              class:list={["polar-ring", { strong: ring.strong }]}
+              cx={polar.centre}
+              cy={polar.centre}
+              r={ring.r}
+            />
+          ))}
+          <path
+            class="polar-ring"
+            d={`M${polar.centre - polar.radius - 8} ${polar.centre}H${polar.centre + polar.radius + 8}M${polar.centre} ${polar.centre - polar.radius - 8}V${polar.centre + polar.radius + 8}`}
+          />
+          <g class="polar-line">
+            {polar.segments.map((segment) => (
+              <path d={segment.d} stroke={segment.color} />
+            ))}
+          </g>
+          <path class="polar-ath" d={polar.athPath} />
+          {polar.halvings.map((halving, index) => (
+            <g>
+              <title>Halving {index + 1}: {isoLong(halving.date)}, {money(halving.price)}</title>
+              <path class="polar-halving-ring" d={`M${halving.xy[0].toFixed(1)} ${halving.xy[1].toFixed(1)}h0`} />
+              <path class="polar-halving-hole" d={`M${halving.xy[0].toFixed(1)} ${halving.xy[1].toFixed(1)}h0`} />
+            </g>
+          ))}
+          <g>
+            <title>Last close: {isoLong(ps.lastDate)}, {usd(ps.price, 0)}</title>
+            <path class="polar-latest-halo" d={`M${polar.latest[0].toFixed(1)} ${polar.latest[1].toFixed(1)}h0`} />
+            <path class="polar-latest" d={`M${polar.latest[0].toFixed(1)} ${polar.latest[1].toFixed(1)}h0`} />
+          </g>
+          {polar.ringLabels.map((label) => (
+            <text x={label.x} y={label.y} dominant-baseline="central">{label.text}</text>
+          ))}
+          {polar.years.map((year) => (
+            <text x={year.x} y={year.y} text-anchor={year.anchor} dominant-baseline="central">{year.label}</text>
+          ))}
+        </svg>
+        <figcaption class="polar-legend">
+          <div class="polar-ramp">
+            <span>Halving cycle 0% &rarr; 100%</span>
+            <span class="polar-ramp-bar" style={`background: linear-gradient(to right, ${GRADIENT.join(", ")})`}></span>
+            <span class="polar-ramp-ends"><span>0% at a halving</span><span>100% at the next</span></span>
+          </div>
+          <ul class="polar-keys">
+            <li>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path class="polar-halving-ring" d="M10 10h0" /><path class="polar-halving-hole" d="M10 10h0" /></svg>
+              Halving
+            </li>
+            <li>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path class="polar-ath" d="M10 10h0" /></svg>
+              All-time-high close
+            </li>
+            <li>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path class="polar-latest-halo" d="M10 10h0" /><path class="polar-latest" d="M10 10h0" /></svg>
+              Latest close
+            </li>
+          </ul>
+        </figcaption>
+      </figure>
+      <p>
+        To read it, pick a point and follow the line one full turn round, to the
+        same date four years later. If that point sits farther out, the price is
+        higher than it was a cycle earlier and the four-year cycle held. {turnsVerdict}
+      </p>
+      <p>
+        Now the other side. Four turns is a tiny sample: the spiral holds
+        {" "}{turnsOfData.toFixed(1)} turns of data and four halvings, the same
+        four episodes every table on this page is built from. The log scale compresses
+        large drawdowns: the {drawdownPct} fall since the
+        {" "}{isoLong(ps.athDate)} high moves the line in by
+        {" "}{drawdownRings.toFixed(2)} of the gap between two rings, so losing
+        half the price reads as a wobble. And the angle is the calendar, not the
+        block height. Halvings line up with it only because they come roughly
+        every four years: they landed {halvingDegrees.slice(0, -1).join(", ")} and
+        {" "}{halvingDegrees[halvingDegrees.length - 1]}
+        {" "}past three o'clock, drifting about {halvingDriftMonths} months
+        earlier over three cycles as blocks came in faster than ten minutes. Any
+        price that rises over four years spirals outward on this chart, halving
+        or not &mdash; what it shows is the four-year return, not its cause.
       </p>
     </section>
 

@@ -285,7 +285,7 @@ do favicon.
 | Seletor de moeda base (USD/BRL/sats) | Não — exige conversão em todas as ferramentas |
 | Rota 404 | Implementada (`src/pages/404.astro`) + `error_page` no nginx |
 | Fonte única de rotas | Implementada (`src/data/routes.ts`) — nav, grid da home e lista do 404 leem dela, com `group` decidindo a linha do nav |
-| Nomes acessíveis nos gráficos | Implementado — `role="img"` + `aria-label` em 10 SVGs do `/debase` e 1 em `/halving`, `/big-mac`, `/dca`, `/rainbow` |
+| Nomes acessíveis nos gráficos | Implementado — `role="img"` + `aria-label` em 10 SVGs do `/debase` e 1 em `/big-mac`, `/dca`, `/rainbow`; 2 em `/halving` (D3 e o ciclo polar) |
 | Blocos do `/all-the-money` alcançáveis por teclado | Implementado — 25.346 viraram `<button>`, um tab stop por item |
 | Modal do `/sem-melhores` | Implementado — `role="dialog"`, trap de foco, restauração ao fechar |
 | Estrutura de cabeçalhos | Implementada — 10 `h2` no `/debase`, seções no `/halving` e `/big-mac` |
