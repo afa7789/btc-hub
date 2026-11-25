@@ -1875,6 +1875,328 @@
         "reason": "Annual revenue, a flow, not a stock of wealth",
         "parentItem": null
       }
+    },
+    {
+      "id": "toyota-market-cap",
+      "slug": "toyota-market-capitalization",
+      "name": "Toyota",
+      "categoryId": "corporations",
+      "valueBillions": 246.42,
+      "valueFormatted": "246.42 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/toyota/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25. Nasdaq shows $273.71bn the same day (different share count)."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "byd-market-cap",
+      "slug": "byd-market-capitalization",
+      "name": "BYD",
+      "categoryId": "corporations",
+      "valueBillions": 101.69,
+      "valueFormatted": "101.69 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/byd/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 25 Nov 2026.",
+        "method": "Market cap 2026-11-25 per companiesmarketcap.com, read from the page on 2026-11-25. Shenzhen listing 002594.SZ, converted to USD by the source."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "xiaomi-market-cap",
+      "slug": "xiaomi-market-capitalization",
+      "name": "Xiaomi",
+      "categoryId": "corporations",
+      "valueBillions": 87.7,
+      "valueFormatted": "87.7 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/xiaomi/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 25 Nov 2026.",
+        "method": "Market cap 2026-11-25 per companiesmarketcap.com, read from the page on 2026-11-25. Phones and electronics too, not only cars."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "ferrari-market-cap",
+      "slug": "ferrari-market-capitalization",
+      "name": "Ferrari",
+      "categoryId": "corporations",
+      "valueBillions": 69.94,
+      "valueFormatted": "69.94 billion",
+      "lastUpdated": "2026-11-23T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/ferrari/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 23 Nov 2026.",
+        "method": "Market cap 2026-11-23 per companiesmarketcap.com, read from the page on 2026-11-25. Nasdaq shows $93.38bn the same day (different share count)."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "general-motors-market-cap",
+      "slug": "general-motors-market-capitalization",
+      "name": "General Motors",
+      "categoryId": "corporations",
+      "valueBillions": 69.44,
+      "valueFormatted": "69.44 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/general-motors/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25. Nasdaq: $68.88bn same day."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "hyundai-market-cap",
+      "slug": "hyundai-market-capitalization",
+      "name": "Hyundai",
+      "categoryId": "corporations",
+      "valueBillions": 52.78,
+      "valueFormatted": "52.78 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/hyundai/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 25 Nov 2026.",
+        "method": "Market cap 2026-11-25 per companiesmarketcap.com, read from the page on 2026-11-25. Korea listing 005380.KS, converted to USD by the source."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "ford-market-cap",
+      "slug": "ford-market-capitalization",
+      "name": "Ford",
+      "categoryId": "corporations",
+      "valueBillions": 47.71,
+      "valueFormatted": "47.71 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/ford/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "honda-market-cap",
+      "slug": "honda-market-capitalization",
+      "name": "Honda",
+      "categoryId": "corporations",
+      "valueBillions": 42.9,
+      "valueFormatted": "42.9 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/honda/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "volkswagen-market-cap",
+      "slug": "volkswagen-market-capitalization",
+      "name": "Volkswagen",
+      "categoryId": "corporations",
+      "valueBillions": 35.93,
+      "valueFormatted": "35.93 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/volkswagen/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 25 Nov 2026.",
+        "method": "Market cap 2026-11-25 per companiesmarketcap.com, read from the page on 2026-11-25. Frankfurt listing VOW3.DE, converted to USD by the source."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "bmw-market-cap",
+      "slug": "bmw-market-capitalization",
+      "name": "BMW",
+      "categoryId": "corporations",
+      "valueBillions": 35.87,
+      "valueFormatted": "35.87 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/bmw/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 25 Nov 2026.",
+        "method": "Market cap 2026-11-25 per companiesmarketcap.com, read from the page on 2026-11-25. Frankfurt listing BMW.DE, converted to USD by the source."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "rivian-market-cap",
+      "slug": "rivian-market-capitalization",
+      "name": "Rivian",
+      "categoryId": "corporations",
+      "valueBillions": 16.56,
+      "valueFormatted": "16.56 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/rivian/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "li-auto-market-cap",
+      "slug": "li-auto-market-capitalization",
+      "name": "Li Auto",
+      "categoryId": "corporations",
+      "valueBillions": 10.45,
+      "valueFormatted": "10.45 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/li-auto/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "xpeng-market-cap",
+      "slug": "xpeng-market-capitalization",
+      "name": "XPeng",
+      "categoryId": "corporations",
+      "valueBillions": 8.64,
+      "valueFormatted": "8.64 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/xpeng/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25. Nasdaq: $8.67bn same day."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "nio-market-cap",
+      "slug": "nio-market-capitalization",
+      "name": "NIO",
+      "categoryId": "corporations",
+      "valueBillions": 6.46,
+      "valueFormatted": "6.46 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/nio/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
     }
   ]
 }
