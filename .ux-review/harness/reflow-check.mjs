@@ -14,7 +14,7 @@ const BASE = process.env.BASE_URL || "http://127.0.0.1:8176/btc-hub";
 const ROUTES = [
   "/", "/debase/", "/halving/", "/rainbow/", "/big-mac/", "/dca/",
   "/how-much-i-fucked-up/", "/all-the-money/", "/sem-melhores/", "/bitcoin-core/",
-  "/off-ramp/",
+  "/off-ramp/", "/dolarizacao/",
 ];
 const settle = (r) => (r === "/sem-melhores/" ? 3000 : 800);
 

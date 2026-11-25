@@ -12,9 +12,9 @@ export type ToolGroup = "chart" | "tool" | "guide";
 export interface Tool {
   href: string;
   /**
-   * Which nav row the item belongs to. "chart" renders on the second row,
-   * "guide" on the third, the rest on the first — the split is content, not
-   * layout, so it lives here and not in Nav.astro.
+   * Which nav row the item belongs to. "tool" renders on the first row, next
+   * to the sibling sites; "chart" and "guide" share the second. The split is
+   * content, not layout, so it lives here and not in Nav.astro.
    */
   group: ToolGroup;
   /** Used verbatim in the nav, the hub card, the 404 list and the page title. */
@@ -65,6 +65,14 @@ export const tools: Tool[] = [
     label: "DCA CALCULATOR",
     description:
       "Dollar Cost Averaging calculator with Bitcoin historical data",
+    status: "DATASET",
+  },
+  {
+    href: "/dolarizacao",
+    group: "tool",
+    label: "DOLARIZAÇÃO",
+    description:
+      "Plan and backtest moving savings out of the Brazilian real in stages, on Central Bank FX and CDI data (in Portuguese)",
     status: "DATASET",
   },
   {

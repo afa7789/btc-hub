@@ -24,6 +24,9 @@ const SCREENS = [
   { path: "/all-the-money/", sel: ".block", min: 25000 },
   { path: "/sem-melhores/", sel: "table tr", min: 5, wait: 3000 },
   { path: "/dca/", sel: "svg", min: 1 },
+  // 323 barras medidas (uma por mes de inicio desde 1999); 100 deixa folga
+  // para um prazo maior, que fecha menos janelas.
+  { path: "/dolarizacao/", sel: "#dz-chart rect", min: 100 },
   { path: "/how-much-i-fucked-up/", sel: "main input, main button", min: 2 },
 ];
 

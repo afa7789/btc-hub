@@ -128,6 +128,7 @@ DATASET_ROWS=(
   "daily_cpi_inflation.csv|csv;1|45|update-cpi.ts (calls generate-daily-cpi.ts)"
   "gold.csv|csv,1|7|update-metals.ts"
   "silver.csv|csv,1|7|update-metals.ts"
+  "brl.csv|csv,1|7|update-brl.ts"
   "bitcoin_2010-07-17_2025-07-25.csv|csv,1|5|update-crypto.ts"
   "ethereum_2015-08-07_2025-07-25.csv|csv,1|5|update-crypto.ts"
   "monero_2014-05-21_2025-07-25.csv|csv,1|5|update-crypto.ts"
@@ -244,11 +245,15 @@ else
   # shellcheck disable=SC2086
   $RUNNER scripts/update-bigmac.ts --no-recompute >/tmp/upd-bigmac.log 2>&1 &
   PID_BIGMAC=$!
+  # shellcheck disable=SC2086
+  $RUNNER scripts/update-brl.ts >/tmp/upd-brl.log 2>&1 &
+  PID_BRL=$!
 
   for spec in "CPI:$PID_CPI:/tmp/upd-cpi.log" \
               "METALS:$PID_METALS:/tmp/upd-metals.log" \
               "CRYPTO:$PID_CRYPTO:/tmp/upd-crypto.log" \
-              "BIGMAC:$PID_BIGMAC:/tmp/upd-bigmac.log"; do
+              "BIGMAC:$PID_BIGMAC:/tmp/upd-bigmac.log" \
+              "BRL:$PID_BRL:/tmp/upd-brl.log"; do
     IFS=':' read -r name pid log <<<"$spec"
     if wait "$pid"; then
       echo "[$name] ok"

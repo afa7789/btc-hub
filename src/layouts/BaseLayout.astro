@@ -13,12 +13,16 @@ interface Props {
   description?: string;
   /** True only for pages that compute a default scenario at build time. */
   prerendered?: boolean;
+  /** Idioma do conteudo da pagina. O site e em ingles; /dolarizacao e em
+   *  portugues, e leitor de tela le com a pronuncia do `lang` declarado. */
+  lang?: string;
 }
 
 const {
   title,
   description = "Unified Bitcoin Tools Platform",
   prerendered = false,
+  lang = "en",
 } = Astro.props;
 const canonicalURL = new URL(
   Astro.url.pathname,
@@ -27,7 +31,7 @@ const canonicalURL = new URL(
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

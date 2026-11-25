@@ -1,0 +1,540 @@
+---
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { withBase } from "../utils/base";
+import {
+  allWindows,
+  backtest,
+  cdiYearPct,
+  chartLabel,
+  dlHtml,
+  edgeChartSvg,
+  fmt,
+  lastCompleteStart,
+  parseBrl,
+  plan,
+  planCells,
+  planSummary,
+  resultCells,
+  rowsHtml,
+  summarize,
+  windowsText,
+} from "../utils/dolarizacao";
+import { ASSETS } from "../utils/prerender";
+
+const title = "Dolarização";
+const description =
+  "Tirar parte do patrimônio do real em etapas, sem tentar acertar o câmbio: o método do Era de Ouro, com simulação sobre PTAX e CDI do Banco Central.";
+
+/*
+ * Pagina em portugues de proposito: o assunto (real, CDI, IOF, Receita) so
+ * existe para quem mora no Brasil. O resto do site segue em ingles.
+ *
+ * O cenario padrao e calculado aqui no build com o mesmo modulo que o script
+ * usa no navegador (src/utils/dolarizacao.ts), entao sem JS a pagina ainda
+ * mostra numeros reais, e com JS eles nao mudam ate o formulario mudar.
+ */
+const DATASETS = join(process.cwd(), "public", "datasets");
+const days = parseBrl(readFileSync(join(DATASETS, "brl.csv"), "utf-8"));
+const last = days[days.length - 1];
+
+const PLAN = {
+  wealthBrl: 100000,
+  usdHeld: 0,
+  rate: Math.round(last.ptax * 100) / 100,
+  targetPct: 30,
+  months: 12,
+  firstBrl: 2000,
+  cdiYearPct: Math.round(cdiYearPct(last.cdi) * 100) / 100,
+  irPct: 20,
+  costPct: 1.5,
+};
+const planned = plan(PLAN);
+
+const BT = {
+  capitalBrl: 100000,
+  months: 12,
+  asset: "usd" as const,
+  costPct: 1.5,
+  irPct: 20,
+  usdYieldPct: 0,
+};
+const start = lastCompleteStart(days, BT.months);
+const bt = backtest(days, null, { ...BT, start });
+if (!bt) throw new Error(`dolarizacao: janela padrao incompleta (${start})`);
+const windows = allWindows(days, null, BT);
+const summary = summarize(windows);
+if (!summary) throw new Error("dolarizacao: nenhuma janela completa");
+
+const btcCsv = withBase(`/datasets/${ASSETS.bitcoin.file}`);
+const ERA = "https://eradeouro.substack.com/p/";
+---
+
+<BaseLayout title={title} description={description} prerendered lang="pt-BR">
+  <style>
+    .page-header {
+      margin-bottom: 2em;
+    }
+
+    .page-header h1 {
+      margin: 0 0 0.5em;
+      border: none;
+      padding-bottom: 0;
+    }
+
+    .section {
+      margin-bottom: 2.5em;
+    }
+
+    .note {
+      color: var(--fg-muted);
+    }
+
+    .steps,
+    .points {
+      max-width: 68ch;
+      padding-left: 1.5em;
+    }
+
+    .points {
+      list-style: square;
+    }
+
+    .steps li:not(:last-child),
+    .points li:not(:last-child) {
+      margin-bottom: 0.6em;
+    }
+
+    .points li::marker,
+    .steps li::marker {
+      color: var(--accent-btc);
+    }
+
+    .steps:not(:last-child),
+    .points:not(:last-child) {
+      margin-bottom: 1em;
+    }
+
+    /* Campos em grade que encolhe ate uma coluna; o minimo cabe em 320px. */
+    .fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+      gap: 0.75rem 1.25rem;
+      margin: 1em 0 1.5em;
+      border: none;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .field label {
+      font-size: var(--text-micro);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--fg-secondary);
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      min-height: 44px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+      gap: 0.75rem;
+      margin: 0 0 1.5em;
+    }
+
+    .summary :global(div) {
+      border: var(--border-width) solid var(--border-subtle);
+      padding: 0.6rem 0.8rem;
+    }
+
+    .summary :global(dt) {
+      font-size: var(--text-micro);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--fg-secondary);
+    }
+
+    .summary :global(dd) {
+      font-size: 1.15em;
+      font-weight: bold;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* A tabela rola sozinha; a pagina nao (WCAG 1.4.10 em 320px). */
+    .table-wrap {
+      overflow-x: auto;
+      margin-bottom: 1em;
+    }
+
+    .table-wrap table {
+      width: 100%;
+      min-width: 32rem;
+    }
+
+    .table-wrap :global(th),
+    .table-wrap :global(td) {
+      padding: 0.45rem 0.6rem;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    .table-wrap :global(tbody th) {
+      background: none;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: normal;
+    }
+
+    /*
+     * Canvas escuro fixo nos dois temas, como os outros graficos do site
+     * (DESIGN.md 2.2). As cores das barras sao do proprio canvas, entao nao
+     * mudam com o tema; acima/abaixo de zero carrega o sentido junto da cor.
+     */
+    .chart {
+      background: var(--chart-bg);
+      border: var(--border-width) solid var(--border-subtle);
+      padding: 0.75rem 0.5rem 0.25rem;
+      margin: 1em 0;
+    }
+
+    .chart :global(svg) {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .chart :global(.bar-pos) {
+      fill: #00ff66;
+    }
+
+    .chart :global(.bar-neg) {
+      fill: #ff3333;
+    }
+
+    .chart :global(.zero) {
+      stroke: var(--chart-grid);
+      stroke-width: 1;
+    }
+
+    .chart :global(.tick) {
+      fill: var(--chart-ink);
+      font-size: 13px;
+      font-family: var(--font);
+    }
+
+    .legend {
+      font-size: var(--text-micro);
+      color: var(--fg-secondary);
+    }
+
+    .status {
+      min-height: 1.6em;
+      color: var(--status-warning);
+    }
+  </style>
+
+  <article id="dz-root" data-btc-csv={btcCsv} data-brl-csv={withBase("/datasets/brl.csv")}>
+    <header class="page-header">
+      <h1>Dolarização</h1>
+      <p>
+        Tirar parte do patrimônio do real em etapas, sem tentar acertar o câmbio.
+        O método é do Gabriel Duarte, do
+        <a href="https://eradeouro.substack.com" target="_blank" rel="noopener">Era de Ouro<span aria-hidden="true">↗</span></a>;
+        os números abaixo vêm da PTAX e do CDI publicados pelo Banco Central,
+        de {fmt.date(days[0].date)} a {fmt.date(last.date)}.
+      </p>
+      <p class="note">Simulação, não recomendação de investimento.</p>
+    </header>
+
+    <section class="section">
+      <h2>O método</h2>
+      <ol class="steps">
+        <li>
+          <strong>A meta é uma fatia do patrimônio total,</strong> contando os
+          dólares que você já tem. O exemplo dele é 30%, calculado num câmbio
+          de referência que fica fixo durante o plano.
+        </li>
+        <li>
+          <strong>A primeira compra é agora;</strong> o resto é dividido em
+          compras mensais, de 6 a 18 meses, sem tentar adivinhar o melhor dia.
+        </li>
+        <li>
+          <strong>O dinheiro que espera fica rendendo</strong> em renda fixa com
+          liquidez diária, 100% do CDI. Os juros líquidos de cada mês entram na
+          compra daquele mês.
+        </li>
+        <li>
+          <strong>Se o dólar cair mais de 5% no mês,</strong> ele compra um lote
+          maior e reduz o do mês seguinte. Essa regra não está na simulação.
+        </li>
+        <li>
+          <strong>Antes de tudo, reserva de emergência:</strong> 6 a 12 meses de
+          gastos, 24 com filhos.
+        </li>
+      </ol>
+      <p class="note">
+        Fontes: o post da
+        <a href={`${ERA}nova-ferramenta-planilha-de-dolarizacao`} target="_blank" rel="noopener">Planilha de Dolarização</a>
+        (a planilha original está linkada lá), o de
+        <a href={`${ERA}como-comecar-a-investir-de-forma`} target="_blank" rel="noopener">como começar a investir</a>
+        e o de
+        <a href={`${ERA}vai-viajar-e-comprar-eurodolar-leia`} target="_blank" rel="noopener">compra de moeda em lotes</a>.
+      </p>
+    </section>
+
+    <section class="section" aria-labelledby="plan-title">
+      <h2 id="plan-title">Planejador</h2>
+      <p>
+        A planilha dele, aqui. O câmbio e o CDI já vêm preenchidos com o último
+        dado do Banco Central ({fmt.date(last.date)}).
+      </p>
+      <form id="dz-plan" class="fields" onsubmit="return false">
+        <div class="field"><label for="p-wealth">Patrimônio no Brasil (R$)</label><input id="p-wealth" type="number" min="0" step="1000" value={PLAN.wealthBrl} /></div>
+        <div class="field"><label for="p-usd">Dólares que já tem (US$)</label><input id="p-usd" type="number" min="0" step="100" value={PLAN.usdHeld} /></div>
+        <div class="field"><label for="p-rate">Câmbio de referência (R$/US$)</label><input id="p-rate" type="number" min="0.5" step="0.01" value={PLAN.rate} /></div>
+        <div class="field"><label for="p-target">Meta em dólar (% do total)</label><input id="p-target" type="number" min="0" max="100" step="1" value={PLAN.targetPct} /></div>
+        <div class="field"><label for="p-months">Prazo (meses)</label><input id="p-months" type="number" min="1" max="36" step="1" value={PLAN.months} /></div>
+        <div class="field"><label for="p-first">Primeira compra (R$)</label><input id="p-first" type="number" min="0" step="500" value={PLAN.firstBrl} /></div>
+        <div class="field"><label for="p-cdi">CDI (% ao ano)</label><input id="p-cdi" type="number" min="0" step="0.05" value={PLAN.cdiYearPct} /></div>
+        <div class="field"><label for="p-ir">IR sobre os juros (%)</label><input id="p-ir" type="number" min="0" max="30" step="0.5" value={PLAN.irPct} /></div>
+        <div class="field"><label for="p-cost">IOF + spread por compra (%)</label><input id="p-cost" type="number" min="0" max="10" step="0.1" value={PLAN.costPct} /></div>
+      </form>
+      <dl id="dz-plan-summary" class="summary" set:html={dlHtml(planSummary(planned))} />
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Cronograma de compras mês a mês">
+        <table>
+          <thead>
+            <tr><th scope="col">Mês</th><th scope="col" class="num">Planejado</th><th scope="col" class="num">Juros do mês</th><th scope="col" class="num">Total a comprar</th><th scope="col" class="num">US$ comprados</th><th scope="col" class="num">US$ acumulados</th></tr>
+          </thead>
+          <tbody id="dz-plan-rows" set:html={rowsHtml(planCells(planned))} />
+        </table>
+      </div>
+      <p class="note">
+        Os juros são uma estimativa: CDI anual convertido para mês, menos o IR.
+        Como na planilha, as compras param na meta, então os juros adiantam o
+        fim em vez de passar dela. O dólar de cada compra usa o câmbio de
+        referência mais o custo; na vida real cada compra sai no câmbio do dia.
+      </p>
+    </section>
+
+    <section class="section" aria-labelledby="bt-title">
+      <h2 id="bt-title">E se você tivesse feito isso antes?</h2>
+      <p>
+        O mesmo método contra o câmbio e o CDI que de fato aconteceram. Três
+        jeitos de usar o mesmo dinheiro, avaliados no mesmo dia, um mês depois
+        da última compra: tudo de uma vez no primeiro dia, aos poucos com o
+        resto no CDI, ou nunca converter.
+      </p>
+      <form id="dz-bt" class="fields" onsubmit="return false">
+        <div class="field"><label for="b-capital">Capital (R$)</label><input id="b-capital" type="number" min="1" step="1000" value={BT.capitalBrl} /></div>
+        <div class="field"><label for="b-start">Primeira compra (mês)</label><input id="b-start" type="month" min={days[0].date.slice(0, 7)} max={last.date.slice(0, 7)} value={start.slice(0, 7)} /></div>
+        <div class="field"><label for="b-months">Número de compras (meses)</label><input id="b-months" type="number" min="1" max="36" step="1" value={BT.months} /></div>
+        <div class="field">
+          <label for="b-asset">Destino</label>
+          <select id="b-asset">
+            <option value="usd" selected>Dólar</option>
+            <option value="btc">Bitcoin (comprado em dólar)</option>
+          </select>
+        </div>
+        <div class="field"><label for="b-cost">IOF + spread por compra (%)</label><input id="b-cost" type="number" min="0" max="10" step="0.1" value={BT.costPct} /></div>
+        <div class="field"><label for="b-ir">IR sobre o CDI (%)</label><input id="b-ir" type="number" min="0" max="30" step="0.5" value={BT.irPct} /></div>
+        <div class="field"><label for="b-yield">Rendimento do dólar (% ao ano)</label><input id="b-yield" type="number" min="0" max="10" step="0.25" value={BT.usdYieldPct} /></div>
+      </form>
+      <p id="dz-bt-status" class="status" role="status"></p>
+      <p id="dz-bt-window">
+        Janela: {fmt.date(bt.start)} a {fmt.date(bt.end)}.
+      </p>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Resultado das três estratégias">
+        <table>
+          <thead>
+            <tr><th scope="col">Estratégia</th><th scope="col" class="num">Valor final</th><th scope="col" class="num">Em dólar</th><th scope="col" class="num">Contra tudo de uma vez</th></tr>
+          </thead>
+          <tbody id="dz-bt-rows" set:html={rowsHtml(resultCells(bt))} />
+        </table>
+      </div>
+
+      <h3>Em todas as janelas</h3>
+      <p id="dz-windows-text">{windowsText(summary, BT.months, BT.asset)}</p>
+      <div id="dz-chart" class="chart" set:html={edgeChartSvg(windows, chartLabel(summary, BT.months, BT.asset))} />
+      <p class="legend">
+        Uma barra por mês de início. Acima de zero, comprar aos poucos terminou
+        com mais que comprar tudo de uma vez; abaixo, com menos.
+      </p>
+
+      <h3>Os dois lados</h3>
+      <ul class="points">
+        <li>
+          <strong>No dólar, aos poucos ganha na maioria das vezes, não sempre.</strong>
+          Em janela em que o real despencou logo no começo, como no início de
+          2020, quem comprou tudo de uma vez se protegeu e quem foi aos poucos
+          comprou cada vez mais caro.
+        </li>
+        <li>
+          <strong>Em ativo que sobe muito, aos poucos costuma perder.</strong>
+          Troque o destino para bitcoin: o dinheiro que espera rende CDI, mas
+          deixa de pegar a alta. O método serve para reduzir arrependimento e
+          risco de entrada, não para render mais.
+        </li>
+        <li>
+          <strong>Ficar no CDI ganha com frequência quando o dólar comprado
+          fica parado.</strong> Isso diz mais sobre o juro brasileiro do que
+          sobre o dólar, e ignora o motivo de dolarizar, que é sair da
+          jurisdição. Ponha no campo de rendimento o que o dólar renderia (uma
+          T-bill, por exemplo).
+        </li>
+      </ul>
+      <p class="note">
+        Simplificações: o custo de câmbio é um só e vale para a série inteira,
+        mas o IOF mudou várias vezes desde 1999 (hoje é 1,1% na remessa para
+        investimento e 3,5% na maioria das outras saídas, pelo Decreto
+        12.499/2025). O IR do CDI é aplicado dia a dia sobre o rendimento, uma
+        aproximação do IR cobrado no resgate. A série começa em 1999 porque,
+        antes do câmbio flutuante, o real andava em banda administrada pelo BC.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>O que conta como dolarizar</h2>
+      <ul class="points">
+        <li>
+          <strong>BDR não é dolarizar.</strong> É negociado na B3, em reais, sob
+          regra e imposto brasileiros. Para ele, dolarizar é ter custódia e
+          jurisdição fora: conta numa corretora no exterior, com conta conjunta
+          e beneficiários cadastrados
+          (<a href={`${ERA}dolarizar-o-patrimonio-via-bdrs`} target="_blank" rel="noopener">post</a>).
+        </li>
+        <li>
+          <strong>Herança nos EUA:</strong> ele alerta que, acima de US$60 mil,
+          o imposto sobre herança de não residente é progressivo até 40%, e que
+          ETFs domiciliados na Irlanda evitam essa incidência.
+        </li>
+        <li>
+          <strong>Remessa pelo banco costuma passar de 3%</strong> entre spread
+          e IOF. Ele testou levar reais até dólar na corretora passando por
+          stablecoin (BRL → BBRL → USDB → USD, na Braza On) e pagou cerca de
+          0,6% no total
+          (<a href={`${ERA}voce-esta-gastando-muito-para-remessas`} target="_blank" rel="noopener">post</a>).
+        </li>
+        <li>
+          <strong>Stablecoin direto:</strong> USDT ou USDC comprados por P2P ou
+          em corretora (compra em corretora é informada à Receita), mandados
+          para carteira própria, corretora ou cartão cripto
+          (<a href={`${ERA}ainda-sentiremos-uma-saudade-danada`} target="_blank" rel="noopener">post</a>).
+          As rotas P2P estão em <a href={withBase("/off-ramp")}>/off-ramp</a>.
+        </li>
+        <li>
+          <strong>Bitcoin como destino é escolha deste site, não dele.</strong>
+          Ele trata cripto como aposta pequena e controlada, fora da carteira
+          principal.
+        </li>
+      </ul>
+      <p class="source-link">
+        <a href="https://www3.bcb.gov.br/sgspub/" target="_blank" rel="noopener">Dados: Banco Central, SGS séries 1 (PTAX venda) e 12 (CDI)</a>
+      </p>
+    </section>
+  </article>
+
+  <script>
+    import {
+      type Asset,
+      type BrlDay,
+      type Closes,
+      allWindows,
+      backtest,
+      chartLabel,
+      dlHtml,
+      edgeChartSvg,
+      fmt,
+      parseBrl,
+      parseCloses,
+      plan,
+      planCells,
+      planSummary,
+      resultCells,
+      rowsHtml,
+      summarize,
+      windowsText,
+    } from "../utils/dolarizacao";
+
+    let brl: BrlDay[] | null = null;
+    let btc: Closes | null = null;
+
+    const el = (id: string) => document.getElementById(id) as HTMLElement;
+    const num = (id: string) => Number((el(id) as HTMLInputElement).value);
+
+    function renderPlan(): void {
+      const p = plan({
+        wealthBrl: num("p-wealth"),
+        usdHeld: num("p-usd"),
+        rate: num("p-rate"),
+        targetPct: num("p-target"),
+        months: Math.max(1, Math.round(num("p-months"))),
+        firstBrl: num("p-first"),
+        cdiYearPct: num("p-cdi"),
+        irPct: num("p-ir"),
+        costPct: num("p-cost"),
+      });
+      el("dz-plan-summary").innerHTML = dlHtml(planSummary(p));
+      el("dz-plan-rows").innerHTML = rowsHtml(planCells(p));
+    }
+
+    async function loadBtc(root: HTMLElement): Promise<Closes> {
+      if (!btc) {
+        const res = await fetch(root.dataset.btcCsv as string);
+        btc = parseCloses(await res.text());
+      }
+      return btc;
+    }
+
+    async function renderBacktest(root: HTMLElement): Promise<void> {
+      if (!brl) return;
+      const asset = (el("b-asset") as HTMLSelectElement).value as Asset;
+      const prices = asset === "btc" ? await loadBtc(root) : null;
+      const base = {
+        capitalBrl: num("b-capital"),
+        months: Math.max(1, Math.round(num("b-months"))),
+        asset,
+        costPct: num("b-cost"),
+        irPct: num("b-ir"),
+        usdYieldPct: num("b-yield"),
+      };
+      const start = `${(el("b-start") as HTMLInputElement).value}-01`;
+      const bt = backtest(brl, prices, { ...base, start });
+      el("dz-bt-status").textContent = bt
+        ? ""
+        : "Essa janela não fecha: passa do fim dos dados ou começa antes de haver preço do destino.";
+      // Sem janela valida a tabela esvazia: deixar o resultado anterior na
+      // tela faria ele parecer a resposta para a data nova.
+      el("dz-bt-window").textContent = bt
+        ? `Janela: ${fmt.date(bt.start)} a ${fmt.date(bt.end)}.`
+        : "";
+      el("dz-bt-rows").innerHTML = bt ? rowsHtml(resultCells(bt)) : "";
+      const windows = allWindows(brl, prices, base);
+      const s = summarize(windows);
+      if (!s) return;
+      el("dz-windows-text").textContent = windowsText(s, base.months, asset);
+      el("dz-chart").innerHTML = edgeChartSvg(windows, chartLabel(s, base.months, asset));
+    }
+
+    // O router troca o <body> a cada navegacao: os nos sao novos, entao os
+    // ouvintes sao religados em cada astro:page-load, e so nesta pagina.
+    document.addEventListener("astro:page-load", async () => {
+      const root = document.getElementById("dz-root");
+      if (!root) return;
+      el("dz-plan").addEventListener("input", renderPlan);
+      if (!brl) {
+        const res = await fetch(root.dataset.brlCsv as string);
+        brl = parseBrl(await res.text());
+      }
+      el("dz-bt").addEventListener("input", () => void renderBacktest(root));
+    });
+  </script>
+</BaseLayout>

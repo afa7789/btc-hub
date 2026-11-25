@@ -4,7 +4,7 @@ A collection of Bitcoin-related data visualization tools built with Astro.
 
 ## Tools
 
-Eleven static pages, live at **https://afa7789.github.io/btc-hub/**.
+Twelve static pages, live at **https://afa7789.github.io/btc-hub/**.
 
 The shell (nav, layout, copy) is prerendered HTML. Most charts are client-side vanilla
 JS and need JavaScript enabled, with three deliberate exceptions: `/dca` and
@@ -47,6 +47,21 @@ amount per buy, a frequency and a date range; it walks the matching historical C
 and per-asset precision (8 decimals for BTC, 4 for a troy ounce). Outputs total
 invested, accumulated quantity, average price, current value, P/L, and the full
 transaction table. Runs offline once the CSV is fetched.
+
+### `/dolarizacao` — DOLARIZAÇÃO
+
+The one page in Portuguese (`<html lang="pt-BR">`), because its subject — the
+real, the CDI, IOF — only exists for people living in Brazil. It turns Gabriel
+Duarte's (Era de Ouro) gradual dollarization spreadsheet into a planner, then
+backtests the same method on what actually happened: PTAX and daily CDI from
+the Central Bank (`brl.csv`, 1999 onward, the start of the floating rate). Three
+uses of the same money are valued on the same day — all at once, in monthly
+lots with the rest earning CDI, or never converting — for one chosen window and
+for every monthly start in the series, drawn as one bar per start. The target
+can be the dollar or bitcoin. The calculation lives once, in
+`src/utils/dolarizacao.ts`, and both the build (default scenario, works with JS
+off) and the page script import it, so the prerender and the live result cannot
+drift apart the way `/dca`'s two copies once did.
 
 ### `/debase` — DEBASE
 
@@ -175,6 +190,7 @@ no Python and no Docker in the update path any more.
 | `CPI_U.csv` | `update-cpi.ts` (BLS API) | `/debase` |
 | `daily_cpi_inflation.csv` | `update-cpi.ts`, which calls `generate-daily-cpi.ts` to interpolate the monthly CPI into a daily series | `/debase` |
 | `gold.csv`, `silver.csv` | `update-metals.ts` (Yahoo Finance) | `/debase`, `/dca` |
+| `brl.csv` | `update-brl.ts` (Central Bank SGS series 1, PTAX sell, and 12, daily CDI) | `/dolarizacao` |
 | `bitcoin_*.csv`, `ethereum_*.csv`, `monero_*.csv` | `update-crypto.ts` (Kraken OHLC) | `/debase`, `/dca`, `/rainbow`, `/how-much-i-fucked-up` |
 | `satsukashii/big-mac-source-data-v2.csv` | `update-bigmac.ts` (The Economist's published Big Mac Index) | source for the next row |
 | `satsukashii/prices.json` | `compute-satsukashii.ts`, derived from the Big Mac CSV plus the bitcoin CSV | `/satsukashii` |

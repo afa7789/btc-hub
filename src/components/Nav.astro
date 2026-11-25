@@ -26,15 +26,20 @@ const wordmarkColumns = Math.max(
  * ocupa e conhecimento de rota, e duplicar conhecimento de rota foi o que fez
  * nav, home e 404 divergirem antes de routes.ts existir.
  */
-const chartTools = tools.filter((item) => item.group === "chart");
-const otherTools = tools.filter((item) => item.group !== "chart");
+const toolRow = tools.filter((item) => item.group === "tool");
+const lowerRow = tools.filter((item) => item.group !== "tool");
 /*
- * Duas linhas, sempre: graficos embaixo, todo o resto em cima. Um grupo novo
- * NAO ganha linha propria — uma terceira linha com um item sozinho foi
- * rejeitada explicitamente pelo dono do site. Se a linha de cima ficar larga
- * demais, mexa no breakpoint, nao no agrupamento.
+ * Duas linhas, sempre: ferramentas em cima (com os sites irmaos), graficos e
+ * guias embaixo. Um grupo novo NAO ganha linha propria — uma terceira linha
+ * com um item sozinho foi rejeitada explicitamente pelo dono do site.
+ *
+ * Os guias moraram na linha de cima ate o /dolarizacao. Com ele a linha de
+ * cima passava da largura maxima do container (1136px uteis) em QUALQUER
+ * viewport, entao nenhum breakpoint resolvia: o container trava em 1200px.
+ * Mover os guias para a linha de baixo, que era a mais curta, manteve as duas
+ * linhas e o limite de duas. Medido, ver o comentario do .nav__links.
  */
-const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
+const navRows = [toolRow, lowerRow].filter((row) => row.length > 0);
 ---
 
 <nav class="nav">
@@ -146,13 +151,16 @@ const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
    * que le como bug. Aqui cada grupo e a sua propria linha, entao o corte e
    * sempre 4/4 e nunca depende da largura.
    *
-   * Cada linha e `nowrap` na pratica. Com OFF-RAMP e WALLET-GEN (site irmao,
-   * fim da linha de cima) os rotulos com a decoracao "> <" do item ativo somam
-   * ~1011px, mais 6 gaps — MEDIDO no Playwright, nao estimado. O gap cresce
-   * com 1.1vw, entao o teto dele e de 1rem: com 1.5rem a linha precisava de
-   * 1138px em 1920 e o container so da 1136, quebrando justo na tela larga.
-   * Com o teto, a linha cabe a partir de ~1156px; o menu colapsa abaixo de
-   * 1180px (ver o media query do fim): mexer no breakpoint, nao no agrupamento.
+   * Cada linha e `nowrap` na pratica. A de cima (ferramentas + WALLET-GEN,
+   * site irmao) e a mais larga: com a decoracao "> <" do item ativo os rotulos
+   * somam ~911px, mais 6 gaps — MEDIDO no Playwright, nao estimado. O gap
+   * cresce com 1.1vw, entao o teto dele e de 1rem: sem teto a linha crescia
+   * mais rapido que o container, que trava em 1200px (1136px uteis), e
+   * quebrava justo na tela larga. Com o teto a linha precisa de 982px em
+   * 1080 (cabe em 1012) e de 1007px no maximo; o menu colapsa abaixo de
+   * 1080px (ver o media query do fim). Se uma linha nao couber mais, mexa no
+   * breakpoint; se nem a 1136px ela couber, troque um grupo de linha, nunca
+   * crie a terceira.
    * O `wrap` fica so como valvula: numa fonte de fallback mais larga o nav
    * quebra em vez de vazar na horizontal.
    */
@@ -237,10 +245,10 @@ const navRows = [otherTools, chartTools].filter((row) => row.length > 0);
   }
   
   /* O disclosure sem JS continua igual: o nav__links some e so o :checked o
-     traz de volta — sem script nenhum no caminho. 1179px: a linha de cima
-     so cabe a partir de ~1156px (comentario do .nav__links); o logo segue
-     em 768px. */
-  @media (max-width: 1179px) {
+     traz de volta — sem script nenhum no caminho. 1079px: a linha de cima
+     precisa de 982px em 1080 (comentario do .nav__links); o logo segue em
+     768px. */
+  @media (max-width: 1079px) {
     .nav__links {
       display: none;
       width: 100%;
