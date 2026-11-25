@@ -102,3 +102,8 @@ This file tracks lessons learned during the BTC_Things project.
   trava em 1200px. Ao adicionar `/off-ramp` a linha quebrou em 1920px (faltavam
   2px), não só perto do breakpoint. Item novo no nav = medir de 1080 a 2560, com
   item ativo; o gap agora tem teto de 1rem e o menu colapsa abaixo de 1180px.
+- **2026-11-24**: Criei /btc-in-gold sem ver que o /debase ja tinha "Crypto
+  Priced in Gold": procurei "in gold" com grep sensivel a maiuscula e nao achei
+  "Priced in Gold". O dono notou a sobreposicao; o grafico duplicado saiu e so
+  a tabela de ciclos e as leituras entraram no /debase. Antes de propor pagina
+  nova, `grep -rni` pela metrica em src/pages e public/scripts.

@@ -74,6 +74,13 @@ brutalist rendering, and the `import_from_*.js` fetchers. Marks the Bitcoin halv
 from `/datasets/halvings.txt` and shows inflation-adjusted ATHs.
 `daily_cpi_inflation.csv` is the denominator for everything on the page.
 
+Under the "Crypto Priced in Gold" chart, a build-time table splits bitcoin in
+ounces of gold halving to halving: each cycle's peak, the low after it, the drop
+and how much each peak cleared the last (`src/utils/btcgold.ts`). Two readings
+follow from those numbers, both computed from the CSVs: Gabriel Duarte's (Era
+de Ouro) November 2025 bear call and the shrinking peaks, against higher lows
+and shrinking drops.
+
 ### `/halving` — HALVING
 
 The supply schedule on its own page, split out of `/debase` because it answers a

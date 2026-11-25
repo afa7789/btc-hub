@@ -299,3 +299,16 @@ export const usd = (value: number, decimals = 2): string =>
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   })}`;
+
+/**
+ * Datas dos halvings (aaaa-mm-dd, UTC), de public/datasets/halvings.txt, que
+ * guarda um timestamp unix por linha. Um leitor so para as paginas que marcam
+ * halving no build.
+ */
+export function loadHalvings(): string[] {
+  return readFileSync(join(DATASETS, "halvings.txt"), "utf8")
+    .split("\n")
+    .map((line) => Number(line.trim()))
+    .filter((ts) => ts > 0)
+    .map((ts) => new Date(ts * 1000).toISOString().slice(0, 10));
+}

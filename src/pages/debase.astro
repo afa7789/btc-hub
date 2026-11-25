@@ -1,10 +1,40 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { withBase } from "../utils/base";
+import { at, btcInGold, cycles, lowSince } from "../utils/btcgold";
+import { loadHalvings } from "../utils/prerender";
 
 const title = "Debase";
 const description =
   "Inflation-adjusted asset price comparison tool - Bitcoin, Ethereum, Monero, Gold, Silver vs USD";
+
+/*
+ * BTC em ouro, ciclo a ciclo: a tabela e as duas leituras abaixo do grafico
+ * D3 "Crypto Priced in Gold". Calculado no build, entao existe sem JS. Nenhum
+ * numero do texto e digitado, exceto o que o Gabriel Duarte escreveu (a data
+ * do post e a queda prevista); quando os CSVs mudam, o texto acompanha.
+ */
+const goldPoints = btcInGold();
+const cyc = cycles(goldPoints, loadHalvings());
+const ath = cyc.reduce((m, c) => (c.peak.oz > m.oz ? c.peak : m), cyc[0].peak);
+// Post do Era de Ouro de 21/11/2025: "pode cair mais 70 a 80% cotado em ouro".
+const CALL_DATE = "2025-11-21";
+const call = at(goldPoints, CALL_DATE);
+const lowAfterCall = lowSince(goldPoints, CALL_DATE);
+const peakGrowth = cyc
+  .slice(1)
+  .map((c, k) => c.peak.oz / cyc[k].peak.oz)
+  .map((m) => `×${m >= 10 ? m.toFixed(0) : m.toFixed(m >= 2 ? 1 : 2)}`);
+const dayFmt = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+const d = (iso: string) => dayFmt.format(new Date(`${iso}T00:00:00Z`));
+const oz = (v: number) => `${v >= 1 ? v.toFixed(2) : v.toPrecision(2)} oz`;
+const pct = (v: number) =>
+  `${v > 0 ? "+" : "−"}${Math.abs(v * 100).toFixed(0)}%`;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -55,6 +85,55 @@ const description =
     /* Compartilha a borda do artigo com os paragrafos. O margin-left de 80px
        criava uma terceira borda de inicio na pagina: paragrafo em 136, ATH em
        216, grafico centrado em 270. */
+    /* Tabela de ciclos: rola sozinha, a pagina nao (WCAG 1.4.10 em 320px). */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 1em 0;
+    }
+
+    .table-wrap table {
+      width: 100%;
+      min-width: 34rem;
+    }
+
+    .table-wrap th,
+    .table-wrap td {
+      padding: 0.45rem 0.6rem;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    .table-wrap td {
+      text-align: right;
+    }
+
+    .table-wrap td:first-child {
+      text-align: left;
+    }
+
+    .readings {
+      max-width: 68ch;
+      padding-left: 1.5em;
+      list-style: square;
+      margin-bottom: 1em;
+    }
+
+    .readings li:not(:last-child) {
+      margin-bottom: 0.6em;
+    }
+
+    .readings li::marker {
+      color: var(--accent-btc);
+    }
+
+    .cycle-note {
+      color: var(--fg-muted);
+    }
+
+    .cycle-h {
+      margin-top: 1.75em;
+    }
+
     .ath-display {
       margin-top: 60px;
     }
@@ -270,7 +349,80 @@ const description =
       <p>These lines show the value of ETH, BTC, and XMR measured in ounces of
         gold, not dollars. This helps compare crypto performance to gold, a traditional store of value, and see
         which asset outperformed the other over time.</p>
+
+      <h3 id="btc-gold-cycles" class="cycle-h">Bitcoin in gold, cycle by cycle</h3>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Bitcoin in gold: each halving cycle's peak and the low after it">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Cycle</th>
+              <th scope="col">Peak</th>
+              <th scope="col">Low after the peak</th>
+              <th scope="col">Drop</th>
+              <th scope="col">Peak vs the last one</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cyc.map((k, i) => (
+              <tr>
+                <td>{k.from.slice(0, 4)}–{k.to ? k.to.slice(0, 4) : "now"}</td>
+                <td>{oz(k.peak.oz)}, {d(k.peak.date)}</td>
+                <td>{oz(k.low.oz)}, {d(k.low.date)}</td>
+                <td>{pct(k.low.oz / k.peak.oz - 1)}</td>
+                <td>{i === 0 ? "—" : peakGrowth[i - 1]}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="cycle-note">
+        Cycles run halving to halving; the first row is the data before the
+        first halving. The last row is still open, so its low can go lower.
+      </p>
+
+      <h3 class="cycle-h">The bear reading</h3>
+      <ul class="readings">
+        <li>
+          <strong>Risk assets outrun gold for a cycle, then give it back.</strong>
+          Gabriel Duarte (Era de Ouro) points at the S&amp;P 500 priced in gold,
+          which peaked in 1929, 1969 and 2000 and fell back each time, and
+          argues bitcoin is on the same path
+          (<a href="https://eradeouro.substack.com/p/bitcoin-colapsa-49-a-historia-por" target="_blank" rel="noopener" lang="pt-BR">post, in Portuguese</a>).
+        </li>
+        <li>
+          <strong>On {d(CALL_DATE)} he wrote that bitcoin could fall another
+          70–80% in gold during 2026.</strong> It stood at {oz(call.oz)} that
+          day, so the call meant {oz(call.oz * 0.2)}–{oz(call.oz * 0.3)}. The
+          lowest close since was {oz(lowAfterCall.oz)} on {d(lowAfterCall.date)},
+          {pct(lowAfterCall.oz / call.oz - 1)} from his post: the direction held,
+          the size has not.
+        </li>
+        <li>
+          <strong>Each peak clears the last by less:</strong> {peakGrowth.join(", ")}.
+          The {ath.date.slice(0, 4)} high is barely above the one before it.
+        </li>
+      </ul>
+
+      <h3 class="cycle-h">The bull reading</h3>
+      <ul class="readings">
+        <li>
+          <strong>Every low after a peak sat above the previous cycle's low:</strong>
+          {cyc.map((k) => oz(k.low.oz)).join(" → ")}, the last one still open.
+        </li>
+        <li>
+          <strong>The drops are getting smaller:</strong>
+          {cyc.map((k) => pct(k.low.oz / k.peak.oz - 1)).join(", ")}.
+        </li>
+        <li>
+          <strong>A month before the bear post, the same author argued the
+          opposite for the short run:</strong> bitcoin sat on support against
+          gold and could outperform it for weeks or months
+          (<a href="https://eradeouro.substack.com/p/bitcoin-pode-performar-melhor-do" target="_blank" rel="noopener" lang="pt-BR">post</a>).
+          Ratio charts read both ways, and five cycles is a small sample.
+        </li>
+      </ul>
     </section>
+
     <br>
 
     <!-- Relative Price Ratio in USD Chart -->
