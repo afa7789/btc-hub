@@ -139,6 +139,10 @@ const serviceGroups: ServiceGroup[] = [
 const iconFor = (name: string) =>
   withBase(`/icons/off-ramp/${name.toLowerCase().replaceAll(" ", "-")}.png`);
 
+const DARK_INK = new Set(["Travala"]);
+const iconClass = (name: string) =>
+  DARK_INK.has(name) ? "service-icon dark-ink" : "service-icon";
+
 const allServices = serviceGroups.flatMap((group) =>
   group.services.map((service) => ({ ...service, group: group.title })),
 );
@@ -154,10 +158,20 @@ const allServices = serviceGroups.flatMap((group) =>
       margin-top: 1.5em;
     }
 
-    /* Fundo claro fixo: varios favicons sao escuros e somem no tema escuro. */
     .service-icon {
-      background: #fff;
       vertical-align: text-bottom;
+    }
+
+    /*
+     * Favicon de traco escuro sobre transparente: some no tema escuro. Inverte
+     * a luminancia e devolve o matiz; no tema claro fica como veio.
+     */
+    .service-icon.dark-ink {
+      filter: invert(1) hue-rotate(180deg);
+    }
+
+    :global([data-theme="light"]) .service-icon.dark-ink {
+      filter: none;
     }
 
     .service-grid {
@@ -510,7 +524,7 @@ const allServices = serviceGroups.flatMap((group) =>
           <ul class="points">
             {group.services.map((service) => (
               <li>
-                <img class="service-icon" src={iconFor(service.name)} alt="" width="20" height="20" loading="lazy" />{" "}
+                <img class={iconClass(service.name)} src={iconFor(service.name)} alt="" width="20" height="20" loading="lazy" />{" "}
                 <strong><a href={service.href} target="_blank" rel="noopener">{service.name}<span aria-hidden="true">↗</span></a></strong>{" "}
                 {service.text}
               </li>
@@ -527,7 +541,7 @@ const allServices = serviceGroups.flatMap((group) =>
         {allServices.map((service) => (
           <li>
             <a href={service.href} target="_blank" rel="noopener">
-              <img class="service-icon" src={iconFor(service.name)} alt="" width="40" height="40" loading="lazy" />
+              <img class={iconClass(service.name)} src={iconFor(service.name)} alt="" width="40" height="40" loading="lazy" />
               <span class="service-name">{service.name}<span aria-hidden="true">↗</span></span>
               <span class="service-group">{service.group}</span>
             </a>
