@@ -134,16 +134,6 @@ const serviceGroups: ServiceGroup[] = [
 
 <BaseLayout title={title} description={description}>
   <style>
-    .page-header {
-      margin-bottom: 2em;
-    }
-
-    .page-header h1 {
-      margin: 0 0 0.5em;
-      border: none;
-      padding-bottom: 0;
-    }
-
     .section {
       margin-bottom: 2em;
     }
@@ -154,23 +144,6 @@ const serviceGroups: ServiceGroup[] = [
 
     /* O reset global zera o padding de <ul>; sem isto o marcador cai fora da
        coluna. A medida acompanha a do <p>. */
-    .points {
-      max-width: 68ch;
-      padding-left: 1.5em;
-      list-style: square;
-    }
-
-    .points:not(:last-child) {
-      margin-bottom: 1em;
-    }
-
-    .points li:not(:last-child) {
-      margin-bottom: 0.6em;
-    }
-
-    .points li::marker {
-      color: var(--accent-btc);
-    }
 
     mark {
       background: var(--accent-btc);
@@ -178,9 +151,6 @@ const serviceGroups: ServiceGroup[] = [
       padding: 0 0.15em;
     }
 
-    .note {
-      color: var(--fg-muted);
-    }
   </style>
 
   <article>
@@ -189,7 +159,7 @@ const serviceGroups: ServiceGroup[] = [
       <p>
         Eric on how to <mark>off-ramp crypto without paying insane taxes</mark>.
       </p>
-      <p class="note">
+      <p class="muted">
         His take, summarized. Not tax advice: whether any of this triggers a
         taxable event depends on where you live.
       </p>
@@ -412,8 +382,8 @@ const serviceGroups: ServiceGroup[] = [
 
     <section class="section">
       <h2>Where to start</h2>
-      <p class="note">Not part of Eric's summary: added here.</p>
-      <p class="note">
+      <p class="muted">Not part of Eric's summary: added here.</p>
+      <p class="muted">
         The spending options skip the exchange, not necessarily the tax. In the
         US, UK and Canada, paying for something with crypto counts as disposing
         of it, the same as selling it.
@@ -429,7 +399,7 @@ const serviceGroups: ServiceGroup[] = [
               </li>
             ))}
           </ul>
-          {group.note && <p class="note">{group.note}</p>}
+          {group.note && <p class="muted">{group.note}</p>}
         </Fragment>
       ))}
     </section>

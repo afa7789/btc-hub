@@ -290,16 +290,6 @@ electrum setconfig server 127.0.0.1:50002:s`,
 
 <BaseLayout title={title} description={description}>
   <style>
-    .page-header {
-      margin-bottom: 2em;
-    }
-
-    .page-header h1 {
-      margin: 0;
-      border: none;
-      padding-bottom: 0;
-    }
-
     .section {
       margin-bottom: 2em;
     }
@@ -383,9 +373,6 @@ electrum setconfig server 127.0.0.1:50002:s`,
       margin-bottom: 1em;
     }
 
-    .note {
-      color: var(--fg-muted);
-    }
   </style>
 
   <article>
@@ -585,7 +572,7 @@ electrum setconfig server 127.0.0.1:50002:s`,
         tabindex="0"
         role="region"
         aria-label={mnemonicGenBlock.label}><code>{mnemonicGenBlock.code}</code></pre>
-      <p class="note">
+      <p class="muted">
         Generate on a machine that is offline, and read the words off the
         screen rather than out of a file. Entropy that leaks is a wallet
         somebody else owns.
@@ -690,7 +677,7 @@ electrum setconfig server 127.0.0.1:50002:s`,
         role="region"
         aria-label={electrumServerBlock.label}><code>{electrumServerBlock.code}</code></pre>
 
-      <p class="note">
+      <p class="muted">
         Setting up ElectrumX or Fulcrum itself is its own walkthrough and is
         not covered here.
       </p>

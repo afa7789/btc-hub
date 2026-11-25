@@ -33,22 +33,14 @@ const investedDate = new Date(`${scenario.date}T00:00:00Z`).toLocaleDateString(
 
 <BaseLayout title={title} description={description} prerendered>
   <style>
-    .calculator-header {
-      margin-bottom: 2em;
-    }
     
-    .calculator-header h1 {
-      margin: 0;
-      border: none;
-      padding-bottom: 0;
-    }
     
-    .calculator-header a {
+    .page-header a {
       color: var(--fg);
       text-decoration: none;
     }
     
-    .calculator-header a:hover {
+    .page-header a:hover {
       text-decoration: underline;
     }
     
@@ -177,7 +169,7 @@ const investedDate = new Date(`${scenario.date}T00:00:00Z`).toLocaleDateString(
   </style>
 
   <article>
-    <header class="calculator-header">
+    <header class="page-header">
       <h1>How Much I Fucked Up</h1>
     </header>
       <p class="source-link"><a href="https://github.com/afa7789/btc-hub" target="_blank" rel="noopener">View the BTC_THINGS source on GitHub</a></p>

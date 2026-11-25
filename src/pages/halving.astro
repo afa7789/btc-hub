@@ -302,12 +302,6 @@ const polarLabel = [
 
 <BaseLayout title={title} description={description}>
   <style>
-    .page-header h1 {
-      margin: 0;
-      border: none;
-      padding-bottom: 0;
-    }
-
     .section {
       margin-bottom: 1em;
     }
@@ -376,10 +370,6 @@ const polarLabel = [
     th.num,
     td.num {
       text-align: right;
-    }
-
-    .note {
-      color: var(--fg-muted);
     }
 
     /* Data da observacao sob o numero: a coluna continua alinhada a direita e
@@ -656,7 +646,7 @@ const polarLabel = [
           </tbody>
         </table>
       </div>
-      <p class="note">
+      <p class="muted">
         Four halvings. Four data points. Enough to describe what happened, not
         enough to call it a pattern.
       </p>
@@ -911,7 +901,7 @@ const polarLabel = [
           </tbody>
         </table>
       </div>
-      <p class="note">
+      <p class="muted">
         Daily closes from the same price dataset the chart uses, read at build
         time. Where the window opens or closes on a day the dataset does not
         cover, the nearest available close is used. A cycle whose window has not
@@ -989,7 +979,7 @@ const polarLabel = [
           </tbody>
         </table>
       </div>
-      <p class="note">
+      <p class="muted">
         Two years after the halving is a fixed horizon, chosen so the run-up
         into the next halving cannot be counted as the previous cycle's high.
         Measured to the next halving instead, the 2020 cycle's highest close
@@ -1062,7 +1052,7 @@ const polarLabel = [
           </tbody>
         </table>
       </div>
-      <p class="note">
+      <p class="muted">
         Issuance is {BLOCKS_PER_YEAR.toLocaleString("en-US")} blocks a year — 144
         a day at ten minutes each — times the subsidy, over the coins already
         mined at that block height. Coins that are lost are still counted; there

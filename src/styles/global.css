@@ -374,6 +374,48 @@ p {
   max-width: 68ch;
 }
 
+/*
+ * Cabecalho de pagina. Oito paginas repetiam este par de regras com nomes
+ * diferentes (.dca-header, .debase-header, .calculator-header, .page-header).
+ * O h1 perde a regua dos outros titulos: ali ele e o topo da pagina, nao o
+ * comeco de uma secao.
+ */
+.page-header {
+  margin-bottom: 2em;
+}
+
+.page-header h1 {
+  margin: 0;
+  border: none;
+  padding-bottom: 0;
+}
+
+/*
+ * Lista de prosa. O reset zera o padding de <ul>/<ol>, e sem devolver o
+ * marcador cai fora da coluna; a medida acompanha a do <p>.
+ */
+.points {
+  max-width: 68ch;
+  padding-left: 1.5em;
+  list-style: square;
+}
+
+ol.points {
+  list-style: decimal;
+}
+
+.points:not(:last-child) {
+  margin-bottom: 1em;
+}
+
+.points li:not(:last-child) {
+  margin-bottom: 0.6em;
+}
+
+.points li::marker {
+  color: var(--accent-btc);
+}
+
 p:not(:last-child) {
   margin-bottom: 1em;
 }

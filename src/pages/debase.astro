@@ -39,22 +39,14 @@ const pct = (v: number) =>
 
 <BaseLayout title={title} description={description}>
   <style>
-    .debase-header {
-      margin-bottom: 2em;
-    }
     
-    .debase-header h1 {
-      margin: 0;
-      border: none;
-      padding-bottom: 0;
-    }
     
-    .debase-header a {
+    .page-header a {
       color: var(--fg);
       text-decoration: none;
     }
     
-    .debase-header a:hover {
+    .page-header a:hover {
       text-decoration: underline;
     }
     
@@ -109,21 +101,6 @@ const pct = (v: number) =>
 
     .table-wrap td:first-child {
       text-align: left;
-    }
-
-    .readings {
-      max-width: 68ch;
-      padding-left: 1.5em;
-      list-style: square;
-      margin-bottom: 1em;
-    }
-
-    .readings li:not(:last-child) {
-      margin-bottom: 0.6em;
-    }
-
-    .readings li::marker {
-      color: var(--accent-btc);
     }
 
     .cycle-note {
@@ -229,7 +206,7 @@ const pct = (v: number) =>
   </style>
 
   <article>
-    <header class="debase-header">
+    <header class="page-header">
       <h1>Debase</h1>
     </header>
       <p class="source-link"><a href="https://github.com/afa7789/debase" target="_blank" rel="noopener">View the DEBASE source on GitHub</a></p>
@@ -381,7 +358,7 @@ const pct = (v: number) =>
       </p>
 
       <h3 class="cycle-h">The bear reading</h3>
-      <ul class="readings">
+      <ul class="points">
         <li>
           <strong>Risk assets outrun gold for a cycle, then give it back.</strong>
           Gabriel Duarte (Era de Ouro) points at the S&amp;P 500 priced in gold,
@@ -404,7 +381,7 @@ const pct = (v: number) =>
       </ul>
 
       <h3 class="cycle-h">The bull reading</h3>
-      <ul class="readings">
+      <ul class="points">
         <li>
           <strong>Every low after a peak sat above the previous cycle's low:</strong>
           {cyc.map((k) => oz(k.low.oz)).join(" → ")}, the last one still open.

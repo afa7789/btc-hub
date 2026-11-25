@@ -73,47 +73,8 @@ const ERA = "https://eradeouro.substack.com/p/";
 
 <BaseLayout title={title} description={description} prerendered lang="pt-BR">
   <style>
-    .page-header {
-      margin-bottom: 2em;
-    }
-
-    .page-header h1 {
-      margin: 0 0 0.5em;
-      border: none;
-      padding-bottom: 0;
-    }
-
     .section {
       margin-bottom: 2.5em;
-    }
-
-    .note {
-      color: var(--fg-muted);
-    }
-
-    .steps,
-    .points {
-      max-width: 68ch;
-      padding-left: 1.5em;
-    }
-
-    .points {
-      list-style: square;
-    }
-
-    .steps li:not(:last-child),
-    .points li:not(:last-child) {
-      margin-bottom: 0.6em;
-    }
-
-    .points li::marker,
-    .steps li::marker {
-      color: var(--accent-btc);
-    }
-
-    .steps:not(:last-child),
-    .points:not(:last-child) {
-      margin-bottom: 1em;
     }
 
     /* Campos em grade que encolhe ate uma coluna; o minimo cabe em 320px. */
@@ -252,12 +213,12 @@ const ERA = "https://eradeouro.substack.com/p/";
         os números abaixo vêm da PTAX e do CDI publicados pelo Banco Central,
         de {fmt.date(days[0].date)} a {fmt.date(last.date)}.
       </p>
-      <p class="note">Simulação, não recomendação de investimento.</p>
+      <p class="muted">Simulação, não recomendação de investimento.</p>
     </header>
 
     <section class="section">
       <h2>O método</h2>
-      <ol class="steps">
+      <ol class="points">
         <li>
           <strong>A meta é uma fatia do patrimônio total,</strong> contando os
           dólares que você já tem. O exemplo dele é 30%, calculado num câmbio
@@ -281,7 +242,7 @@ const ERA = "https://eradeouro.substack.com/p/";
           gastos, 24 com filhos.
         </li>
       </ol>
-      <p class="note">
+      <p class="muted">
         Fontes: o post da
         <a href={`${ERA}nova-ferramenta-planilha-de-dolarizacao`} target="_blank" rel="noopener">Planilha de Dolarização</a>
         (a planilha original está linkada lá), o de
@@ -317,7 +278,7 @@ const ERA = "https://eradeouro.substack.com/p/";
           <tbody id="dz-plan-rows" set:html={rowsHtml(planCells(planned))} />
         </table>
       </div>
-      <p class="note">
+      <p class="muted">
         Os juros são uma estimativa: CDI anual convertido para mês, menos o IR.
         Como na planilha, as compras param na meta, então os juros adiantam o
         fim em vez de passar dela. O dólar de cada compra usa o câmbio de
@@ -391,7 +352,7 @@ const ERA = "https://eradeouro.substack.com/p/";
           T-bill, por exemplo).
         </li>
       </ul>
-      <p class="note">
+      <p class="muted">
         Simplificações: o custo de câmbio é um só e vale para a série inteira,
         mas o IOF mudou várias vezes desde 1999 (hoje é 1,1% na remessa para
         investimento e 3,5% na maioria das outras saídas, pelo Decreto
