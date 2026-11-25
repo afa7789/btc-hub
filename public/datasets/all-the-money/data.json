@@ -2243,6 +2243,329 @@
         "reason": "Annual revenue, a flow, not a stock of wealth",
         "parentItem": null
       }
+    },
+    {
+      "id": "coca-cola-market-cap",
+      "slug": "coca-cola-market-capitalization",
+      "name": "Coca-Cola",
+      "categoryId": "corporations",
+      "valueBillions": 419.95,
+      "valueFormatted": "419.95 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/coca-cola/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25. Nasdaq: $420.45bn same day."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "airbus-market-cap",
+      "slug": "airbus-market-capitalization",
+      "name": "Airbus",
+      "categoryId": "corporations",
+      "valueBillions": 164.74,
+      "valueFormatted": "164.74 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/airbus/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 25 Nov 2026.",
+        "method": "Market cap 2026-11-25 per companiesmarketcap.com, read from the page on 2026-11-25. Paris listing AIR.PA, converted to USD by the source."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "boeing-market-cap",
+      "slug": "boeing-market-capitalization",
+      "name": "Boeing",
+      "categoryId": "corporations",
+      "valueBillions": 129.63,
+      "valueFormatted": "129.63 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/boeing/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25. Nasdaq: $129.80bn same day."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "delta-air-lines-market-cap",
+      "slug": "delta-air-lines-market-capitalization",
+      "name": "Delta Air Lines",
+      "categoryId": "corporations",
+      "valueBillions": 55.59,
+      "valueFormatted": "55.59 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/delta-air-lines/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "weg-market-cap",
+      "slug": "weg-market-capitalization",
+      "name": "WEG",
+      "categoryId": "corporations",
+      "valueBillions": 35.8,
+      "valueFormatted": "35.8 billion",
+      "lastUpdated": "2026-11-25T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/weg-on/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 25 Nov 2026.",
+        "method": "Market cap 2026-11-25 per companiesmarketcap.com, read from the page on 2026-11-25. B3 listing WEGE3.SA, converted to USD by the source."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "united-airlines-market-cap",
+      "slug": "united-airlines-market-capitalization",
+      "name": "United Airlines",
+      "categoryId": "corporations",
+      "valueBillions": 35.02,
+      "valueFormatted": "35.02 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/united-airlines/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "sharkninja-market-cap",
+      "slug": "sharkninja-market-capitalization",
+      "name": "SharkNinja",
+      "categoryId": "corporations",
+      "valueBillions": 32.25,
+      "valueFormatted": "32.25 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/sharkninja/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25. Nasdaq: $32.52bn same day."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "ryanair-market-cap",
+      "slug": "ryanair-market-capitalization",
+      "name": "Ryanair",
+      "categoryId": "corporations",
+      "valueBillions": 29.58,
+      "valueFormatted": "29.58 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/ryanair/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25. Nasdaq: $30.05bn same day."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "southwest-airlines-market-cap",
+      "slug": "southwest-airlines-market-capitalization",
+      "name": "Southwest Airlines",
+      "categoryId": "corporations",
+      "valueBillions": 22.41,
+      "valueFormatted": "22.41 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/southwest-airlines/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "latam-airlines-market-cap",
+      "slug": "latam-airlines-market-capitalization",
+      "name": "LATAM Airlines",
+      "categoryId": "corporations",
+      "valueBillions": 13.24,
+      "valueFormatted": "13.24 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/latam-airlines/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25. Nasdaq: $13.33bn same day."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "embraer-market-cap",
+      "slug": "embraer-market-capitalization",
+      "name": "Embraer",
+      "categoryId": "corporations",
+      "valueBillions": 12.86,
+      "valueFormatted": "12.86 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/embraer/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25. Nasdaq shows $9.80bn the same day (different share count)."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "american-airlines-market-cap",
+      "slug": "american-airlines-market-capitalization",
+      "name": "American Airlines",
+      "categoryId": "corporations",
+      "valueBillions": 8.35,
+      "valueFormatted": "8.35 billion",
+      "lastUpdated": "2026-11-24T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "CompaniesMarketCap",
+        "url": "https://companiesmarketcap.com/american-airlines/marketcap/",
+        "apiEndpoint": null,
+        "notes": "Market cap on 24 Nov 2026.",
+        "method": "Market cap 2026-11-24 per companiesmarketcap.com, read from the page on 2026-11-25."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "emirates-revenue",
+      "slug": "emirates-group-annual-revenue",
+      "name": "Emirates Group (annual revenue)",
+      "categoryId": "corporations",
+      "valueBillions": 41,
+      "valueFormatted": "41 billion",
+      "lastUpdated": "2026-03-31T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Emirates Group",
+        "url": "https://www.emirates.com/media-centre/emirates-group-achieves-record-profit-of-aed-244-bn-us-66-bn-in-2025-26/",
+        "apiEndpoint": null,
+        "notes": "Not listed, owned by the government of Dubai: this is one year of sales (AED150.5 billion, year ended 31 Mar 2026), not what the company is worth.",
+        "method": "NOT LISTED, state-owned (Investment Corporation of Dubai). 2025-26 annual report released 2026-05-07: group revenue AED150.5bn (US$41.0bn, +3%), profit before tax AED24.4bn (US$6.6bn); airline alone AED130.9bn (US$35.7bn). USD figures are the company's own. REVENUE, not a valuation; shown for scale."
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Annual revenue, a flow, not a stock of wealth",
+        "parentItem": null
+      }
+    },
+    {
+      "id": "paraguay-gdp",
+      "slug": "paraguay-gross-domestic-product",
+      "name": "Paraguay GDP",
+      "categoryId": "national-economy",
+      "valueBillions": 49.278,
+      "valueFormatted": "49.3 billion",
+      "lastUpdated": "2026-11-11T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "World Bank",
+        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=PY",
+        "apiEndpoint": "https://api.worldbank.org/v2/country/PY/indicator/NY.GDP.MKTP.CD",
+        "notes": "NY.GDP.MKTP.CD, 2025; WB database release 2026-11-11. IMF WEO NGDPD 2025 gives the same 49.278."
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.worldbank.org/v2/country/PY/indicator/NY.GDP.MKTP.CD?format=json&date=2022:2024&per_page=1",
+        "method": "GET",
+        "authRequired": false,
+        "dataPath": "[1][0].value",
+        "transform": "divide_by_1e9"
+      }
     }
   ]
 }
