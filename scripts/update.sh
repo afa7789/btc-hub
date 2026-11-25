@@ -123,8 +123,14 @@ json_date() {
 # max-age of "-" means the dataset is exempt from the staleness gate (curated
 # by hand, or a static schedule). Cadence-driven overrides are noted inline.
 # ---------------------------------------------------------------------------
+#
+# CPI: o mes M sai por volta do dia 13 de M+1 e so e substituido pelo de M+1
+# perto do dia 13 de M+2. Medida a partir do dia 1 de M (que e a data que o
+# leitor da matriz devolve), a observacao mais nova possivel chega a ~72 dias.
+# Com 45, o gate acusava STALE entre o dia ~45 e o ~72 de todo ciclo, sem nada
+# novo para buscar. 75 so dispara quando um release realmente faltou.
 DATASET_ROWS=(
-  "CPI_U.csv|cpi|45|update-cpi.ts"
+  "CPI_U.csv|cpi|75|update-cpi.ts"
   "daily_cpi_inflation.csv|csv;1|45|update-cpi.ts (calls generate-daily-cpi.ts)"
   "gold.csv|csv,1|7|update-metals.ts"
   "silver.csv|csv,1|7|update-metals.ts"
