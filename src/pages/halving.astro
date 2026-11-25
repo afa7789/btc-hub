@@ -4,7 +4,12 @@ import { join } from "node:path";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { withBase } from "../utils/base";
 import { GRADIENT, buildPolar } from "../utils/polar";
-import { closestPrice, loadPrices, usd } from "../utils/prerender";
+import {
+  closestPrice,
+  loadPrices,
+  nextHalvingMs,
+  usd,
+} from "../utils/prerender";
 
 const title = "Halving";
 const description =
@@ -27,8 +32,6 @@ const BLOCKS_PER_HALVING = 210_000;
 const INITIAL_SUBSIDY = 50;
 const DAY_MS = 24 * 3600 * 1000;
 const WINDOW_DAYS = 500;
-/* Media do protocolo: 210.000 blocos a 10 minutos ~ 4 anos julianos. */
-const HALVING_INTERVAL_MS = 4 * 365.25 * DAY_MS;
 
 /*
  * Datas do dataset sao meia-noite UTC. Formatar no fuso do servidor de build
@@ -53,7 +56,7 @@ const pastHalvings = halvingTimestamps.map((timestamp, index) => ({
 const lastHalving = new Date(
   (halvingTimestamps[halvingTimestamps.length - 1] as number) * 1000,
 );
-const nextHalving = new Date(lastHalving.getTime() + HALVING_INTERVAL_MS);
+const nextHalving = new Date(nextHalvingMs());
 const windowOpens = new Date(nextHalving.getTime() - WINDOW_DAYS * DAY_MS);
 const windowCloses = new Date(nextHalving.getTime() + WINDOW_DAYS * DAY_MS);
 

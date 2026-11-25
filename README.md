@@ -14,9 +14,16 @@ tells the visitor when a page is showing its prerendered default.
 
 ### `/` — Home
 
-Landing page with the tool grid and a scrolling price ticker (`Ticker.astro`) that
-pulls the top 10 coins plus gold (`tether-gold`) from CoinGecko, caches the payload in
-`localStorage` for 2 minutes, and serves stale data on a failed fetch.
+Opens on "Right now": six numbers computed at build time from the site's own
+datasets (no JS, no API), each linking to the page that explains it: the last
+bitcoin close and its distance from the high, sats per dollar, how far through the
+halving cycle we are (`nextHalvingMs()` in `src/utils/prerender.ts`, shared with
+`/halving`), the rainbow band, bitcoin priced in gold, and the dollar in reais
+(PTAX). Six on purpose, so the grid closes 3x2 or 2x3 with no orphan card. Below,
+the index lists every page as a terminal-style row grouped as Charts, Tools and
+Guides, then the source repositories. A scrolling price ticker (`Ticker.astro`)
+pulls the top 10 coins plus gold (`tether-gold`) from CoinGecko, caches the payload
+in `localStorage` for 2 minutes, and serves stale data on a failed fetch.
 
 ### `/sem-melhores` — SEM MELHORES
 

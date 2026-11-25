@@ -300,15 +300,31 @@ export const usd = (value: number, decimals = 2): string =>
     maximumFractionDigits: decimals,
   })}`;
 
+/** Media do protocolo: 210.000 blocos a 10 minutos ~ 4 anos julianos. */
+export const HALVING_INTERVAL_MS = 4 * 365.25 * 86_400_000;
+
 /**
- * Datas dos halvings (aaaa-mm-dd, UTC), de public/datasets/halvings.txt, que
- * guarda um timestamp unix por linha. Um leitor so para as paginas que marcam
- * halving no build.
+ * Instantes dos halvings em ms, de public/datasets/halvings.txt, que guarda o
+ * timestamp unix do bloco de cada halving, um por linha. Um leitor so para as
+ * paginas que marcam halving no build.
  */
-export function loadHalvings(): string[] {
+export function loadHalvingTimes(): number[] {
   return readFileSync(join(DATASETS, "halvings.txt"), "utf8")
     .split("\n")
     .map((line) => Number(line.trim()))
     .filter((ts) => ts > 0)
-    .map((ts) => new Date(ts * 1000).toISOString().slice(0, 10));
+    .map((ts) => ts * 1000);
+}
+
+/** As mesmas datas em aaaa-mm-dd, UTC. */
+export function loadHalvings(): string[] {
+  return loadHalvingTimes().map((ms) =>
+    new Date(ms).toISOString().slice(0, 10),
+  );
+}
+
+/** Estimativa do proximo halving: o ultimo mais o intervalo medio. */
+export function nextHalvingMs(): number {
+  const times = loadHalvingTimes();
+  return (times[times.length - 1] as number) + HALVING_INTERVAL_MS;
 }

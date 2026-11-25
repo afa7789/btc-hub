@@ -1,18 +1,132 @@
 ---
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import Sponsor from "../components/Sponsor.astro";
-import { tools } from "../data/routes";
+import { type ToolGroup, tools } from "../data/routes";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { withBase } from "../utils/base";
+import { btcInGold } from "../utils/btcgold";
+import { parseBrl } from "../utils/dolarizacao";
+import {
+  loadHalvingTimes,
+  loadPrices,
+  nextHalvingMs,
+  usd,
+} from "../utils/prerender";
+import { BANDS, fitRainbow } from "../utils/rainbow";
 
 /*
- * Deliberadamente fora de `tools`: aquele grid promete "clique e abre uma
- * pagina deste site". Estes sao repositorios externos, entao ficam numa secao
+ * A home era so um indice: dez cartoes iguais e nenhum numero, num site que
+ * existe para mostrar numeros. Agora ela abre com o que o site ja calcula,
+ * tudo no build a partir dos datasets do repositorio (sem JS, sem API), e
+ * cada numero leva a pagina que o explica. Seis numeros de proposito: fecham
+ * em 3x2 ou 2x3, sem cartao sozinho na ultima linha.
+ */
+const dayFmt = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+const d = (iso: string | number) =>
+  dayFmt.format(
+    typeof iso === "number" ? new Date(iso) : new Date(`${iso}T00:00:00Z`),
+  );
+const pct = (v: number) =>
+  `${v > 0 ? "+" : "−"}${Math.abs(v * 100).toFixed(0)}%`;
+
+const closes = [...loadPrices("bitcoin", "start")]
+  .filter(([, price]) => price > 0)
+  .sort(([a], [b]) => a.localeCompare(b));
+const [lastDate, price] = closes[closes.length - 1] as [string, number];
+const [athDate, athPrice] = closes.reduce((m, c) => (c[1] > m[1] ? c : m));
+
+const halvings = loadHalvingTimes();
+const lastHalving = halvings[halvings.length - 1] as number;
+const nextHalving = nextHalvingMs();
+const cycleShare =
+  (Date.parse(`${lastDate}T00:00:00Z`) - lastHalving) /
+  (nextHalving - lastHalving);
+
+const band = BANDS[fitRainbow().todayBand] as (typeof BANDS)[number];
+
+const gold = btcInGold();
+const goldNow = gold[gold.length - 1] as (typeof gold)[number];
+const goldAth = gold.reduce((m, p) => (p.oz > m.oz ? p : m));
+
+const brl = parseBrl(
+  readFileSync(join(process.cwd(), "public", "datasets", "brl.csv"), "utf8"),
+);
+const fx = brl[brl.length - 1] as (typeof brl)[number];
+
+interface NowStat {
+  label: string;
+  value: string;
+  note: string;
+  href: string;
+  link: string;
+  swatch?: string;
+}
+
+const now: NowStat[] = [
+  {
+    label: "1 bitcoin",
+    value: usd(price, 0),
+    note: `${pct(price / athPrice - 1)} from the ${d(athDate)} high`,
+    href: "/halving",
+    link: "Halving",
+  },
+  {
+    label: "Sats per dollar",
+    value: Math.round(1e8 / price).toLocaleString("en-US"),
+    note: "What one dollar buys in bitcoin's smallest unit",
+    href: "/big-mac",
+    link: "Big Mac Index",
+  },
+  {
+    label: "Halving cycle",
+    value: `${Math.round(cycleShare * 100)}% through`,
+    note: `Next halving around ${d(nextHalving)}`,
+    href: "/halving",
+    link: "Halving",
+  },
+  {
+    label: "Rainbow band",
+    value: band.label,
+    swatch: band.color,
+    note: "Where the price sits against the power law",
+    href: "/rainbow",
+    link: "Rainbow",
+  },
+  {
+    label: "In gold",
+    value: `${goldNow.oz.toFixed(1)} oz`,
+    note: `${pct(goldNow.oz / goldAth.oz - 1)} from the ${d(goldAth.date)} high`,
+    href: "/debase#btc-gold-cycles",
+    link: "Debase",
+  },
+  {
+    label: "1 dollar in reais",
+    value: `R$ ${fx.ptax.toFixed(2).replace(".", ",")}`,
+    note: `Central Bank PTAX, ${d(fx.date)}`,
+    href: "/dolarizacao",
+    link: "Dolarização",
+  },
+];
+
+/* O indice segue o `group` de routes.ts, na ordem em que um leitor chega:
+   graficos, depois ferramentas, depois guias. */
+const GROUPS: { id: ToolGroup; title: string }[] = [
+  { id: "chart", title: "Charts" },
+  { id: "tool", title: "Tools" },
+  { id: "guide", title: "Guides" },
+];
+
+/*
+ * Deliberadamente fora de `tools`: o indice promete "clique e abre uma pagina
+ * deste site". Estes sao repositorios externos, entao ficam numa secao
  * propria, com o destino escrito no rotulo.
  */
-// Gerado no build. FIGlet "fraktur" e blackletter desenhado em ASCII — a
-// tradicao de banner de terminal. So cabe em string curta, entao vive aqui e
-// nao nos titulos das paginas.
-
 const repos = [
   {
     href: "https://github.com/afa7789/mnmncs",
@@ -40,44 +154,70 @@ const repos = [
 
 <BaseLayout title="HOME">
   <div class="landing">
-    <header class="landing__header">
+    <header class="home-hero">
       <!-- O wordmark ASCII vive no logo do nav, presente em todas as paginas.
            Repeti-lo aqui seria dizer a mesma coisa duas vezes na mesma tela. -->
       <h1 class="sr-only">BTC_THINGS</h1>
-      <p class="landing__subtitle">
-        Tools for visualizing Bitcoin, money, and purchasing power over time
+      <p class="home-hero__lead">
+        Bitcoin against money, measured from data you can check.
+      </p>
+      <p class="muted">
+        Charts, calculators and guides, computed from public datasets that ship
+        with the site. No accounts, no tracking.
       </p>
     </header>
 
-    <section class="tools">
-      <h2 class="tools__title">Tools</h2>
-      <div class="tools__grid">
-        {tools.map(tool => (
-          <a href={withBase(tool.href)} class="tool-card">
-            <div class="tool-card__header">
-              <h3 class="tool-card__title">{tool.label}</h3>
-              <span class="tool-card__status">{tool.status}</span>
-            </div>
-            <p class="tool-card__description">{tool.description}</p>
-            <div class="tool-card__footer">
-              <span class="tool-card__arrow">→</span>
-            </div>
-          </a>
+    <section class="now" aria-labelledby="now-title">
+      <h2 id="now-title">Right now</h2>
+      <p class="muted now__meta">Last daily close: {d(lastDate)}.</p>
+      <dl class="stat-grid now__grid">
+        {now.map((stat) => (
+          <div>
+            <dt>{stat.label}</dt>
+            <dd>
+              {stat.swatch && (
+                <span class="swatch" style={`--band: ${stat.swatch}`} aria-hidden="true"></span>
+              )}
+              {stat.value}
+            </dd>
+            <dd class="now__note">
+              {stat.note}.{" "}
+              <a href={withBase(stat.href)}>{stat.link}<span aria-hidden="true"> →</span></a>
+            </dd>
+          </div>
         ))}
-      </div>
+      </dl>
     </section>
 
+    {GROUPS.map((group) => (
+      <section class="index" aria-labelledby={`group-${group.id}`}>
+        <h2 id={`group-${group.id}`}>{group.title}</h2>
+        <ul class="index-list">
+          {tools
+            .filter((tool) => tool.group === group.id)
+            .map((tool) => (
+              <li>
+                <a href={withBase(tool.href)} class="index-row">
+                  <span class="index-row__name">{tool.label}</span>
+                  <span class="index-row__desc">{tool.description}</span>
+                  <span class="tag">{tool.status}</span>
+                </a>
+              </li>
+            ))}
+        </ul>
+      </section>
+    ))}
+
     <section class="repos">
-      <h2 class="repos__title">Source</h2>
-      <ul class="repos__list">
-        {repos.map(repo => (
-          <li class="repo">
-            <a href={repo.href} target="_blank" rel="noopener">
-              {repo.title} on GitHub
-              <span class="repo__external" aria-hidden="true"> ↗</span>
+      <h2>Source</h2>
+      <ul class="index-list">
+        {repos.map((repo) => (
+          <li>
+            <a href={repo.href} class="index-row index-row--external" target="_blank" rel="noopener">
+              <span class="index-row__name">{repo.title}<span class="sr-only"> on GitHub (new tab)</span></span>
+              <span class="index-row__desc">{repo.description}</span>
+              <span class="tag">{repo.lang}</span>
             </a>
-            <span class="repo__lang">[{repo.lang}]</span>
-            <p class="repo__description">{repo.description}</p>
           </li>
         ))}
       </ul>
@@ -88,162 +228,124 @@ const repos = [
 </BaseLayout>
 
 <style>
-  .repos {
-    margin-top: 4rem;
+  .home-hero {
+    margin: 1rem 0 2.5rem;
   }
-  
-  .repos__title {
-    font-size: var(--text-section);
-    text-align: center;
-    max-width: 900px;
-    margin: 0 auto 2rem;
+
+  .home-hero__lead {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.35;
+    max-width: 32ch;
+    margin-bottom: 0.75rem;
   }
-  
-  .repos__list {
-    list-style: none;
-    display: grid;
-    /* min(300px, 100%): em 320px de viewport o minimo fixo de 300px mais o
-       padding do cartao passa da tela e o DOCUMENTO rola de lado (WCAG 1.4.10
-       exige caber em 320). O min() deixa a trilha encolher abaixo de 300. */
-    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
-    gap: 1.5rem;
-    max-width: 900px;
-    margin: 0 auto;
+
+  .now {
+    margin-bottom: 3rem;
   }
-  
-  .repo {
-    border: var(--border-width) solid var(--border-strong);
-    padding: 1.5rem;
+
+  .now__meta {
+    margin-bottom: 1rem;
   }
-  
-  /* WCAG 2.5.8: o link nasceu com 17px de altura. */
-  .repo a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 24px;
+
+  /* 16rem, nao os 13rem da grade global: em 920px cabem 3 colunas, e os seis
+     numeros fecham 3x2 em vez de 4+2. */
+  .now__grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
   }
-  
-  .repo__lang {
-    margin-left: 0.5rem;
+
+  .now__note {
+    margin-top: 0.35rem;
     font-size: var(--text-micro);
-    letter-spacing: 1px;
+    font-weight: normal;
     color: var(--fg-muted);
   }
-  
-  .repo__description {
-    margin-top: 0.75rem;
-    color: var(--fg-secondary);
+
+  .now__note a {
+    white-space: nowrap;
   }
-  
-  .landing {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
+
+  .swatch {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    margin-right: 0.4em;
+    background: var(--band);
   }
-  
-  .landing__header {
-    text-align: center;
-    margin-bottom: 4rem;
+
+  .index {
+    margin-bottom: 2.5rem;
   }
-  
-  .landing__title {
-    font-size: 3rem;
-    letter-spacing: 0.2em;
-    margin-bottom: 1rem;
-    color: var(--accent);
+
+  .index-list {
+    list-style: none;
   }
-  
-  .landing__subtitle {
-    font-size: 1.2rem;
-    opacity: 0.8;
-    margin-bottom: 2rem;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  
-  .tools {
-    margin-bottom: 4rem;
-  }
-  
-  .tools__title {
-    text-align: center;
-    margin-bottom: 2rem;
-    font-size: 1.8rem;
-  }
-  
-  .tools__grid {
+
+  /*
+   * Linha de terminal em vez de cartao: nome, para que serve, de onde vem o
+   * dado. Lista nao tem "ultima linha com um cartao sozinho", e o indice de
+   * onze paginas cabe numa tela.
+   */
+  .index-row {
     display: grid;
-    /* Mesmo motivo do .repos__list acima. */
-    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
-    gap: 2rem;
-  }
-  
-  .tool-card {
-    border: var(--border-width) solid var(--border);
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    transition: border-color 0.2s, background-color 0.2s;
+    grid-template-columns: 15rem 1fr auto;
+    align-items: baseline;
+    gap: 0.4rem 1.25rem;
+    padding: 0.85rem 0.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--fg-primary);
+    /* A regra global "li a" sublinha link de prosa; aqui a linha inteira e o
+       controle, e sublinhar tres colunas de texto vira ruido. */
     text-decoration: none;
   }
-  
-  .tool-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
+
+  .index-list li:first-child .index-row {
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .index-row:hover {
+    background: var(--bg-highlight);
+    color: var(--fg-primary);
     text-decoration: none;
   }
-  
-  .tool-card__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1rem;
+
+  .index-row__name {
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: var(--accent-btc);
   }
-  
-  .tool-card__title {
-    font-size: 1.2rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0;
-    padding: 0;
-    border: none;
+
+  .index-row:hover .index-row__name,
+  .index-row:focus-visible .index-row__name {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
   }
-  
-  .tool-card__status {
-    font-size: 0.7rem;
-    padding: 0.2rem 0.5rem;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+
+  .index-row__name::after {
+    content: " →";
   }
-  
-  .tool-card__description {
-    font-size: 0.9rem;
-    /* Herdava --accent-btc do <a>; opacity .8 compunha para #b97f33 = 3.41:1. */
+
+  .index-row__desc {
     color: var(--fg-secondary);
-    flex-grow: 1;
-    margin-bottom: 1rem;
   }
-  
-  .tool-card__footer {
-    display: flex;
-    justify-content: flex-end;
-  }
-  
-  .tool-card__arrow {
-    font-size: 1.2rem;
-    color: var(--accent);
-  }
-  
-  @media (max-width: 768px) {
-    .landing__title {
-      font-size: 2rem;
+
+  @media (max-width: 640px) {
+    .index-row {
+      grid-template-columns: 1fr auto;
     }
-    
-    .tools__grid {
-      grid-template-columns: 1fr;
+
+    .index-row__desc {
+      grid-column: 1 / -1;
+      grid-row: 2;
     }
+  }
+
+  .repos {
+    margin-top: 1rem;
+  }
+
+  /* Repositorio externo: a seta diz "outro site", como o WALLET-GEN do nav. */
+  .index-row--external .index-row__name::after {
+    content: " ↗";
   }
 </style>

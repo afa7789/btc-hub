@@ -48,7 +48,8 @@ export const tools: Tool[] = [
     href: "/sem-melhores",
     group: "tool",
     label: "SEM MELHORES",
-    description: "Top 100 cryptocurrency browser powered by CoinGecko API",
+    description:
+      "The top 100 coins by market cap, without stablecoins or staked copies, live from CoinGecko",
     status: "LIVE PRICES",
   },
   {
@@ -56,7 +57,7 @@ export const tools: Tool[] = [
     group: "tool",
     label: "ALL THE MONEY IN THE WORLD",
     description:
-      "Global wealth block visualization - see all the money in the world",
+      "Every large pile of money in the world, from one fortune to all derivatives, in $100 billion squares",
     status: "DATASET",
   },
   {
@@ -64,7 +65,7 @@ export const tools: Tool[] = [
     group: "tool",
     label: "DCA CALCULATOR",
     description:
-      "Dollar Cost Averaging calculator with Bitcoin historical data",
+      "What buying the same amount of bitcoin, ether, monero, gold or silver on a schedule would have left you with",
     status: "DATASET",
   },
   {
@@ -79,7 +80,8 @@ export const tools: Tool[] = [
     href: "/debase",
     group: "chart",
     label: "DEBASE",
-    description: "Inflation-adjusted asset charts with D3.js visualizations",
+    description:
+      "Bitcoin, gold, silver and ether after inflation, and bitcoin priced in gold, cycle by cycle",
     status: "DATASET",
   },
   {
@@ -87,7 +89,7 @@ export const tools: Tool[] = [
     group: "chart",
     label: "HALVING",
     description:
-      "Bitcoin halvings against the price, with the 500-day window around each one",
+      "Every halving against the price, the 500-day window around it, and the 4-year polar cycle",
     status: "DATASET",
   },
   {
@@ -102,7 +104,7 @@ export const tools: Tool[] = [
     href: "/big-mac",
     group: "chart",
     label: "BIG MAC INDEX",
-    description: "Big Mac Index vs Bitcoin price history comparison",
+    description: "A Big Mac priced in dollars and in sats, over time",
     status: "DATASET",
   },
   {
@@ -110,7 +112,7 @@ export const tools: Tool[] = [
     group: "tool",
     label: "HOW MUCH I FUCKED UP",
     description:
-      '"What if I invested X on date Y?" calculator with historical data',
+      "What a sum put into bitcoin on a past date would be worth today",
     status: "DATASET + LIVE",
   },
   {
