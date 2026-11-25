@@ -234,8 +234,10 @@ sobre preto — nítido em 16px e 32px.
   skeleton monoespaçado. Hoje a página depende 100% da CoinGecko sem fallback.
 
 ### `/all-the-money`
-- Trocar os blocos de altura variável por treemap proporcional ou grade de
-  quadrados empacotados, para tornar a comparação de escala mais direta.
+- **Feito:** grade de quadrados empacotados em 40 colunas fixas, um item por
+  linha, agrupados por categoria com a frase de contexto de cada uma — a altura
+  compara os valores. Referência: "All of the World's Money and Markets in One
+  Visualization" (Visual Capitalist, 2022).
 - Régua de magnitude flutuante (`Você está vendo $10T de $120T`) e zoom próprio,
   sem depender do zoom do navegador.
 
@@ -279,7 +281,7 @@ do favicon.
 | Escala tipográfica da seção 3 | Implementada (`--text-display` … `--text-micro`, aplicada a `h1`–`h6`) |
 | Primitivas `.btn-primary` / `.btn-secondary` / `.tag` / `.num` | Implementadas; aplicadas em `/dca`, `/how-much-i-fucked-up` e `/all-the-money` |
 | Padroes de pagina em `global.css` | Implementados — `.page-header` (10 paginas), `.points` (lista de prosa), `.fields`/`.field` (formulario em grade) e `.stat-grid` (numeros em `<dl>`); as copias escopadas sairam |
-| `/all-the-money` no padrao do site | Implementado — coluna de 920px, cabecalho, campos e botoes globais, bordas em `--border-width`, texto na escala `--text-*`, sem emoji nos controles; o rotulo invertido dos itens foi mantido |
+| `/all-the-money` no padrao do site | Implementado — coluna de 920px, cabecalho, campos e botoes globais, bordas em `--border-width`, texto na escala `--text-*`, sem emoji nos controles; itens agrupados por categoria em grade fixa de 40 colunas (ver secao 5) |
 | Tabelas com `tabular-nums` e hover de linha | Implementadas globalmente |
 | Indicador de página ativa | Implementado — `> PÁGINA <` em `Nav.astro` |
 | Ticker no BaseLayout | Implementado — presente nas 10 páginas, dentro de um landmark `<header>` |

@@ -60,34 +60,6 @@ const description =
       display: none !important;
     }
 
-    .visualization {
-      border: var(--border-width) solid var(--border-strong);
-      padding: 1rem;
-      margin-bottom: 2em;
-      min-height: 500px;
-    }
-
-    #blocks-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2px;
-      align-items: flex-start;
-      line-height: 0;
-    }
-
-    #blocks-container.wrapped {
-      display: block;
-      line-height: normal;
-    }
-
-    :global(.blocks-wrapper) {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2px;
-      align-items: flex-start;
-      line-height: 0;
-    }
-
     /*
      * Blocks. Sao <button> desde a task de acessibilidade — o reset abaixo
      * apaga o chrome de botao para o desenho nao mudar.
@@ -101,20 +73,15 @@ const description =
       color: inherit;
       min-width: 0;
       text-transform: none;
-      width: 30px;
-      height: 30px;
-      border: 1px solid var(--border-strong);
+      width: auto;
+      height: auto;
+      aspect-ratio: 1;
+      border: none;
       cursor: pointer;
       position: relative;
       transition: none;
       display: inline-block;
       vertical-align: top;
-    }
-
-    :global(.block:hover) {
-      transform: scale(1.1);
-      z-index: 10;
-      border-width: 2px;
     }
 
     :global(.block:focus-visible) {
@@ -277,53 +244,95 @@ const description =
       margin-bottom: 0.6rem;
     }
 
-    /* Agrupado por item. O rotulo invertido (fundo claro, texto escuro) e a
-       marca desta pagina; so a espessura e o corpo entraram na escala. */
-    :global(.item-wrapper) {
-      border: var(--border-width) solid var(--border-strong);
-      margin-bottom: 1rem;
-      width: 100%;
-      display: block;
-      clear: both;
+    /*
+     * Leitura no estilo do Visual Capitalist, no idioma deste site.
+     *
+     * - Grade fixa de 40 colunas em todo item: a largura nunca muda, entao a
+     *   ALTURA do bloco de quadrados e o que compara um valor com outro.
+     *   Antes era flex-wrap, e cada item tinha a sua propria largura.
+     * - Quadrados sem borda, separados por espaco: a borda branca de 1px em
+     *   25 mil quadrados virava uma malha que brigava com a cor.
+     * - Um item por linha, rotulo em texto normal, nota da fonte embaixo.
+     */
+    .visualization {
+      margin-bottom: 2em;
+      min-height: 500px;
     }
 
-    :global(.blocks-wrapper .item-wrapper) {
-      display: inline-block;
-      vertical-align: top;
-      width: auto;
-      margin: 2px;
-      clear: none;
-    }
-
-    :global(.item-label) {
-      background: var(--fg-primary);
-      color: var(--bg-primary);
-      padding: 0.6rem 0.9rem;
-      font-weight: bold;
-      font-size: var(--text-body);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      border-bottom: var(--border-width) solid var(--border-strong);
-      white-space: normal;
-      overflow-wrap: anywhere;
-      line-height: 1.3;
-      max-width: 100%;
-      display: block;
-    }
-
-    :global(.blocks-container) {
-      display: flex;
-      flex-wrap: wrap;
+    #blocks-container {
+      display: grid;
+      grid-template-columns: repeat(40, minmax(0, 1fr));
       gap: 2px;
-      padding: 0.75rem;
-      min-height: 60px;
-      align-items: flex-start;
       line-height: 0;
     }
 
-    :global(.blocks-wrapper .item-wrapper .blocks-container) {
-      padding: 0.5rem;
-      min-height: auto;
+    /* No modo agrupado o conteiner tem um filho so, o .blocks-wrapper: ele
+       ocupa as 40 colunas em vez de uma. */
+    :global(.blocks-wrapper) {
+      grid-column: 1 / -1;
+      line-height: normal;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+
+    :global(.blocks-container) {
+      display: grid;
+      grid-template-columns: repeat(40, minmax(0, 1fr));
+      gap: 2px;
+      line-height: 0;
+    }
+
+    :global(.block:hover) {
+      outline: 2px solid var(--fg-primary);
+      outline-offset: 1px;
+      z-index: 10;
+    }
+
+    :global(.category-head) {
+      margin-top: 1.5rem;
+    }
+
+    :global(.category-head h2) {
+      margin-bottom: 0.4rem;
+    }
+
+    :global(.category-note) {
+      color: var(--fg-secondary);
+    }
+
+    :global(.item-label) {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.25rem 0.75rem;
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+
+    :global(.item-tag) {
+      flex-basis: 100%;
+      font-size: var(--text-micro);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--fg-muted);
+    }
+
+    :global(.item-name) {
+      font-weight: bold;
+      color: var(--fg-primary);
+    }
+
+    :global(.item-value) {
+      color: var(--accent-btc);
+      font-variant-numeric: tabular-nums;
+    }
+
+    :global(.item-note) {
+      flex-basis: 100%;
+      overflow-wrap: anywhere;
+      font-size: var(--text-micro);
+      color: var(--fg-muted);
     }
 
     #toggleDataSources {
@@ -351,9 +360,9 @@ const description =
       <div class="field">
         <label for="sortBy">Sort</label>
         <select id="sortBy">
+          <option value="category" selected>By category</option>
           <option value="value">By value</option>
           <option value="name">By name</option>
-          <option value="category">By category</option>
         </select>
       </div>
       <div class="field-actions">

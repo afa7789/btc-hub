@@ -450,6 +450,62 @@ function createWealthBlock(
   return block;
 }
 
+/*
+ * "Por categoria" segue a ordem curada de data.json (do individuo ao
+ * derivativo, a mesma narrativa de escala do Visual Capitalist), e dentro de
+ * cada categoria vai do menor ao maior. As outras ordens seguem ascendentes.
+ */
+function sortItems(items, sortBy) {
+  const rank = (id) => wealthData.categories.findIndex((c) => c.id === id);
+  items.sort((a, b) => {
+    if (sortBy === "name") return a.name.localeCompare(b.name);
+    if (sortBy === "category") {
+      const byCategory = rank(a.categoryId) - rank(b.categoryId);
+      if (byCategory !== 0) return byCategory;
+    }
+    return parseValue(a) - parseValue(b);
+  });
+}
+
+function textEl(tag, className, text) {
+  const el = document.createElement(tag);
+  el.className = className;
+  el.textContent = text;
+  return el;
+}
+
+/* Cabecalho de grupo: o nome da categoria e a frase de contexto dela. */
+function buildCategoryHeader(categoryId) {
+  const category = getCategoryById(categoryId);
+  const header = document.createElement("header");
+  header.className = "category-head";
+  header.appendChild(textEl("h2", "", category ? category.name : "Other"));
+  if (category?.description) {
+    header.appendChild(textEl("p", "category-note", category.description));
+  }
+  return header;
+}
+
+/*
+ * Rotulo do item: nome, valor e a nota da fonte. Era uma faixa invertida em
+ * caixa alta com tudo numa string so, o elemento mais alto da pagina.
+ */
+function buildItemLabel(item, showCategory) {
+  const label = document.createElement("div");
+  label.className = "item-label";
+  if (showCategory) {
+    const category = getCategoryById(item.categoryId);
+    label.appendChild(
+      textEl("span", "item-tag", category ? category.name : ""),
+    );
+  }
+  label.appendChild(textEl("span", "item-name", item.name));
+  label.appendChild(textEl("span", "item-value", `$${item.valueFormatted}`));
+  const note = item.dataSource?.notes;
+  if (note) label.appendChild(textEl("span", "item-note", note));
+  return label;
+}
+
 function createVisualization() {
   if (!wealthData) {
     console.error("No data available for visualization");
@@ -497,17 +553,7 @@ function createVisualization() {
     );
   });
 
-  // Sort items (all ascending)
-  items.sort((a, b) => {
-    switch (sortBy) {
-      case "name":
-        return a.name.localeCompare(b.name);
-      case "category":
-        return a.categoryId.localeCompare(b.categoryId);
-      default:
-        return parseValue(a) - parseValue(b); // Ascending order
-    }
-  });
+  sortItems(items, sortBy);
 
   filteredItems = items;
 
@@ -539,6 +585,8 @@ function createVisualization() {
   }
 
   let blockIndex = 0;
+  const groupByCategory = wrapped && sortBy === "category";
+  let lastCategoryId = null;
 
   for (const item of items) {
     const itemValue = parseValue(item);
@@ -555,14 +603,9 @@ function createVisualization() {
     // Calculate partial block size ratio
     const partialBlockRatio = hasPartialBlock ? remainder / currentScale : 1;
 
-    // Debug logging for problematic items
-    if (
-      hasPartialBlock &&
-      (item.name.includes("Jeff Bezos") || item.name.includes("Elon Musk"))
-    ) {
-      console.log(
-        `🔍 ${item.name}: Value=${itemValue}B, FullBlocks=${fullBlocks}, Remainder=${remainder}B, Ratio=${partialBlockRatio.toFixed(3)}`,
-      );
+    if (groupByCategory && item.categoryId !== lastCategoryId) {
+      blocksWrapper.appendChild(buildCategoryHeader(item.categoryId));
+      lastCategoryId = item.categoryId;
     }
 
     if (wrapped) {
@@ -571,13 +614,7 @@ function createVisualization() {
       itemWrapper.className = "item-wrapper";
       itemWrapper.setAttribute("data-item-name", item.name);
 
-      // Add item label with category
-      const itemLabel = document.createElement("div");
-      itemLabel.className = "item-label";
-      const category = getCategoryById(item.categoryId);
-      const categoryName = category ? category.name : "Unknown";
-      itemLabel.textContent = `[${categoryName}] ${item.name} ($${item.valueFormatted})`;
-      itemWrapper.appendChild(itemLabel);
+      itemWrapper.appendChild(buildItemLabel(item, !groupByCategory));
 
       // Create blocks container
       const blocksContainer = document.createElement("div");
