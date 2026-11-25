@@ -26,9 +26,9 @@
 
   /* Tipografia */
   --fg-primary: #ffffff;
-  --fg-secondary: #aaaaaa;
+  --fg-secondary: #d0d0d0;
   /* #666 dava 3.66:1 sobre preto — abaixo de AA para texto normal. */
-  --fg-muted: #8c8c8c;
+  --fg-muted: #a8a8a8;
 
   /* Ação e semântica */
   --accent-btc: #ff9900;
@@ -84,8 +84,14 @@
   --chart-legend-ink: var(--fg-primary);
 
   /* Tipografia — stack e escala */
-  --font: "Courier New", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono",
-    Menlo, Consolas, monospace;
+  /*
+   * JetBrains Mono, nao Courier New. O Courier tem traco fino e corpo pequeno:
+   * no preto o texto lia fraco, e era o que pintava o site inteiro (medido).
+   * Mesmo avanco de 0.6em por caractere, entao colunas e o wordmark ASCII
+   * (calculado em 0.62) nao mudam de largura.
+   */
+  --font: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, "Cascadia Mono",
+    Consolas, "Roboto Mono", monospace;
   /*
    * Blackletter moderno — traco afiado e geometrico, nao manuscrito medieval.
    * So em titulos de pagina e no logo: em caixa alta fica indecifravel, entao
@@ -97,7 +103,7 @@
   --text-section: 1.25rem; /* 20px — H2 */
   --text-card: 0.9375rem; /* 15px — H3 */
   --text-body: 0.8125rem; /* 13px */
-  --text-micro: 0.6875rem; /* 11px — tags e timestamps */
+  --text-micro: 0.75rem; /* 12px — tags e timestamps; 11px lia como ruido */
 
   --border-width: 2px;
 
@@ -124,10 +130,10 @@
   --border-accent: #9c5800;
 
   --fg-primary: #000000;
-  --fg-secondary: #444444;
+  --fg-secondary: #262626;
   /* #767676 so passava sobre branco puro (4.54:1); falhava em --bg-surface
      (4.17:1), --bg-elevated (3.81:1) e --bg-highlight (3.44:1). */
-  --fg-muted: #5f5f5f;
+  --fg-muted: #4a4a4a;
 
   /* #a85f00 dava 4.47:1 sobre --bg-surface — errava o AA por 0.03. */
   --accent-btc: #9c5800;
@@ -180,6 +186,7 @@ html {
 body {
   background-color: var(--bg-primary);
   color: var(--fg-primary);
+  -webkit-font-smoothing: antialiased;
   border: var(--border-width) solid var(--border-strong);
   min-height: 100vh;
   display: flex;

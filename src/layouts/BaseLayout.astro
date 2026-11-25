@@ -59,13 +59,14 @@ const canonicalURL = new URL(
          componente some do caminho e os links voltam a ser navegacao normal. -->
     <ClientRouter />
 
-    <!-- A unica web font do site. display=swap com fallback monoespacado, para
-         o texto nunca ficar invisivel enquanto ela carrega. -->
+    <!-- As duas web fonts do site: Pirata One nos titulos, JetBrains Mono no
+         texto. display=swap com fallback monoespacado, para o texto nunca
+         ficar invisivel enquanto elas carregam. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Pirata+One&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Pirata+One&display=swap"
     />
 
     <!-- O prefixo de deploy, publicado para o JS que NAO passa pelo bundler.

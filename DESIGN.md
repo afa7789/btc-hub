@@ -120,8 +120,8 @@ alinhamento colunar exato dos números financeiros. Os títulos de página e o l
 são blackletter — é onde entra o gótico, sem contaminar a leitura de dados.
 
 ```css
---font: 'Courier New', 'SF Mono', Monaco, 'Cascadia Code',
-        'Roboto Mono', Menlo, Consolas, monospace;
+--font: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, 'Cascadia Mono',
+        Consolas, 'Roboto Mono', monospace;
 
 --font-display: 'UnifrakturCook', 'Pirata One', 'Courier New', monospace;
 ```
@@ -168,9 +168,11 @@ favicon renderiza fora da página e não alcança web font.
 - **Só em `h1`, `h2` e no logo.** Rótulos de nav, títulos de card (`h3`), badges,
   cabeçalhos de tabela e botões continuam monoespaçados em caixa alta — é o
   contraste entre os dois registros que produz o efeito, não o gótico sozinho.
-- **É a única web font do site.** Carregada com `display=swap` e fallback
-  monoespaçado, então o texto nunca fica invisível enquanto ela baixa. Aceita-se
-  o FOUT em troca da identidade; nenhuma outra web font entra.
+- **Duas web fonts, nenhuma terceira.** Pirata One nos títulos e JetBrains
+  Mono no texto (decisão do dono em 2026-11-25: o Courier New, que pintava o
+  site inteiro, tem traço fino e lia fraco no preto). As duas carregam com
+  `display=swap` e fallback monoespaçado, então o texto nunca fica invisível;
+  aceita-se o FOUT em troca da identidade.
 
 O tema escuro é o padrão da identidade: o claro só aparece por escolha explícita
 no toggle, não por `prefers-color-scheme`.
@@ -182,7 +184,7 @@ no toggle, não por `prefers-color-scheme`.
 | H3 / card header | 14–15px | bold |
 | Body | 13px | `line-height: 1.6` |
 | Números / tabelas | 13px | `font-variant-numeric: tabular-nums`, alinhado à direita |
-| Micro-labels e tags | 10–11px | `letter-spacing: 1px`, entre colchetes `[LIVE]` |
+| Micro-labels e tags | 12px | `letter-spacing: 1px`, entre colchetes `[LIVE]` |
 
 ## 4. Componentes globais e padrões de layout
 
