@@ -29834,10 +29834,15 @@
       "date": "2026-11-23",
       "bigmac_usd": 6.22,
       "bigmac_satoshi": 10161.024466505374
+    },
+    {
+      "date": "2026-11-24",
+      "bigmac_usd": 6.22,
+      "bigmac_satoshi": 10411.575261293714
     }
   ],
   "max_price": 6.22,
   "max_price_satoshi": 7059999999.999999,
   "smallest_date": "2010-07-17",
-  "biggest_date": "2026-11-23"
+  "biggest_date": "2026-11-24"
 }
