@@ -44,6 +44,9 @@ Thumbs.db
 # os graficos ainda desenham. Precisa viajar com o repo.
 !.ux-review/harness/draw-check.mjs
 !.ux-review/harness/reflow-check.mjs
+# Navegacao pelo nav (ClientRouter), ida e volta: pega script que so quebra
+# quando outro script ja carregou na mesma sessao.
+!.ux-review/harness/spa-crawl.mjs
 .ux-review/discovery.raw.md
 
 # dagRobin — estado por maquina, nao fonte

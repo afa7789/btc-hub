@@ -1,12 +1,14 @@
 /*
  * Este arquivo vive em public/ — e servido literalmente, sem passar pelo
  * bundler, entao `import.meta.env.BASE_URL` nao existe aqui. O prefixo de
- * deploy ("/btc-hub" no GitHub Pages, "" na raiz) vem de window.__BASE__,
- * publicado pelo BaseLayout no <head> antes deste script carregar.
+ * deploy vem de window.withBase, publicado pelo BaseLayout no <head> antes
+ * deste script carregar.
+ *
+ * Nada de `const` no topo com nome generico: scripts classicos dividem um
+ * escopo global, e com o ClientRouter dois deles convivem na mesma sessao. O
+ * `const assetPath` daqui e o do outro script faziam o segundo a carregar
+ * morrer com SyntaxError, e a pagina ficava sem desenhar ao chegar pelo nav.
  */
-const assetPath = (path) =>
-  (typeof window !== "undefined" && window.__BASE__ ? window.__BASE__ : "") +
-  path;
 
 const currentScale = 100; // Fixed scale in billions per block
 const updateCount = 0;
@@ -132,7 +134,7 @@ async function loadData() {
   //    Isso acontecerá SEMPRE para garantir que temos os dados base ou complementares
   try {
     const jsonResponse = await fetch(
-      assetPath("/datasets/all-the-money/data.json"),
+      window.withBase("/datasets/all-the-money/data.json"),
     );
     if (!jsonResponse.ok)
       throw new Error(`HTTP error! status: ${jsonResponse.status}`);
@@ -205,7 +207,7 @@ async function fetchFreshDataInBackground() {
   try {
     console.log("🔄 Checking for data updates in background...");
     const response = await fetch(
-      assetPath("/datasets/all-the-money/data.json?t=") + Date.now(),
+      window.withBase("/datasets/all-the-money/data.json?t=") + Date.now(),
     ); // Cache bust
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

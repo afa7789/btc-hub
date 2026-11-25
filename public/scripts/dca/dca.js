@@ -1,41 +1,43 @@
 /*
  * Este arquivo vive em public/ — e servido literalmente, sem passar pelo
  * bundler, entao `import.meta.env.BASE_URL` nao existe aqui. O prefixo de
- * deploy ("/btc-hub" no GitHub Pages, "" na raiz) vem de window.__BASE__,
- * publicado pelo BaseLayout no <head> antes deste script carregar.
+ * deploy vem de window.withBase, publicado pelo BaseLayout no <head> antes
+ * deste script carregar.
+ *
+ * Nada de `const` no topo com nome generico: scripts classicos dividem um
+ * escopo global, e com o ClientRouter dois deles convivem na mesma sessao. O
+ * `const assetPath` daqui e o do outro script faziam o segundo a carregar
+ * morrer com SyntaxError, e a pagina ficava sem desenhar ao chegar pelo nav.
  */
-const assetPath = (path) =>
-  (typeof window !== "undefined" && window.__BASE__ ? window.__BASE__ : "") +
-  path;
 
 // Asset configuration
 const ASSETS = {
   bitcoin: {
-    file: assetPath("/datasets/bitcoin_2010-07-17_2025-07-25.csv"),
+    file: window.withBase("/datasets/bitcoin_2010-07-17_2025-07-25.csv"),
     format: "crypto", // Start,End,Open,High,Low,Close
     symbol: "BTC",
     decimals: 8,
   },
   ethereum: {
-    file: assetPath("/datasets/ethereum_2015-08-07_2025-07-25.csv"),
+    file: window.withBase("/datasets/ethereum_2015-08-07_2025-07-25.csv"),
     format: "crypto",
     symbol: "ETH",
     decimals: 6,
   },
   monero: {
-    file: assetPath("/datasets/monero_2014-05-21_2025-07-25.csv"),
+    file: window.withBase("/datasets/monero_2014-05-21_2025-07-25.csv"),
     format: "crypto",
     symbol: "XMR",
     decimals: 6,
   },
   gold: {
-    file: assetPath("/datasets/gold.csv"),
+    file: window.withBase("/datasets/gold.csv"),
     format: "commodity", // Price,Close,High,Low,Open,Volume
     symbol: "oz",
     decimals: 4,
   },
   silver: {
-    file: assetPath("/datasets/silver.csv"),
+    file: window.withBase("/datasets/silver.csv"),
     format: "commodity",
     symbol: "oz",
     decimals: 4,

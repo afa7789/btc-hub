@@ -129,3 +129,8 @@ This file tracks lessons learned during the BTC_Things project.
   ~21px reais, cortando titulo e empilhando legenda. Antes de compensar escala,
   medir a escala renderizada (largura na tela / largura do viewBox) — um
   comentario que afirma a escala nao e medicao.
+- **2026-11-25**: `dca.js` e o script do /all-the-money declaravam `const
+  assetPath` no topo. Scripts classicos dividem o escopo global e o
+  ClientRouter mantem a sessao: o segundo a carregar morria com SyntaxError e
+  a pagina nao desenhava ao chegar pelo nav — invisivel para o draw-check, que
+  abre cada rota por URL. Gate novo: `.ux-review/harness/spa-crawl.mjs`.
