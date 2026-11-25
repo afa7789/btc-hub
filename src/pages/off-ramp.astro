@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { withBase } from "../utils/base";
 
 const title = "Off-Ramp";
 const description =
@@ -130,6 +131,17 @@ const serviceGroups: ServiceGroup[] = [
     ],
   },
 ];
+
+/*
+ * Favicon de cada servico, baixado do proprio site (do repositorio, no caso do
+ * RoboSats) e reduzido a 64px em public/icons/off-ramp/<slug>.png.
+ */
+const iconFor = (name: string) =>
+  withBase(`/icons/off-ramp/${name.toLowerCase().replaceAll(" ", "-")}.png`);
+
+const allServices = serviceGroups.flatMap((group) =>
+  group.services.map((service) => ({ ...service, group: group.title })),
+);
 ---
 
 <BaseLayout title={title} description={description}>
@@ -140,6 +152,51 @@ const serviceGroups: ServiceGroup[] = [
 
     .section h3 {
       margin-top: 1.5em;
+    }
+
+    /* Fundo claro fixo: varios favicons sao escuros e somem no tema escuro. */
+    .service-icon {
+      background: #fff;
+      vertical-align: text-bottom;
+    }
+
+    .service-grid {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: var(--border-width);
+    }
+
+    .service-grid a {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      column-gap: 0.75em;
+      align-items: center;
+      height: 100%;
+      padding: 0.75em;
+      border: var(--border-width) solid var(--fg-muted);
+      color: var(--fg-primary);
+      text-decoration: none;
+    }
+
+    .service-grid a:hover,
+    .service-grid a:focus-visible {
+      border-color: var(--accent-btc);
+    }
+
+    .service-grid .service-icon {
+      grid-row: span 2;
+    }
+
+    .service-name {
+      font-weight: 700;
+    }
+
+    .service-group {
+      color: var(--fg-secondary);
+      font-size: var(--text-sm, 0.85em);
     }
 
     mark {
@@ -453,6 +510,7 @@ const serviceGroups: ServiceGroup[] = [
           <ul class="points">
             {group.services.map((service) => (
               <li>
+                <img class="service-icon" src={iconFor(service.name)} alt="" width="20" height="20" loading="lazy" />{" "}
                 <strong><a href={service.href} target="_blank" rel="noopener">{service.name}<span aria-hidden="true">↗</span></a></strong>{" "}
                 {service.text}
               </li>
@@ -461,6 +519,21 @@ const serviceGroups: ServiceGroup[] = [
           {group.note && <p class="muted">{group.note}</p>}
         </Fragment>
       ))}
+    </section>
+
+    <section class="section">
+      <h2>All of them</h2>
+      <ul class="service-grid">
+        {allServices.map((service) => (
+          <li>
+            <a href={service.href} target="_blank" rel="noopener">
+              <img class="service-icon" src={iconFor(service.name)} alt="" width="40" height="40" loading="lazy" />
+              <span class="service-name">{service.name}<span aria-hidden="true">↗</span></span>
+              <span class="service-group">{service.group}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
     </section>
   </article>
 </BaseLayout>
