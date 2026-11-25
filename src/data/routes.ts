@@ -95,7 +95,7 @@ export const tools: Tool[] = [
     group: "chart",
     label: "RAINBOW",
     description:
-      "Bitcoin against a log regression fitted to our own data, with bands at multiples of the residual",
+      "Bitcoin against blockchaincenter.net's rainbow: nine bands on a power law through the cycle lows, projected to 2032",
     status: "DATASET",
   },
   {

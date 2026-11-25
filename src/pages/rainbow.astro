@@ -1,12 +1,26 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { BANDS, bandPrice, fitRainbow } from "../utils/rainbow";
+import {
+  BANDS,
+  BAND_RATIO,
+  type Band,
+  CENTRE_EDGE,
+  CHART_END,
+  CHART_START,
+  GENESIS,
+  LOW_WINDOW,
+  SOURCE_URL,
+  bandEdge,
+  daysSinceGenesis,
+  fitRainbow,
+} from "../utils/rainbow";
 
 const title = "Rainbow";
-const description =
-  "Bitcoin's price against a logarithmic regression fitted to our own dataset, with bands at multiples of the residual standard deviation.";
+const description = `Bitcoin's price against blockchaincenter.net's rainbow chart: nine bands on a power-law line through the cycle lows, recomputed on our own data and projected to ${CHART_END.slice(0, 4)}.`;
 
 const fit = fitRainbow();
+const { last } = fit;
+const todayBand = BANDS[fit.todayBand] as Band;
 
 // Desenhado aqui e nao no navegador: e um grafico estatico, entao renderiza
 // sem JavaScript — o unico do site que faz isso.
@@ -29,30 +43,36 @@ const M = { top: 20, right: 330, bottom: 52, left: 96 };
 const innerW = W - M.left - M.right;
 const innerH = H - M.top - M.bottom;
 
-const lastDay = fit.points[fit.points.length - 1]?.day ?? 1;
-const firstDay = fit.points[0]?.day ?? 1;
+// Eixo x igual ao da referencia: de 2012 ate o fim de 2032, entao as bandas
+// seguem anos alem do ultimo fechamento — e essa a projecao.
+const firstDay = daysSinceGenesis(CHART_START);
+const endDay = daysSinceGenesis(CHART_END);
+const TOP_EDGE = BANDS.length;
 
-// Um ponto por semana: 5889 pontos num SVG inline seriam ~200KB de markup.
-const sampled = fit.points.filter(
-  (_, i) => i % 7 === 0 || i === fit.points.length - 1,
+// Um ponto por semana: ~770 pontos de preco num SVG inline ja sao ~9KB.
+const sampled = fit.closes.filter(
+  (_, i) => i % 7 === 0 || i === fit.closes.length - 1,
 );
 
 /*
- * Limites vindos do preco real, nao da curva ajustada. No dia 1 a regressao
- * vale ~1e-9, entao usar a banda de baixo como piso esticava a escala log por
- * 15 decadas e comprimia o grafico inteiro contra o topo.
+ * As bordas das bandas sao lisas (lei de potencia), entao um ponto a cada 30
+ * dias erra menos de 0,02px — e corta o markup das nove areas de ~240KB
+ * (um ponto por semana em 21 anos) para ~55KB.
  */
-const observedMin = Math.min(...fit.points.map((p) => p.price));
-const observedMax = Math.max(...fit.points.map((p) => p.price));
-const minPrice = observedMin * 0.35;
-const maxPrice =
-  Math.max(
-    observedMax,
-    bandPrice(fit, lastDay, BANDS[BANDS.length - 1]?.sigma ?? 2.5),
-  ) * 1.4;
+const bandDays: number[] = [];
+for (let day = firstDay; day < endDay; day += 30) bandDays.push(day);
+bandDays.push(endDay);
+
+/*
+ * Limites: piso no menor entre o preco real e a borda de baixo em 2012; teto
+ * na borda de cima no fim de 2032, que e onde o arco-iris termina.
+ */
+const observedMin = Math.min(...fit.closes.map((c) => c.price));
+const minPrice = Math.min(observedMin, bandEdge(fit, firstDay, 0)) * 0.8;
+const maxPrice = bandEdge(fit, endDay, TOP_EDGE) * 1.25;
 
 const x = (day: number) =>
-  M.left + ((day - firstDay) / (lastDay - firstDay)) * innerW;
+  M.left + ((day - firstDay) / (endDay - firstDay)) * innerW;
 const y = (price: number) =>
   M.top +
   innerH -
@@ -60,55 +80,36 @@ const y = (price: number) =>
     (Math.log10(maxPrice) - Math.log10(minPrice))) *
     innerH;
 
-const bandCurve = (sigma: number) =>
-  sampled.map(
-    (p) =>
-      `${x(p.day).toFixed(1)},${y(bandPrice(fit, p.day, sigma)).toFixed(1)}`,
+const edgeCurve = (k: number) =>
+  bandDays.map(
+    (day) => `${x(day).toFixed(1)},${y(bandEdge(fit, day, k)).toFixed(1)}`,
   );
 
-/*
- * Cada faixa e a area entre a sua curva e a de baixo. A mais baixa fecha numa
- * curva-piso meio sigma abaixo, e nao no fundo do grafico: descer ate o piso
- * pintava metade do painel de azul.
- */
-const FLOOR_SIGMA = (BANDS[0]?.sigma ?? -1.5) - 0.5;
-const areas = BANDS.map((band, i) => {
-  const upper = bandCurve(band.sigma);
-  const lower = bandCurve(BANDS[i - 1]?.sigma ?? FLOOR_SIGMA).reverse();
-  return { band, points: [...upper, ...lower].join(" ") };
-});
+// Banda i e a area entre a borda i e a borda i + 1 — a mesma regra que
+// classifica o preco em fitRainbow, entao a cor sob a linha e o veredito batem.
+const areas = BANDS.map((band, i) => ({
+  band,
+  points: [...edgeCurve(i + 1), ...edgeCurve(i).reverse()].join(" "),
+}));
 
 const priceLine = sampled
-  .map((p) => `${x(p.day).toFixed(1)},${y(p.price).toFixed(1)}`)
+  .map((c) => `${x(c.day).toFixed(1)},${y(c.price).toFixed(1)}`)
   .join(" ");
 
 const priceTicks = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000].filter(
   (p) => p >= minPrice && p <= maxPrice,
 );
-const yearTicks = fit.points
-  .filter((p) => {
-    const d = new Date(
-      new Date(`${fit.firstDate}T00:00:00Z`).getTime() +
-        (p.day - 1) * 86_400_000,
-    );
-    return (
-      d.getUTCMonth() === 0 &&
-      d.getUTCDate() === 1 &&
-      d.getUTCFullYear() % 2 === 0
-    );
-  })
-  .map((p) => ({
-    day: p.day,
-    year: new Date(
-      new Date(`${fit.firstDate}T00:00:00Z`).getTime() +
-        (p.day - 1) * 86_400_000,
-    ).getUTCFullYear(),
-  }));
+const firstYear = Number(CHART_START.slice(0, 4));
+const lastYear = Number(CHART_END.slice(0, 4));
+const yearTicks: { year: number; x: number }[] = [];
+for (let year = firstYear; year <= lastYear; year += 2) {
+  yearTicks.push({ year, x: x(daysSinceGenesis(`${year}-01-01`)) });
+}
 
 /*
  * O canvas do grafico e escuro nos dois temas (--chart-bg). As cores das
- * bandas foram escolhidas para AREAS, nao para texto: "Basically a fire sale"
- * (#1f4fd8) sobre #0a0a0a mede 2,58:1. A legenda e texto, entao cada cor e
+ * bandas foram escolhidas para AREAS, nao para texto: "Basically a Fire Sale"
+ * (#4472c4) sobre #0a0a0a mede 4,2:1. A legenda e texto, entao cada cor e
  * clareada em direcao ao branco ate passar 4,5:1 — o matiz continua o mesmo,
  * logo o mapa cor->faixa continua legivel.
  */
@@ -148,13 +149,12 @@ function readableOnChart(hex: string): string {
 }
 
 /*
- * As nove bandas estao a 0,5 sigma uma da outra: no ultimo dia isso deixa as
- * legendas a ~14 unidades de distancia vertical, menos que a altura de uma
- * linha de 20px. Elas vao para uma coluna de espacamento fixo na margem
- * direita, ligadas a sua banda por uma linha-guia, em vez de empilhadas em
- * cima umas das outras.
+ * Cada banda tem log10(1,3) = 0,114 decada de altura: no fim de 2032 isso da
+ * ~8 unidades verticais por banda, menos que uma linha de 20px. As legendas
+ * vao para uma coluna de espacamento fixo na margem direita, ligadas ao meio
+ * da sua banda por uma linha-guia, em vez de empilhadas umas sobre as outras.
  */
-const naturalY = BANDS.map((band) => y(bandPrice(fit, lastDay, band.sigma)));
+const naturalY = BANDS.map((_, i) => y(bandEdge(fit, endDay, i + 0.5)));
 const naturalCentre =
   naturalY.reduce((s, v) => s + v, 0) / Math.max(naturalY.length, 1);
 const blockTop = naturalCentre - ((BANDS.length - 1) / 2) * LABEL_GAP;
@@ -170,10 +170,42 @@ const bandLabels = BANDS.map((band, i) => ({
   bandY: naturalY[i] ?? 0,
 }));
 
-const money = (v: number) =>
-  v >= 1000
-    ? `$${Math.round(v / 1000).toLocaleString("en-US")}K`
-    : `$${Math.round(v)}`;
+const money = (v: number) => {
+  if (v >= 1e6) return `$${Number((v / 1e6).toFixed(2))}M`;
+  if (v >= 1000) return `$${Math.round(v / 1000).toLocaleString("en-US")}K`;
+  return `$${Math.round(v)}`;
+};
+const dollars = (v: number) => `$${Math.round(v).toLocaleString("en-US")}`;
+
+// Onde o ultimo fechamento esta em relacao a banda: a de baixo nao tem piso e
+// a de cima nao tem teto, entao "dentro da banda" nem sempre e verdade.
+const lineToday = bandEdge(fit, last.day, 1);
+const vsLine = last.price / lineToday - 1;
+const position =
+  last.price <= bandEdge(fit, last.day, 0)
+    ? "below the lowest band's floor"
+    : last.price > bandEdge(fit, last.day, TOP_EDGE)
+      ? "above the top band's ceiling"
+      : "inside the band";
+const vsLineText = `${Math.abs(vsLine * 100).toFixed(0)}% ${vsLine < 0 ? "below" : "above"} the fitted line`;
+
+// As tres datas que a propria referencia tabula.
+const projections = [
+  { name: "2028 halving (Apr 2028)", date: "2028-04-17" },
+  { name: "End of 2030", date: "2030-12-31" },
+  { name: "End of 2032", date: "2032-12-31" },
+].map((p) => {
+  const day = daysSinceGenesis(p.date);
+  return {
+    ...p,
+    floor: bandEdge(fit, day, 0),
+    centre: bandEdge(fit, day, CENTRE_EDGE),
+    top: bandEdge(fit, day, TOP_EDGE),
+  };
+});
+
+const firstLow = fit.lows[0];
+const newestLow = fit.lows[fit.lows.length - 1];
 ---
 
 <BaseLayout title={title} description={description}>
@@ -198,7 +230,8 @@ const money = (v: number) =>
 
     /* Regiao rolavel focavel: sem isto ninguem chega ao lado direito do
        grafico so com o teclado (WCAG 2.1.1). */
-    .rainbow:focus-visible {
+    .rainbow:focus-visible,
+    .table-scroll:focus-visible {
       outline: 2px solid var(--accent);
       outline-offset: 2px;
     }
@@ -255,6 +288,29 @@ const money = (v: number) =>
     .fit-note {
       color: var(--fg-secondary);
     }
+
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      margin: 1em 0;
+    }
+
+    /* O seletor escopado compila para td[data-astro-cid-...] — (0,1,1), que
+       vence o .num global em (0,1,0). A regra precisa existir aqui. */
+    th,
+    td {
+      border: var(--border-width) solid var(--border);
+      padding: 0.5rem;
+      text-align: start;
+    }
+
+    th.num,
+    td.num {
+      text-align: right;
+    }
   </style>
 
   <article>
@@ -264,13 +320,18 @@ const money = (v: number) =>
 
     <section class="section">
       <p>
-        Bitcoin's price on a log scale against a logarithmic regression, with
-        coloured bands around it. Where the price sits in the bands is the whole
-        point of the chart.
+        Bitcoin's price on a log scale against the
+        <a href={SOURCE_URL}>blockchaincenter.net Bitcoin Rainbow Chart</a>:
+        nine coloured bands stacked on a line through the cycle lows, projected
+        out to the end of {CHART_END.slice(0, 4)}. Same method, band names and
+        colours as their Dynamic Rainbow Chart, recomputed on the price series
+        this site plots. Where the price sits in the bands is the whole point of
+        the chart.
       </p>
       <p class="verdict">
-        Right now: <span class="band-swatch" style={`--band: ${fit.todayBand.color}`} aria-hidden="true"></span><span class="band-name">{fit.todayBand.label}</span>
-        &mdash; {fit.todaySigma.toFixed(2)} standard deviations from the fitted line.
+        Right now: <span class="band-swatch" style={`--band: ${todayBand.color}`} aria-hidden="true"></span><span class="band-name">{todayBand.label}</span>
+        &mdash; the last close, {dollars(last.price)} on {last.date}, is
+        {vsLineText}, {position}.
       </p>
     </section>
 
@@ -283,10 +344,10 @@ const money = (v: number) =>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
-        aria-label={`Bitcoin price from ${fit.firstDate} to ${fit.lastDate} on a logarithmic scale, against a fitted regression with nine bands. The last close sits ${fit.todaySigma.toFixed(2)} standard deviations from the fit, in the "${fit.todayBand.label}" band.`}
+        aria-label={`Bitcoin price from ${CHART_START} to ${last.date} on a logarithmic scale, against nine rainbow bands projected to ${CHART_END}. The last close, ${dollars(last.price)}, is in the "${todayBand.label}" band, ${vsLineText}, ${position}.`}
       >
         {areas.map(area => (
-          <polygon points={area.points} fill={area.band.color} opacity="0.85" />
+          <polygon points={area.points} fill={area.band.color} />
         ))}
 
         {priceTicks.map(price => (
@@ -301,10 +362,24 @@ const money = (v: number) =>
         ))}
 
         {yearTicks.map(tick => (
-          <text x={x(tick.day)} y={M.top + innerH + 28} text-anchor="middle">{tick.year}</text>
+          <text x={tick.x} y={M.top + innerH + 28} text-anchor="middle">{tick.year}</text>
         ))}
 
-        <polyline points={priceLine} fill="none" stroke="var(--chart-ink)" stroke-width="1.6" />
+        {/* Fim dos dados, comeco da projecao: a direita daqui so ha modelo. */}
+        <line
+          x1={x(last.day)} x2={x(last.day)}
+          y1={M.top} y2={M.top + innerH}
+          stroke="var(--chart-ink)" stroke-width="1" stroke-dasharray="4 4" opacity="0.6"
+        />
+        <text x={x(last.day) + 6} y={M.top + 18}>last close</text>
+
+        {/*
+          Linha branca com contorno da cor do canvas: branco sobre o amarelo de
+          "HODL!" mede 1,2:1 e a linha sumia ali. O contorno garante o 3:1
+          contra todas as nove bandas e contra o fundo.
+        */}
+        <polyline points={priceLine} fill="none" stroke="var(--chart-bg)" stroke-width="4.5" stroke-linejoin="round" />
+        <polyline points={priceLine} fill="none" stroke="var(--chart-ink)" stroke-width="1.6" stroke-linejoin="round" />
 
         {bandLabels.map(item => (
           <g>
@@ -328,23 +403,78 @@ const money = (v: number) =>
     </div>
 
     <section class="section">
+      <h2>The Projection</h2>
+      <p>
+        Where the rainbow's edges sit on the three dates the reference
+        tabulates. These are edges of the bands, not price targets.
+      </p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Projected band edges">
+        <table>
+          <caption class="sr-only">
+            Projected rainbow band edges: the floor of "{BANDS[0]?.label}", the
+            middle of "HODL!", and the ceiling of "{BANDS[TOP_EDGE - 1]?.label}".
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col" class="num">Floor</th>
+              <th scope="col" class="num">Centre</th>
+              <th scope="col" class="num">Ceiling</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projections.map((p) => (
+              <tr>
+                <td>{p.name}</td>
+                <td class="num">{money(p.floor)}</td>
+                <td class="num">{money(p.centre)}</td>
+                <td class="num">{money(p.top)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>How the Line Is Drawn</h2>
       <p class="fit-note">
-        The regression is fitted here, at build time, to the same price series
-        the rest of the site plots &mdash; not to constants copied from another
-        chart. The model is
-        <code>log10(price) = {fit.a.toFixed(4)} &middot; ln(days) &minus; {Math.abs(fit.b).toFixed(4)}</code>,
-        least squares over {fit.points.length.toLocaleString("en-US")} daily closes
-        from {fit.firstDate} to {fit.lastDate}, R&sup2; = {fit.r2.toFixed(3)}.
-        The bands sit at multiples of the residual standard deviation
-        (&sigma; = {fit.sigma.toFixed(3)} in log10 terms), so their width is a
-        property of how far the price has actually strayed from the fit rather
-        than a number someone picked.
+        A cycle low is a daily close with no lower close within
+        {LOW_WINDOW} closes either side. The {fit.lows.length} lows since
+        {CHART_START.slice(0, 4)}, from {firstLow?.date} to {newestLow?.date},
+        are fitted with
+        <code>log10(price) = {fit.slope.toFixed(4)} &middot; log10(days) &minus; {Math.abs(fit.intercept).toFixed(4)}</code>,
+        days counted from the genesis block on {GENESIS}. That line is the top
+        of "{BANDS[0]?.label}"; each band above is {BAND_RATIO}&times; the one
+        below, so the top of "{BANDS[TOP_EDGE - 1]?.label}" is
+        {(BAND_RATIO ** (TOP_EDGE - 1)).toFixed(1)}&times; the line.
+      </p>
+      <p class="fit-note">
+        R&sup2; = {fit.r2.toFixed(3)}, but over {fit.lows.length} points chosen
+        because they are lows, so a high R&sup2; comes almost for free: it says
+        the lows line up, not that the line predicts anything.
+        {fit.newestLowProvisional && (
+          <>The newest low, {newestLow?.date}, is less than {LOW_WINDOW} closes
+          old, so it is provisional: a lower close before it gets there would
+          replace it and move every band.</>
+        )}
+      </p>
+      <p class="fit-note">
+        Our bands run about 9&ndash;15% above the reference's by 2028&ndash;2032
+        because the data differ on one day: their series has $111.60 on
+        2014-02-21 where ours has $574 (theirs matches Mt.&nbsp;Gox's quote as
+        that exchange collapsed), and that one close is a cycle low in their
+        fit. The reference also still draws the original 2014
+        curve, a fixed formula with a tenth band ("Bitcoin is dead") below these
+        nine; it is more optimistic and can put the same price in a different
+        band.
       </p>
       <p>
-        <strong>What it is not:</strong> a forecast. A log regression through a
-        rising series will always slope up, and the band you are in says where
-        the price is relative to its own past, not where it is going. Refreshing
-        the dataset refits the line and moves every band.
+        <strong>What it is not:</strong> a forecast. Past the last close the
+        bands are the line extended, and a power law through rising lows can
+        only keep rising. The band you are in says where the price is relative
+        to its own past lows, not where it is going. The chart's own author
+        calls it a meme with no scientific basis.
       </p>
     </section>
   </article>

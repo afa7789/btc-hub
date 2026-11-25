@@ -104,16 +104,24 @@ angle lines up with the halvings only because they come about every four years.
 
 ### `/rainbow` — RAINBOW
 
-Logarithmic regression on the full daily BTC series with bands at multiples of the
-residual standard deviation. The fit is computed at build time in `src/utils/rainbow.ts`
-against our own dataset rather than copied from the usual chart: a = 1.4733,
-b = -8.0566, sigma = 0.4618, R^2 = 0.9099 over 5889 closes. The plot is inline SVG, so
-it is the only chart that works with JavaScript disabled. Band labels carry their own
-colour and the "right now" verdict puts the band colour in a swatch rather than in the
-text, so the colour-to-band mapping survives both themes.
+Bitcoin against blockchaincenter.net's Dynamic Rainbow Chart, recomputed at build
+time in `src/utils/rainbow.ts` on our own series. Method and constants are read from
+their chart code, not their prose: a cycle low is a close with no lower close within
+180 rows either side; the lows dated 2012-01-01 to 2032-12-31 are fitted by least
+squares as log10(price) = slope · log10(days since 2009-01-03) + intercept. That
+line is the top of "Basically a Fire Sale"; each band above is 1.3× the one below,
+nine bands up to 1.3^8 × the line, with their names and colours. The x-axis runs
+2012 to the end of 2032, so the bands project past the last close. On the current
+dataset: slope 5.8992, intercept −17.5159, R² 0.966 over 8 lows. Run on the
+reference's own series, the same code returns their 5.6715 / −16.6773 / 97.14%. Our
+bands sit about 9–15% above theirs in 2028–2032 because their series has $111.60 on
+2014-02-21 (Mt. Gox's collapse) where ours has $574, which adds a 2014 low to their
+fit.
 
-The scale bounds come from observed prices, not from the fitted curve — the curve is
-~1e-9 on day 1, and using it would squash fifteen decades into the panel.
+The plot is inline SVG, so it works with JavaScript disabled. Band labels carry
+their own colour and the "right now" verdict puts the band colour in a swatch, so
+the colour-to-band mapping survives both themes. Fills are solid and the price line
+has a canvas-coloured casing, so the line stays visible over the yellow bands.
 
 ### `/big-mac` — BIG MAC INDEX
 

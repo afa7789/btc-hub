@@ -117,3 +117,8 @@ This file tracks lessons learned during the BTC_Things project.
   (`git archive $(git write-tree)`) e rodar `bun run check` la. Com
   `node_modules` em symlink o Astro falha ("No cached compile metadata"), porque
   resolve o caminho real; `bun install --frozen-lockfile` na copia leva ~2s.
+- **2026-11-25**: O brief do /rainbow supunha uma formula fixa; a referencia
+  (blockchaincenter.net) ajusta a curva em runtime pelos fundos de ciclo e
+  ainda mostra a curva de 2014, e o texto dela contradiz o codigo (R² e numero
+  de pontos). Antes de copiar o modelo de um site, ler o JS dele: constante do
+  metodo nao e resultado do ajuste, e prosa nao e especificacao.
