@@ -9,94 +9,61 @@ const description =
 
 <BaseLayout title={title} description={description}>
   <style>
-    /* Adapted from original styles.css with variable mapping */
-
     /*
      * Escopo: este bloco era `is:global` e redefinia `button`, `input`,
-     * `select`, `header` e `h1` para o documento inteiro — o toggle de tema e o
-     * nav compartilhado herdavam a caixa desta pagina. Agora e escopado; os
-     * seletores nus viraram classes de pagina (.atm-header, .atm-controls) e o
+     * `select`, `header` e `h1` para o documento inteiro. Agora e escopado, e o
      * que o JS cria em runtime (sem atributo de escopo do Astro) usa :global().
+     *
+     * Padronizado com o resto do site (DESIGN.md 4): cabecalho, campos,
+     * botoes e grade de numeros vem de global.css; bordas sao
+     * --border-width (nao 3px) e texto usa a escala --text-*, nao px solto.
      */
 
-    /* Header - brutalist style */
-    .atm-header {
-      text-align: center;
-      margin-bottom: 30px;
-      border: 3px solid var(--border);
-      padding: 20px;
-      background: var(--bg);
-    }
-
-    .header-top {
+    .atm-scale {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 1rem;
-    }
-
-    .header-controls {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .header-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 2px solid var(--border);
-    }
-
-    .atm-header p {
-      font-size: 1rem;
+      gap: 0.6rem;
       font-weight: bold;
       text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     .sample-block {
-      display: inline-block;
+      flex: none;
       width: 20px;
       height: 20px;
       background: var(--accent-btc);
-      border: 2px solid var(--border);
-      margin: 0 8px;
-      vertical-align: middle;
+      border: 1px solid var(--border-strong);
     }
 
-    /*
-     * Caixa, cor e borda dos botoes vem do design system em global.css — este
-     * bloco era `is:global` e so vencia global.css nas declaracoes que ela nao
-     * tem. Manter mais que isso mudaria o desenho da pagina.
-     */
-    .atm-controls button,
-    .comparison-mode button {
-      font-family: var(--font);
-      font-weight: bold;
-      cursor: pointer;
-      transition: none;
-      min-width: 60px;
+    .field-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-end;
+      flex-wrap: wrap;
     }
 
-    .atm-controls button:active,
-    .comparison-mode button:active {
-      transform: translate(2px, 2px);
+    /* Botao de alternancia: o estado mora em aria-pressed, nao no texto. */
+    .field-actions [aria-pressed="true"] {
+      background: var(--accent-btc);
+      color: var(--on-accent);
+      border-color: var(--accent-btc);
+    }
+
+    .control-hint {
+      font-size: var(--text-micro);
+      color: var(--fg-secondary);
+      margin: -0.75em 0 1.5em;
     }
 
     .hidden {
       display: none !important;
     }
 
-    /* Visualization */
     .visualization {
-      border: 3px solid var(--border);
-      padding: 20px;
-      margin-bottom: 30px;
-      background: var(--bg);
+      border: var(--border-width) solid var(--border-strong);
+      padding: 1rem;
+      margin-bottom: 2em;
       min-height: 500px;
     }
 
@@ -105,16 +72,14 @@ const description =
       flex-wrap: wrap;
       gap: 2px;
       align-items: flex-start;
-      line-height: 0; /* Remove line spacing between blocks */
+      line-height: 0;
     }
 
-    /* When wrapped view is active, stack items vertically */
     #blocks-container.wrapped {
       display: block;
       line-height: normal;
     }
 
-    /* Wrapper for blocks in wrapped mode - makes all blocks stay in one line */
     :global(.blocks-wrapper) {
       display: flex;
       flex-wrap: wrap;
@@ -138,7 +103,7 @@ const description =
       text-transform: none;
       width: 30px;
       height: 30px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-strong);
       cursor: pointer;
       position: relative;
       transition: none;
@@ -152,7 +117,6 @@ const description =
       border-width: 2px;
     }
 
-    /* Foco de teclado precisa levantar o bloco junto com o tooltip. */
     :global(.block:focus-visible) {
       z-index: 100;
     }
@@ -168,15 +132,16 @@ const description =
       bottom: 25px;
       left: 50%;
       transform: translateX(-50%);
-      background: var(--fg);
-      color: var(--bg);
-      padding: 8px 12px;
+      background: var(--fg-primary);
+      color: var(--bg-primary);
+      padding: 0.5rem 0.75rem;
       white-space: nowrap;
       z-index: 100;
-      font-size: 12px;
+      font-size: var(--text-micro);
       font-weight: bold;
+      letter-spacing: 1px;
       text-transform: uppercase;
-      border: 2px solid var(--border);
+      border: var(--border-width) solid var(--border-strong);
     }
 
     :global(.small-block) {
@@ -190,90 +155,68 @@ const description =
       transform: scale(1.2) !important;
     }
 
-    /* Scale reference */
     :global(.scale-reference) {
       display: flex;
       align-items: center;
-      gap: 20px;
-      margin-bottom: 15px;
-      margin-left: 15px;
-      margin-right: 15px;
-      padding: 15px 15px;
-      border: 3px solid var(--border);
-      background: var(--bg);
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border: var(--border-width) solid var(--border-subtle);
+      font-size: var(--text-micro);
       font-weight: bold;
-      text-transform: uppercase;
-    }
-
-    :global(.scale-label) {
-      font-size: 14px;
       letter-spacing: 1px;
+      text-transform: uppercase;
     }
 
     :global(.scale-blocks-demo) {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 0.6rem;
     }
 
     :global(.reference-block) {
       width: 20px;
       height: 20px;
-      background: var(--fg);
-      border: 2px solid var(--border);
+      background: var(--fg-primary);
+      border: 1px solid var(--border-strong);
     }
 
-    :global(.scale-text) {
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    /* Loading overlay */
     .loading {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: var(--bg);
-      color: var(--fg);
+      background: var(--bg-surface);
+      color: var(--fg-primary);
       padding: 2rem;
-      border: 3px solid var(--border);
+      border: var(--border-width) solid var(--border-strong);
       z-index: 1000;
       font-weight: bold;
-      margin: 20px 0;
       text-align: center;
-      font-size: 14px;
+      font-size: var(--text-body);
+      letter-spacing: 1px;
       text-transform: uppercase;
-      animation: loadingPulse 1.5s infinite;
     }
 
-    @keyframes loadingPulse {
-      0%, 100% { transform: translate(-50%, -50%) scale(1); }
-      50% { transform: translate(-50%, -50%) scale(1.05); }
-    }
-
-    /* Update notification - brutalist */
+    /* Aviso de atualizacao: era verde com canto arredondado, em estilo
+       inline no script, fora de todo o sistema. */
     :global(.update-notification) {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      background: var(--fg);
-      color: var(--bg);
-      padding: 15px 20px;
-      border: 3px solid var(--border);
+      top: 1.25rem;
+      right: 1.25rem;
+      background: var(--bg-surface);
+      color: var(--fg-primary);
+      padding: 0.75rem 1rem;
+      border: var(--border-width) solid var(--status-positive);
+      font-size: var(--text-micro);
       font-weight: bold;
+      letter-spacing: 1px;
       text-transform: uppercase;
-      font-size: 12px;
       z-index: 1001;
-      transform: translateX(100%);
-      transition: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
 
-    :global(.update-notification.show) {
-      transform: translateX(0);
-    }
-
-    /* Enhanced animations */
     :global(.block.updating) {
       animation: pulse 1.5s infinite;
     }
@@ -283,13 +226,11 @@ const description =
       50% { opacity: 0.7; }
     }
 
-    /* Enhanced tooltips */
     :global(.tooltip) {
-      background: var(--bg);
-      color: var(--fg);
-      border: 2px solid var(--border);
+      background: var(--bg-primary);
+      color: var(--fg-primary);
+      border: var(--border-width) solid var(--border-strong);
       border-radius: 0;
-      /* Hard offset in the border colour — no soft shadows in this system. */
       box-shadow: 4px 4px 0 var(--border-strong);
       font-family: var(--font);
       transition: opacity 0.2s ease;
@@ -304,145 +245,48 @@ const description =
       border-top: 1px solid var(--border-subtle);
     }
 
-    .control-label {
-      font-size: var(--text-micro);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      align-self: center;
-    }
-
-    .control-hint {
-      font-size: var(--text-micro);
-      color: var(--fg-secondary);
-      /* 1em, nao 1rem: escopado esta regra passou a vencer o
-         `p:not(:last-child)` de global.css, que dava 1em (11px aqui). */
-      margin: 0.5rem 0 1em;
-    }
-
     :global(.credibility-indicator) {
-      font-size: 1.2rem;
+      font-size: var(--text-card);
     }
 
     :global(.credibility-high) { color: var(--status-positive); }
     :global(.credibility-medium) { color: var(--status-warning); }
     :global(.credibility-low) { color: var(--status-negative); }
 
-    /* Controls - brutalist style */
-    .atm-controls {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-      padding: 20px;
-      border: 3px solid var(--border);
-      background: var(--bg);
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .atm-controls input,
-    .atm-controls select {
-      padding: 12px 16px;
-      background: var(--bg);
-      color: var(--fg);
-      border: 3px solid var(--border);
-      font-family: var(--font);
-      font-size: 12px;
-      text-transform: uppercase;
-      font-weight: bold;
-      flex: 1 1 220px;
-      min-width: 0;
-    }
-
-    .atm-controls input:focus-visible,
-    .atm-controls select:focus-visible {
-      /* Inverting alone is not a focus indicator when the field is already
-         high contrast; keep the global outline on top of it. */
-      outline: var(--border-width) solid var(--border-accent);
-      outline-offset: 2px;
-      background: var(--fg);
-      color: var(--bg);
-    }
-
-    .atm-controls input::placeholder {
-      color: var(--fg);
-      opacity: 0.7;
-      text-transform: uppercase;
-      font-weight: bold;
-    }
-
-    /* Comparison mode */
-    .comparison-mode {
-      margin: 20px 0;
-      padding: 20px;
-      border: 1px solid var(--border);
-      background: var(--bg);
+    .comparison-mode,
+    .data-sources-content {
+      margin: 0 0 2em;
+      padding: 1rem;
+      border: var(--border-width) solid var(--border-strong);
     }
 
     .comparison-items {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 15px;
-      margin: 15px 0;
+      grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
     }
 
     :global(.comparison-item) {
-      padding: 15px;
-      border: 1px solid var(--border);
-      background: var(--bg);
+      padding: 1rem;
+      border: var(--border-width) solid var(--border-subtle);
     }
 
     :global(.comparison-item h4) {
-      color: var(--accent);
-      margin-bottom: 10px;
+      color: var(--accent-btc);
+      margin-bottom: 0.6rem;
     }
 
-    /* Statistics */
-    .statistics {
-      margin: 20px 0;
-      padding: 20px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      margin-top: 15px;
-    }
-
-    .stat-item {
-      text-align: center;
-      padding: 15px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-    }
-
-    .stat-value {
-      display: block;
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: var(--accent);
-      margin-bottom: 5px;
-    }
-
-    .stat-label {
-      font-size: 0.9rem;
-      color: var(--fg);
-      opacity: 0.8;
-    }
-
-    /* Wrapped view styles */
+    /* Agrupado por item. O rotulo invertido (fundo claro, texto escuro) e a
+       marca desta pagina; so a espessura e o corpo entraram na escala. */
     :global(.item-wrapper) {
-      border: 3px solid var(--border);
-      margin-bottom: 20px;
-      background: var(--bg);
+      border: var(--border-width) solid var(--border-strong);
+      margin-bottom: 1rem;
       width: 100%;
       display: block;
       clear: both;
     }
 
-    /* When inside blocks-wrapper, make items inline */
     :global(.blocks-wrapper .item-wrapper) {
       display: inline-block;
       vertical-align: top;
@@ -452,142 +296,102 @@ const description =
     }
 
     :global(.item-label) {
-      background: var(--fg);
-      color: var(--bg);
-      padding: 12px 16px;
+      background: var(--fg-primary);
+      color: var(--bg-primary);
+      padding: 0.6rem 0.9rem;
       font-weight: bold;
-      font-size: 14px;
+      font-size: var(--text-body);
       text-transform: uppercase;
       letter-spacing: 1px;
-      border-bottom: 3px solid var(--border);
+      border-bottom: var(--border-width) solid var(--border-strong);
       white-space: normal;
-      word-wrap: break-word;
-      word-break: break-word;
+      overflow-wrap: anywhere;
       line-height: 1.3;
       max-width: 100%;
       display: block;
-    }
-
-    @media (max-width: 480px) {
-      :global(.item-label) {
-        font-size: 0.8em;
-      }
     }
 
     :global(.blocks-container) {
       display: flex;
       flex-wrap: wrap;
       gap: 2px;
-      padding: 15px;
+      padding: 0.75rem;
       min-height: 60px;
       align-items: flex-start;
-      line-height: 0; /* Remove line spacing between blocks */
+      line-height: 0;
     }
 
-    /* When inside blocks-wrapper, make blocks-container more compact */
     :global(.blocks-wrapper .item-wrapper .blocks-container) {
-      padding: 8px;
+      padding: 0.5rem;
       min-height: auto;
     }
 
-    /* Data sources toggle */
-    .toggle-sources {
-      background: var(--bg);
-      color: var(--fg);
-      border: 3px solid var(--border);
-      padding: 12px 16px;
-      font-family: var(--font);
-      font-size: 12px;
-      font-weight: bold;
-      text-transform: uppercase;
-      cursor: pointer;
-      margin-bottom: 20px;
-    }
-
-    .toggle-sources:hover {
-      background: var(--fg);
-      color: var(--bg);
-    }
-
-    .data-sources-content {
-      border: 3px solid var(--border);
-      padding: 20px;
-      background: var(--bg);
-      margin-bottom: 30px;
-    }
-
-    .data-sources-content.hidden {
-      display: none;
+    #toggleDataSources {
+      margin-bottom: 1rem;
     }
   </style>
 
-    <header class="atm-header">
-      <div class="header-top">
-        <h1>All the Money in the World</h1>
-      </div>
-      <div class="header-bottom">
-        <p>Each block = $100 billion USD <span class="sample-block"></span> • <span id="totalBlocks">0</span> blocks</p>
-      </div>
+  <article>
+    <header class="page-header">
+      <h1>All the Money in the World</h1>
+      <p class="atm-scale">
+        <span class="sample-block" aria-hidden="true"></span>
+        <span id="atm-summary">Each block = $100 billion USD</span>
+      </p>
     </header>
-      <p class="source-link"><a href="https://github.com/afa7789/all_the_money_in_the_world" target="_blank" rel="noopener">View the All The Money In The World source on GitHub</a></p>
+    <p class="source-link"><a href="https://github.com/afa7789/all_the_money_in_the_world" target="_blank" rel="noopener">View the All The Money In The World source on GitHub</a></p>
 
     <div id="loading" class="loading hidden">Fetching latest data...</div>
-    
-    <div class="atm-controls">
-      <label for="searchInput" class="control-label">Search items</label>
-      <input type="search" id="searchInput" placeholder="gold, bitcoin, silver" aria-describedby="search-hint" />
-      <label for="sortBy" class="control-label">Sort</label>
-      <select id="sortBy">
-        <option value="value">Sort by Value</option>
-        <option value="name">Sort by Name</option>
-        <option value="category">Sort by Category</option>
-      </select>
-      <button type="button" id="toggleWrapped">📦 Wrapped</button>
-      <button type="button" id="exportData">📁 Export</button>
-    </div>
 
+    <form class="fields" role="search" onsubmit="return false">
+      <div class="field">
+        <label for="searchInput">Search items</label>
+        <input type="search" id="searchInput" placeholder="gold, bitcoin, silver" aria-describedby="search-hint" />
+      </div>
+      <div class="field">
+        <label for="sortBy">Sort</label>
+        <select id="sortBy">
+          <option value="value">By value</option>
+          <option value="name">By name</option>
+          <option value="category">By category</option>
+        </select>
+      </div>
+      <div class="field-actions">
+        <button type="button" id="toggleWrapped" class="btn-secondary" aria-pressed="true">Wrapped</button>
+        <button type="button" id="exportData" class="btn-secondary">Export</button>
+      </div>
+    </form>
     <p id="search-hint" class="control-hint">Separate several items with commas to compare them.</p>
 
     <div id="visualization" class="visualization">
       <div id="blocks-container" class="blocks-container"></div>
     </div>
-    
-    <div id="details" class="details">
-      <button type="button" id="toggleDataSources" class="toggle-sources">📄 Data Sources</button>
-      <div id="data-sources" class="data-sources-content hidden"></div>
-    </div>
 
     <div id="comparison-mode" class="comparison-mode hidden">
       <h2>Compare Items</h2>
       <div id="comparison-items" class="comparison-items"></div>
-      <button type="button" id="clearComparison">Clear Comparison</button>
+      <button type="button" id="clearComparison" class="btn-secondary">Clear comparison</button>
     </div>
 
-    <div id="statistics" class="statistics">
+    <section id="statistics" class="section">
       <h2>Quick Stats</h2>
-      <div class="stats-grid">
-        <div class="stat-item">
-          <span class="stat-value" id="totalValue">-</span>
-          <span class="stat-label">Total Value</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value" id="totalItems">-</span>
-          <span class="stat-label">Total Items</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value" id="liveItems">-</span>
-          <span class="stat-label">Live APIs</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value" id="statsBlocks">-</span>
-          <span class="stat-label">Total Blocks</span>
-        </div>
-      </div>
+      <dl class="stat-grid">
+        <div><dt>Total value</dt><dd id="totalValue">-</dd></div>
+        <div><dt>Total items</dt><dd id="totalItems">-</dd></div>
+        <div><dt>Live APIs</dt><dd id="liveItems">-</dd></div>
+        <div><dt>Total blocks</dt><dd id="statsBlocks">-</dd></div>
+      </dl>
+    </section>
+
+    <div id="details" class="details">
+      <button type="button" id="toggleDataSources" class="btn-secondary" aria-expanded="false" aria-controls="data-sources">Data sources</button>
+      <div id="data-sources" class="data-sources-content hidden"></div>
     </div>
 
-  <footer style="text-align:center; font-family: var(--font); font-size: var(--text-body); margin: 2em 0 1em 0; color: var(--fg-secondary);">
-    <a href="https://www.visualcapitalist.com/all-of-the-worlds-money-and-markets-in-one-visualization-2022/" target="_blank" rel="noopener" style="color: var(--data-cyan); text-decoration: underline;">See also: Visual Capitalist – All of the World’s Money and Markets in One Visualization (2022)</a>
-  </footer>
+    <p class="source-link">
+      <a href="https://www.visualcapitalist.com/all-of-the-worlds-money-and-markets-in-one-visualization-2022/" target="_blank" rel="noopener">See also: Visual Capitalist, All of the World’s Money and Markets in One Visualization (2022)</a>
+    </p>
+  </article>
 
   <script is:inline src={withBase("/scripts/all-the-money/script.js")}></script>
 </BaseLayout>

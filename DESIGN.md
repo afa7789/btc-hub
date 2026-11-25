@@ -277,7 +277,9 @@ do favicon.
 | Tokens da seção 2 | Implementados em `global.css`, com `--bg`/`--fg`/`--accent`/`--border` mantidos como alias |
 | Variante clara dos tokens | Implementada — acentos e status escurecidos para contraste em fundo branco |
 | Escala tipográfica da seção 3 | Implementada (`--text-display` … `--text-micro`, aplicada a `h1`–`h6`) |
-| Primitivas `.btn-primary` / `.btn-secondary` / `.tag` / `.num` | Implementadas; aplicadas em `/dca` e `/how-much-i-fucked-up` |
+| Primitivas `.btn-primary` / `.btn-secondary` / `.tag` / `.num` | Implementadas; aplicadas em `/dca`, `/how-much-i-fucked-up` e `/all-the-money` |
+| Padroes de pagina em `global.css` | Implementados — `.page-header` (9 paginas), `.points` (lista de prosa), `.fields`/`.field` (formulario em grade) e `.stat-grid` (numeros em `<dl>`); as copias escopadas sairam |
+| `/all-the-money` no padrao do site | Implementado — coluna de 920px, cabecalho, campos e botoes globais, bordas em `--border-width`, texto na escala `--text-*`, sem emoji nos controles; o rotulo invertido dos itens foi mantido |
 | Tabelas com `tabular-nums` e hover de linha | Implementadas globalmente |
 | Indicador de página ativa | Implementado — `> PÁGINA <` em `Nav.astro` |
 | Ticker no BaseLayout | Implementado — presente nas 10 páginas, dentro de um landmark `<header>` |

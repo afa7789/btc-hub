@@ -77,59 +77,6 @@ const ERA = "https://eradeouro.substack.com/p/";
       margin-bottom: 2.5em;
     }
 
-    /* Campos em grade que encolhe ate uma coluna; o minimo cabe em 320px. */
-    .fields {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
-      gap: 0.75rem 1.25rem;
-      margin: 1em 0 1.5em;
-      border: none;
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-    }
-
-    .field label {
-      font-size: var(--text-micro);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--fg-secondary);
-    }
-
-    .field input,
-    .field select {
-      width: 100%;
-      min-height: 44px;
-    }
-
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
-      gap: 0.75rem;
-      margin: 0 0 1.5em;
-    }
-
-    .summary :global(div) {
-      border: var(--border-width) solid var(--border-subtle);
-      padding: 0.6rem 0.8rem;
-    }
-
-    .summary :global(dt) {
-      font-size: var(--text-micro);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--fg-secondary);
-    }
-
-    .summary :global(dd) {
-      font-size: 1.15em;
-      font-weight: bold;
-      font-variant-numeric: tabular-nums;
-    }
-
     /* A tabela rola sozinha; a pagina nao (WCAG 1.4.10 em 320px). */
     .table-wrap {
       overflow-x: auto;
@@ -269,7 +216,7 @@ const ERA = "https://eradeouro.substack.com/p/";
         <div class="field"><label for="p-ir">IR sobre os juros (%)</label><input id="p-ir" type="number" min="0" max="30" step="0.5" value={PLAN.irPct} /></div>
         <div class="field"><label for="p-cost">IOF + spread por compra (%)</label><input id="p-cost" type="number" min="0" max="10" step="0.1" value={PLAN.costPct} /></div>
       </form>
-      <dl id="dz-plan-summary" class="summary" set:html={dlHtml(planSummary(planned))} />
+      <dl id="dz-plan-summary" class="stat-grid" set:html={dlHtml(planSummary(planned))} />
       <div class="table-wrap" tabindex="0" role="region" aria-label="Cronograma de compras mês a mês">
         <table>
           <thead>

@@ -543,9 +543,10 @@ function createVisualization() {
   visualization.insertBefore(scaleReference, container);
 
   // Check if wrapped mode is active
-  const wrapped = document
-    .getElementById("toggleWrapped")
-    ?.textContent.includes("📦");
+  // O estado mora em aria-pressed; antes era lido do emoji no rotulo.
+  const wrapped =
+    document.getElementById("toggleWrapped")?.getAttribute("aria-pressed") ===
+    "true";
 
   // Create wrapper div for all blocks if wrapped mode is active
   let blocksWrapper;
@@ -685,8 +686,9 @@ function updatePageTitle() {
       : "";
   const blockInfo = ` • ${totalBlocks.toLocaleString()} blocks`;
 
-  document.querySelector("header p").textContent =
-    baseText + filterInfo + blockInfo;
+  // So o texto: escrever no <p> inteiro apagava o bloco de amostra ao lado.
+  const summary = document.getElementById("atm-summary");
+  if (summary) summary.textContent = baseText + filterInfo + blockInfo;
 }
 
 // Show item details
@@ -701,7 +703,7 @@ function showItemDetails(item) {
 🏷️ Category: ${category ? category.name : "Unknown"}
 🔄 Live Updates: ${item.isLiveUpdatable ? "Yes" : "No"}
 📅 Last Updated: ${lastUpdated}
-📄 Source: ${dataSource.provider}
+Source: ${dataSource.provider}
 🔗 Slug: ${item.slug}
 ℹ️ Notes: ${dataSource.notes || "No additional notes"}
     `.trim();
@@ -872,7 +874,7 @@ function updateComparisonView() {
             <div class="comparison-category">${category ? category.name : "Unknown"}</div>
             <div class="comparison-blocks">${blocks.toLocaleString()} blocks</div>
             <div class="comparison-ratio">${(ratio * 100).toFixed(1)}% of largest</div>
-            <button onclick="removeFromComparison('${item.id}')">Remove</button>
+            <button type="button" class="btn-secondary" onclick="removeFromComparison('${item.id}')">Remove</button>
         `;
     comparisonContainer.appendChild(itemDiv);
   }
@@ -924,8 +926,8 @@ function initializeControls() {
 
   if (toggleWrapped) {
     toggleWrapped.addEventListener("click", () => {
-      const isWrapped = toggleWrapped.textContent.includes("📦");
-      toggleWrapped.textContent = isWrapped ? "📋 Flat" : "📦 Wrapped";
+      const isWrapped = toggleWrapped.getAttribute("aria-pressed") === "true";
+      toggleWrapped.setAttribute("aria-pressed", String(!isWrapped));
       createVisualization();
     });
   }
@@ -1080,20 +1082,6 @@ function showUpdateNotification(message) {
     notification = document.createElement("div");
     notification.id = "updateNotification";
     notification.className = "update-notification";
-    notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        `;
     document.body.appendChild(notification);
   }
 
@@ -1159,10 +1147,12 @@ function initializeDataSourcesToggle() {
       const isHidden = sourcesContent.classList.contains("hidden");
       if (isHidden) {
         sourcesContent.classList.remove("hidden");
-        toggleButton.textContent = "📄 Hide Sources";
+        toggleButton.textContent = "Hide sources";
+        toggleButton.setAttribute("aria-expanded", "true");
       } else {
         sourcesContent.classList.add("hidden");
-        toggleButton.textContent = "📄 Data Sources";
+        toggleButton.textContent = "Data sources";
+        toggleButton.setAttribute("aria-expanded", "false");
       }
     });
   }

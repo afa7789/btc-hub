@@ -416,6 +416,67 @@ ol.points {
   color: var(--accent-btc);
 }
 
+/*
+ * Formulario em grade: rotulo micro em cima, campo embaixo, colunas que
+ * encolhem ate uma so — o minimo cabe em 320px. Alvo de 44px no campo.
+ */
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+  gap: 0.75rem 1.25rem;
+  margin: 1em 0 1.5em;
+  border: none;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field label {
+  font-size: var(--text-micro);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--fg-secondary);
+}
+
+.field input,
+.field select {
+  width: 100%;
+  min-height: 44px;
+}
+
+/*
+ * Grade de numeros (<dl>, um <div> por par): rotulo micro, valor em negrito.
+ * Global de proposito: /dolarizacao reescreve o conteudo por innerHTML, e
+ * no escopo do Astro essas celulas novas perderiam o estilo.
+ */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1.5em;
+}
+
+.stat-grid > div {
+  border: var(--border-width) solid var(--border-subtle);
+  padding: 0.6rem 0.8rem;
+}
+
+.stat-grid dt {
+  font-size: var(--text-micro);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--fg-secondary);
+}
+
+.stat-grid dd {
+  font-size: 1.15em;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+
 p:not(:last-child) {
   margin-bottom: 1em;
 }
