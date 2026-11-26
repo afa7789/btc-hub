@@ -10,6 +10,15 @@
  * As duas taxas sao premissas fixas da simulacao, as mesmas do grafico
  * original. Nenhuma das duas e fixa na vida real.
  */
+import {
+  type Day,
+  type Holding,
+  type Others,
+  dayAt,
+  held,
+  ranked,
+} from "./holdings";
+
 export const SRS_APY = 0.045;
 export const ETH_STAKE_APY = 0.027;
 /** Inicio do grafico original do /debase. */
@@ -19,28 +28,6 @@ const DAY_MS = 86_400_000;
 const days = (from: string, to: string): number =>
   Math.round((Date.parse(to) - Date.parse(from)) / DAY_MS);
 const grow = (apy: number, d: number): number => (1 + apy) ** (d / 365);
-
-export interface Day {
-  date: string;
-  price: number;
-}
-
-/**
- * Le um CSV de public/datasets. Cripto: Start,End,...,Close (coluna 5), e o
- * fechamento do dia D fica na linha que comeca em D. Metal: data,Close.
- * Puro (sem node:fs) porque o calculador roda no navegador com o mesmo codigo.
- */
-export function parseDays(text: string, kind: "crypto" | "metal"): Day[] {
-  const out: Day[] = [];
-  for (const line of text.split("\n").slice(1)) {
-    const cells = line.trim().split(",");
-    const date = cells[0];
-    const price = Number.parseFloat(cells[kind === "crypto" ? 5 : 1] ?? "");
-    if (date && /^\d{4}-\d{2}-\d{2}$/.test(date) && price > 0)
-      out.push({ date, price });
-  }
-  return out.sort((x, y) => (x.date < y.date ? -1 : 1));
-}
 
 /** Valorizacao anual do ETH que empata as duas pernas so no rendimento. */
 export const breakEven = (1 + SRS_APY) / (1 + ETH_STAKE_APY) - 1;
@@ -65,10 +52,6 @@ export function leg(from: Day, to: Day): Leg {
     eth: to.price / from.price - 1,
   };
 }
-
-/** O primeiro dia da serie em ou depois de `date`. */
-export const dayAt = (series: Day[], date: string): Day | undefined =>
-  series.find((p) => p.date >= date);
 
 const shiftYears = (iso: string, years: number): string => {
   const d = new Date(`${iso}T00:00:00Z`);
@@ -225,19 +208,6 @@ export function edgeBarsSvg(rows: Rolling[], label: string): string {
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}"><line class="zero" x1="${left}" x2="${W}" y1="${y(0)}" y2="${y(0)}"/>${bars.join("")}${years.join("")}${yTicks.join("")}</svg>`;
 }
 
-export interface Holding {
-  label: string;
-  note: string;
-  /** null: o ativo nao tinha preco na data pedida. */
-  value: number | null;
-}
-
-export interface Others {
-  label: string;
-  note: string;
-  days: Day[];
-}
-
 /**
  * O mesmo dinheiro, posto no mesmo dia, em cada destino, avaliado no ultimo
  * dia de cada serie. A data vale a partir do primeiro dia do ETH.
@@ -252,19 +222,7 @@ export function compare(
   const end = eth[eth.length - 1];
   if (!start || !end || start.date === end.date) return [];
   const l = leg(start, end);
-  const held = (o: Others): Holding => {
-    const a =
-      o.days[0] && o.days[0].date <= start.date
-        ? dayAt(o.days, start.date)
-        : undefined;
-    const z = o.days[o.days.length - 1];
-    return {
-      label: o.label,
-      note: o.note,
-      value: a && z ? usd * (z.price / a.price) : null,
-    };
-  };
-  return [
+  return ranked([
     {
       label: "SRS",
       note: `${(SRS_APY * 100).toFixed(1)}% a year, simulated`,
@@ -276,31 +234,6 @@ export function compare(
       value: usd * (1 + l.stake),
     },
     { label: "ETH held", note: "ETH price alone", value: usd * (1 + l.eth) },
-    ...others.map(held),
-  ].sort((x, y) => (y.value ?? -1) - (x.value ?? -1));
-}
-
-const money = (v: number): string =>
-  v.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: v >= 100 ? 0 : 2,
-  });
-
-const signedPct = (v: number): string => {
-  const abs = Math.abs(v * 100);
-  return `${v < 0 ? "−" : "+"}${abs.toLocaleString("en-US", { maximumFractionDigits: abs >= 100 ? 0 : 1 })}%`;
-};
-
-/** Linhas da tabela do calculador; o mesmo HTML no build e no navegador. */
-export function holdingsHtml(rows: Holding[], usd: number): string {
-  return rows
-    .map((r) => {
-      const cells =
-        r.value === null
-          ? `<td class="num">no price yet</td><td class="num">-</td>`
-          : `<td class="num">${money(r.value)}</td><td class="num">${signedPct(r.value / usd - 1)}</td>`;
-      return `<tr><th scope="row">${r.label}</th><td>${r.note}</td>${cells}</tr>`;
-    })
-    .join("");
+    ...others.map((o) => held(usd, start.date, o)),
+  ]);
 }

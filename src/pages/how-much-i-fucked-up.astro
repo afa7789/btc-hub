@@ -1,7 +1,8 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { withBase } from "../utils/base";
-import { computeRegret, usd } from "../utils/prerender";
+import { held, holdingsHtml, parseDays, ranked } from "../utils/holdings";
+import { computeRegret, holdingSource, usd } from "../utils/prerender";
 
 const title = "How Much I Fucked Up";
 const description =
@@ -12,6 +13,38 @@ const description =
 // re-runs this with a live CoinGecko quote as soon as it loads.
 const DEFAULTS = { date: "2020-01-01", usd: 1000 };
 const scenario = computeRegret(DEFAULTS);
+/*
+ * O mesmo dinheiro em outros lugares, no mesmo dia. Sai pronto do build para o
+ * cenario padrao; o script do fim da pagina refaz com os mesmos CSVs quando a
+ * data ou o valor mudam.
+ */
+const altSources = [
+  "bitcoin",
+  "sp500",
+  "gold",
+  "silver",
+  "ethereum",
+  "monero",
+].map(holdingSource);
+const alternatives = ranked(
+  altSources.map((s) =>
+    held(DEFAULTS.usd, DEFAULTS.date, {
+      label: s.label,
+      note: s.note,
+      days: parseDays(s.text, s.kind),
+    }),
+  ),
+);
+const altSourcesJson = JSON.stringify(
+  altSources.map(({ key, kind, label, note, file }) => ({
+    key,
+    kind,
+    label,
+    note,
+    url: withBase(`/datasets/${file}`),
+  })),
+);
+
 const priceNowDate = new Date(
   `${scenario.priceNowDate}T00:00:00Z`,
 ).toLocaleDateString("en-US", {
@@ -231,10 +264,85 @@ const investedDate = new Date(`${scenario.date}T00:00:00Z`).toLocaleDateString(
       </div>
     </section>
 
+    <section class="section" id="alt-root" data-sources={altSourcesJson}>
+      <h2>The same money elsewhere</h2>
+      <p>
+        The amount and the date above, put somewhere else on the same day.
+      </p>
+      <p id="alt-status" class="muted" role="status"></p>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="The same money in other assets, valued today">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Where</th>
+              <th scope="col">What it tracks</th>
+              <th scope="col" class="num">Worth now</th>
+              <th scope="col" class="num">Change</th>
+            </tr>
+          </thead>
+          <tbody id="alt-rows" set:html={holdingsHtml(alternatives, DEFAULTS.usd)} />
+        </table>
+      </div>
+      <p class="prerendered-note">
+        Sorted from most to least, each valued at the last close in our
+        dataset, so the Bitcoin row can differ from the live figure above.
+        Prices only: no dividends, no fees, no tax. "No price yet" means the
+        asset did not trade on that date.
+      </p>
+    </section>
+
     <section class="section">
       <p><strong>Disclaimer:</strong> This calculator is for educational purposes only. Historical prices are from our dataset which may have gaps. Current price is fetched from CoinGecko API. Always do your own research before making investment decisions.</p>
     </section>
   </article>
+
+  <script>
+    import {
+      type Loaded,
+      type Source,
+      held,
+      holdingsHtml,
+      loadSources,
+      ranked,
+    } from "../utils/holdings";
+
+    // Os nos sao novos a cada navegacao do router: religar em astro:page-load,
+    // e so nesta pagina.
+    document.addEventListener("astro:page-load", async () => {
+      const root = document.getElementById("alt-root");
+      if (!root) return;
+      const dateEl = document.getElementById("date-picker") as HTMLInputElement;
+      const usdEl = document.getElementById("usd-input") as HTMLInputElement;
+      const rows = document.getElementById("alt-rows") as HTMLElement;
+      const status = document.getElementById("alt-status") as HTMLElement;
+      const sources: Source[] = JSON.parse(root.dataset.sources ?? "[]");
+
+      let all: Loaded[] = [];
+      try {
+        all = await loadSources(sources);
+      } catch {
+        status.textContent =
+          "Could not load the price files; the table shows the default scenario.";
+        return;
+      }
+
+      const update = () => {
+        const amount = Number.parseFloat(usdEl.value);
+        const ok = amount > 0 && /^\d{4}-\d{2}-\d{2}$/.test(dateEl.value);
+        // Sem entrada valida a tabela esvazia: o resultado anterior pareceria
+        // a resposta para os valores novos.
+        status.textContent = ok ? "" : "Pick a date and an amount above zero.";
+        rows.innerHTML = ok
+          ? holdingsHtml(
+              ranked(all.map((o) => held(amount, dateEl.value, o))),
+              amount,
+            )
+          : "";
+      };
+      dateEl.addEventListener("input", update);
+      usdEl.addEventListener("input", update);
+    });
+  </script>
 
   <script is:inline src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
 

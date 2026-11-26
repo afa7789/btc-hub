@@ -51,7 +51,37 @@ export const ASSETS: Record<string, AssetSpec> = {
     symbol: "oz",
     decimals: 4,
   },
+  // ^GSPC: indice de preco, sem dividendos. Mesmo formato dos metais.
+  sp500: { file: "sp500.csv", format: "commodity", symbol: "pts", decimals: 2 },
 };
+
+/*
+ * Destinos do "mesmo dinheiro em outro lugar" (/stake, /how-much-i-fucked-up).
+ * Devolve o texto do CSV para o build e o caminho para o navegador buscar o
+ * mesmo arquivo; a conta em si mora em holdings.ts, que roda nos dois.
+ */
+const HOLDING_LABELS: Record<string, [label: string, note: string]> = {
+  bitcoin: ["Bitcoin", "BTC price"],
+  ethereum: ["Ether", "ETH price"],
+  monero: ["Monero", "XMR price"],
+  gold: ["Gold", "Gold price"],
+  silver: ["Silver", "Silver price"],
+  sp500: ["S&P 500", "Index price, no dividends"],
+};
+
+export function holdingSource(key: string) {
+  const asset = ASSETS[key];
+  const names = HOLDING_LABELS[key];
+  if (!asset || !names) throw new Error(`Unknown holding: ${key}`);
+  return {
+    key,
+    label: names[0],
+    note: names[1],
+    kind: asset.format === "crypto" ? ("crypto" as const) : ("metal" as const),
+    file: asset.file,
+    text: readFileSync(join(DATASETS, asset.file), "utf8"),
+  };
+}
 
 export type PriceSeries = Map<string, number>;
 

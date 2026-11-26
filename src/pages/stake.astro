@@ -1,9 +1,8 @@
 ---
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { withBase } from "../utils/base";
-import { ASSETS } from "../utils/prerender";
+import { holdingsHtml, parseDays } from "../utils/holdings";
+import { holdingSource } from "../utils/prerender";
 import {
   CHART_START,
   EDGE_CAP,
@@ -13,8 +12,6 @@ import {
   compare,
   edgeBarsSvg,
   growthChartSvg,
-  holdingsHtml,
-  parseDays,
   rolling,
   trailing,
   worstDrawdown,
@@ -28,12 +25,16 @@ const description =
  * Tudo abaixo sai do CSV de preco do ether, no build. As duas taxas sao
  * premissas (src/utils/stake.ts); o resto nao e digitado.
  */
-const csv = (asset: keyof typeof ASSETS) =>
-  readFileSync(
-    join(process.cwd(), "public", "datasets", ASSETS[asset]?.file ?? ""),
-    "utf8",
-  );
-const series = parseDays(csv("ethereum"), "crypto");
+const srcs = ["ethereum", "bitcoin", "sp500", "gold", "silver", "monero"].map(
+  holdingSource,
+);
+const loaded = srcs.map((s) => ({
+  key: s.key,
+  label: s.label,
+  note: s.note,
+  days: parseDays(s.text, s.kind),
+}));
+const series = loaded[0]?.days ?? [];
 const last = series[series.length - 1];
 if (!last) throw new Error("stake: serie de ETH vazia");
 
@@ -48,29 +49,17 @@ const drawdown = worstDrawdown(series, CHART_START);
  * refaz a conta quando o valor ou a data mudam, com os mesmos CSVs.
  */
 const CALC = { usd: 1000, from: CHART_START };
-const OTHERS = [
-  { key: "bitcoin", kind: "crypto", label: "Bitcoin", note: "BTC price" },
-  { key: "gold", kind: "metal", label: "Gold", note: "Gold price" },
-  { key: "silver", kind: "metal", label: "Silver", note: "Silver price" },
-  { key: "monero", kind: "crypto", label: "Monero", note: "XMR price" },
-] as const;
-const others = OTHERS.map((o) => ({
-  label: o.label,
-  note: o.note,
-  days: parseDays(csv(o.key), o.kind),
-}));
+const others = loaded.slice(1);
 const holdings = compare(CALC.usd, CALC.from, series, others);
-const sources = JSON.stringify([
-  {
-    key: "ethereum",
-    kind: "crypto",
-    url: withBase(`/datasets/${ASSETS.ethereum?.file}`),
-  },
-  ...OTHERS.map((o) => ({
-    ...o,
-    url: withBase(`/datasets/${ASSETS[o.key]?.file}`),
+const sources = JSON.stringify(
+  srcs.map(({ key, kind, label, note, file }) => ({
+    key,
+    kind,
+    label,
+    note,
+    url: withBase(`/datasets/${file}`),
   })),
-]);
+);
 
 const wins = (rows: { edge: number }[]) =>
   rows.filter((r) => r.edge > 0).length;
@@ -210,7 +199,7 @@ const ahead = (l: { srs: number; stake: number }) =>
     <section class="section" id="stake-calc" data-sources={sources}>
       <h2>What the same money would be</h2>
       <p>
-        One sum, one day, seven places to put it. Valued on {d(last.date)}.
+        One sum, one day, eight places to put it. Valued on {d(last.date)}.
       </p>
       <form class="fields" onsubmit="return false">
         <div class="field">
@@ -408,15 +397,13 @@ const ahead = (l: { srs: number; stake: number }) =>
   </article>
 
   <script>
-    import { type Day, type Others, compare, holdingsHtml, parseDays } from "../utils/stake";
-
-    interface Source {
-      key: string;
-      kind: "crypto" | "metal";
-      url: string;
-      label?: string;
-      note?: string;
-    }
+    import {
+      type Loaded,
+      type Source,
+      holdingsHtml,
+      loadSources,
+    } from "../utils/holdings";
+    import { compare } from "../utils/stake";
 
     // O router troca o <body> a cada navegacao: os nos sao novos, entao os
     // ouvintes sao religados em cada astro:page-load, e so nesta pagina.
@@ -429,23 +416,16 @@ const ahead = (l: { srs: number; stake: number }) =>
       const status = document.getElementById("calc-status") as HTMLElement;
       const sources: Source[] = JSON.parse(root.dataset.sources ?? "[]");
 
-      let eth: Day[] = [];
-      let others: Others[] = [];
+      let all: Loaded[] = [];
       try {
-        const loaded = await Promise.all(
-          sources.map(async (s) => ({
-            s,
-            days: parseDays(await (await fetch(s.url)).text(), s.kind),
-          })),
-        );
-        eth = loaded.find((l) => l.s.key === "ethereum")?.days ?? [];
-        others = loaded
-          .filter((l) => l.s.key !== "ethereum")
-          .map((l) => ({ label: l.s.label ?? l.s.key, note: l.s.note ?? "", days: l.days }));
+        all = await loadSources(sources);
       } catch {
-        status.textContent = "Could not load the price files; the table shows the default scenario.";
+        status.textContent =
+          "Could not load the price files; the table shows the default scenario.";
         return;
       }
+      const eth = all.find((l) => l.key === "ethereum")?.days ?? [];
+      const others = all.filter((l) => l.key !== "ethereum");
 
       const update = () => {
         const usd = Number.parseFloat(usdEl.value);

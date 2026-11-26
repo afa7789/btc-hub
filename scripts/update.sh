@@ -134,6 +134,7 @@ DATASET_ROWS=(
   "daily_cpi_inflation.csv|csv;1|45|update-cpi.ts (calls generate-daily-cpi.ts)"
   "gold.csv|csv,1|7|update-metals.ts"
   "silver.csv|csv,1|7|update-metals.ts"
+  "sp500.csv|csv,1|7|update-metals.ts"
   "brl.csv|csv,1|7|update-brl.ts"
   "bitcoin_2010-07-17_2025-07-25.csv|csv,1|5|update-crypto.ts"
   "ethereum_2015-08-07_2025-07-25.csv|csv,1|5|update-crypto.ts"

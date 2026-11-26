@@ -313,6 +313,7 @@ async function updateMetal(
 function parseArgs(): {
   goldPath: string;
   silverPath: string;
+  sp500Path: string;
   end: string;
   dryRun: boolean;
   debug: boolean;
@@ -322,6 +323,7 @@ function parseArgs(): {
 
   let goldPath = resolveDatasetPath("public/datasets/gold.csv", scriptDir);
   let silverPath = resolveDatasetPath("public/datasets/silver.csv", scriptDir);
+  let sp500Path = resolveDatasetPath("public/datasets/sp500.csv", scriptDir);
   let end = utcToday();
   let dryRun = false;
   let debug = false;
@@ -332,6 +334,8 @@ function parseArgs(): {
       goldPath = args[++i];
     } else if (arg === "--silver-path" && args[i + 1]) {
       silverPath = args[++i];
+    } else if (arg === "--sp500-path" && args[i + 1]) {
+      sp500Path = args[++i];
     } else if (arg === "--end" && args[i + 1]) {
       end = args[++i];
     } else if (arg === "--dry-run") {
@@ -344,6 +348,7 @@ function parseArgs(): {
 Options:
   --gold-path <path>    Path to gold.csv (default: public/datasets/gold.csv)
   --silver-path <path>  Path to silver.csv (default: public/datasets/silver.csv)
+  --sp500-path <path>   Path to sp500.csv (default: public/datasets/sp500.csv)
   --end <YYYY-MM-DD>    End date (default: today UTC)
   --dry-run             Print what would be written without writing
   --debug               Print debug info including API URLs
@@ -353,15 +358,18 @@ Options:
     }
   }
 
-  return { goldPath, silverPath, end, dryRun, debug };
+  return { goldPath, silverPath, sp500Path, end, dryRun, debug };
 }
 
 async function main(): Promise<number> {
-  const { goldPath, silverPath, end, dryRun, debug } = parseArgs();
+  const { goldPath, silverPath, sp500Path, end, dryRun, debug } = parseArgs();
 
   const metals: Metal[] = [
     { name: "Gold", ticker: "GC=F", csvPath: goldPath },
     { name: "Silver", ticker: "SI=F", csvPath: silverPath },
+    // Nao e metal, mas e a mesma fonte e o mesmo formato de CSV. ^GSPC e o
+    // indice de preco: sem dividendos reinvestidos.
+    { name: "S&P 500", ticker: "^GSPC", csvPath: sp500Path },
   ];
 
   if (debug) {
