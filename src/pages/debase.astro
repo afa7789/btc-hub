@@ -210,7 +210,7 @@ const pct = (v: number) =>
       <p class="disclaimer">Disclaimer: This is a static demo web app for concept and testing
         purposes. Data and calculations may not be as accurate as they appear. Always verify with primary sources
         before making financial decisions.</p>
-      <p><strong>Why 1971?</strong> — In 1971, the US ended the convertibility of the dollar to gold (the "Nixon
+      <p><strong>Why 1971?</strong> — In 1971, the US <mark>ended the convertibility of the dollar to gold</mark> (the "Nixon
         Shock"), marking the start of the modern fiat era. Comparing assets from this point helps visualize
         long-term inflation and monetary effects on asset prices. <a href="https://wtfhappenedin1971.com/"
           target="_blank" rel="noopener" style="color: var(--status-warning); text-decoration: underline;">Read what happened in 1971</a></p>
@@ -226,7 +226,7 @@ const pct = (v: number) =>
       <p>This chart shows the decline in the purchasing power of the
         US dollar over time, as measured by the Consumer Price Index (CPI). The line represents
         <code>1 / (accumulated inflation multiplier)</code> since 1971. As inflation accumulates, the value of the
-        dollar falls, so the line trends downward. A value of 0.5 means the dollar buys half as much as it did at
+        dollar falls, so the line trends downward. A value of 0.5 means the dollar <mark>buys half as much</mark> as it did at
         the start.
       </p>
     </section>
@@ -318,7 +318,7 @@ const pct = (v: number) =>
         <p><strong>XMR/Gold ATH:</strong> <span id="xmr-gold-ath"></span></p>
       </div>
       <p>These lines show the value of ETH, BTC, and XMR measured in ounces of
-        gold, not dollars. This helps compare crypto performance to gold, a traditional store of value, and see
+        <mark>gold, not dollars</mark>. This helps compare crypto performance to gold, a traditional store of value, and see
         which asset outperformed the other over time.</p>
 
       <h3 id="btc-gold-cycles" class="cycle-h">Bitcoin in gold, cycle by cycle</h3>
@@ -354,9 +354,9 @@ const pct = (v: number) =>
       <h3 class="cycle-h">The bear reading</h3>
       <ul class="points">
         <li>
-          <strong>Risk assets outrun gold for a cycle, then give it back.</strong>
+          <strong>Risk assets outrun gold for a cycle, <mark>then give it back</mark>.</strong>
           Gabriel Duarte (Era de Ouro) points at the S&amp;P 500 priced in gold,
-          which peaked in 1929, 1969 and 2000 and fell back each time, and
+          which peaked in <mark>1929, 1969 and 2000</mark> and fell back each time, and
           argues bitcoin is on the same path
           (<a href="https://eradeouro.substack.com/p/bitcoin-colapsa-49-a-historia-por" target="_blank" rel="noopener" lang="pt-BR">post, in Portuguese</a>).
         </li>
@@ -369,7 +369,7 @@ const pct = (v: number) =>
           the size has not.
         </li>
         <li>
-          <strong>Each peak clears the last by less:</strong> {peakGrowth.join(", ")}.
+          <strong>Each peak clears the last <mark>by less</mark>:</strong> {peakGrowth.join(", ")}.
           The {ath.date.slice(0, 4)} high is barely above the one before it.
         </li>
       </ul>
@@ -377,11 +377,11 @@ const pct = (v: number) =>
       <h3 class="cycle-h">The bull reading</h3>
       <ul class="points">
         <li>
-          <strong>Every low after a peak sat above the previous cycle's low:</strong>
+          <strong>Every low after a peak sat <mark>above the previous cycle's low</mark>:</strong>
           {cyc.map((k) => oz(k.low.oz)).join(" → ")}, the last one still open.
         </li>
         <li>
-          <strong>The drops are getting smaller:</strong>
+          <strong>The drops are <mark>getting smaller</mark>:</strong>
           {cyc.map((k) => pct(k.low.oz / k.peak.oz - 1)).join(", ")}.
         </li>
         <li>
@@ -389,7 +389,7 @@ const pct = (v: number) =>
           opposite for the short run:</strong> bitcoin sat on support against
           gold and could outperform it for weeks or months
           (<a href="https://eradeouro.substack.com/p/bitcoin-pode-performar-melhor-do" target="_blank" rel="noopener" lang="pt-BR">post</a>).
-          Ratio charts read both ways, and five cycles is a small sample.
+          Ratio charts read both ways, and <mark>five cycles is a small sample</mark>.
         </li>
       </ul>
     </section>

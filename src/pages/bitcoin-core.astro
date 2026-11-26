@@ -411,7 +411,7 @@ electrum setconfig server 127.0.0.1:50002:s`,
 
       <h3>Building it</h3>
       <p>
-        Check out a release tag, not <span class="inline-code">master</span>.
+        Check out <mark>a release tag</mark>, not <span class="inline-code">master</span>.
         Tags ending in <span class="inline-code">rc</span> are release
         candidates — pick the latest one without that suffix. Berkeley DB 4 is
         only needed if you want legacy wallet support.
@@ -476,12 +476,12 @@ electrum setconfig server 127.0.0.1:50002:s`,
         <span class="warning__label">[Private keys ahead]</span>
         <p>
           The commands in this section create, print and export real private
-          keys. Anything that holds a private key holds the coins: whoever reads
-          the file spends the money, and there is no recovery, no chargeback and
+          keys. Anything that <mark>holds a private key holds the coins</mark>: whoever reads
+          the file spends the money, and there is <mark>no recovery</mark>, no chargeback and
           no support line.
         </p>
         <p>
-          Run these against a wallet you are willing to lose until you know
+          Run these against <mark>a wallet you are willing to lose</mark> until you know
           exactly what each command writes to disk.
         </p>
       </div>
@@ -508,7 +508,7 @@ electrum setconfig server 127.0.0.1:50002:s`,
 
       <h3>Current wallet format, with descriptors</h3>
       <p>
-        Descriptor wallets are the current default. The legacy export functions
+        Descriptor wallets are the <mark>current default</mark>. The legacy export functions
         do not work on them — <span class="inline-code">dumpprivkey</span> will
         fail, and you read the keys through the descriptors instead.
       </p>
@@ -535,14 +535,14 @@ electrum setconfig server 127.0.0.1:50002:s`,
       <div class="warning">
         <span class="warning__label">[Backups are the wallet]</span>
         <p>
-          The passphrase is not recoverable. Lose it and the encrypted
+          The passphrase is <mark>not recoverable</mark>. Lose it and the encrypted
           <span class="inline-code">wallet.dat</span> is a dead file — the coins
           stay on the chain and nobody, including you, can move them.
         </p>
         <p>
           <span class="inline-code">private_key.asc</span> is your GPG secret
           key in plain text. Treat that file the way you treat the wallet
-          itself: encrypted storage or an offline drive, never a synced folder.
+          itself: encrypted storage or an offline drive, <mark>never a synced folder</mark>.
         </p>
       </div>
     </section>
@@ -550,7 +550,7 @@ electrum setconfig server 127.0.0.1:50002:s`,
     <section class="section">
       <h2>Creating And Importing Mnemonics</h2>
       <p>
-        <strong>Bitcoin Core does not generate a BIP-39 mnemonic.</strong> There
+        <strong>Bitcoin Core <mark>does not generate</mark> a BIP-39 mnemonic.</strong> There
         is no <span class="inline-code">bitcoin-cli</span> command that prints
         twelve or twenty-four words, and there never was one. Core speaks
         descriptors and keeps its own HD seed; BIP-39 is a wallet-interchange
@@ -573,7 +573,7 @@ electrum setconfig server 127.0.0.1:50002:s`,
         role="region"
         aria-label={mnemonicGenBlock.label}><code>{mnemonicGenBlock.code}</code></pre>
       <p class="muted">
-        Generate on a machine that is offline, and read the words off the
+        Generate on <mark>a machine that is offline</mark>, and read the words off the
         screen rather than out of a file. Entropy that leaks is a wallet
         somebody else owns.
       </p>
@@ -601,7 +601,7 @@ electrum setconfig server 127.0.0.1:50002:s`,
           is correct only for a key that has never received anything. Put
           <span class="inline-code">"now"</span> on a descriptor rebuilt from
           an old mnemonic and Core will not look at any of the history: the
-          wallet reports a zero balance and every past transaction is missing.
+          wallet reports <mark>a zero balance</mark> and every past transaction is missing.
           The coins are on the chain and untouched, but nothing on your screen
           says so. Use <span class="inline-code">0</span> to scan from genesis,
           or the epoch seconds of the day the wallet was first created.
@@ -611,7 +611,7 @@ electrum setconfig server 127.0.0.1:50002:s`,
           <span class="inline-code">prune=550</span> from earlier on this page,
           only the last few hundred megabytes of chain remain on disk, and an
           old descriptor has nothing to scan. Recovering an existing wallet
-          means an unpruned node.
+          means <mark>an unpruned node</mark>.
         </p>
       </div>
 
@@ -621,7 +621,7 @@ electrum setconfig server 127.0.0.1:50002:s`,
       <h2>Using These Keys In Electrum</h2>
       <p>
         Electrum reads the same mnemonic and the same WIF keys, and gets a
-        useful amount of it wrong by default.
+        useful amount of it <mark>wrong by default</mark>.
       </p>
 
       <h3>Restoring the mnemonic</h3>

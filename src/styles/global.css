@@ -401,6 +401,13 @@ p {
   padding-bottom: 0;
 }
 
+/* Marca-texto: o fato de uma a quatro palavras que a frase existe para dizer. */
+mark {
+  background: var(--accent-btc);
+  color: var(--on-accent);
+  padding: 0 0.15em;
+}
+
 /*
  * Lista de prosa. O reset zera o padding de <ul>/<ol>, e sem devolver o
  * marcador cai fora da coluna; a medida acompanha a do <p>.
