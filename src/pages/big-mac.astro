@@ -83,7 +83,8 @@ const findings =
         usdNow: usd(latest.bigmac_usd),
         usdRise: `+${Math.round((latest.bigmac_usd / first.bigmac_usd - 1) * 100)}%`,
         years: Math.round(
-          (Date.parse(latest.date) - Date.parse(first.date)) / (365.25 * 86_400_000),
+          (Date.parse(latest.date) - Date.parse(first.date)) /
+            (365.25 * 86_400_000),
         ),
       }
     : null;
