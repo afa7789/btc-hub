@@ -58,6 +58,10 @@ function colorFor(item, styles) {
  */
 const SHADE_WHITE_PCT = [0, 30, 60];
 
+// Ate este tanto de blocos o item divide a linha com os vizinhos (ver
+// --compact-span no CSS da pagina: 13 colunas, a menor largura usada).
+const COMPACT_MAX_BLOCKS = 13;
+
 function createShadePicker(styles) {
   const seen = {};
   return (item) => {
@@ -574,7 +578,10 @@ function createVisualization() {
     if (wrapped) {
       // Create a wrapper div for this item
       const itemWrapper = document.createElement("div");
-      itemWrapper.className = "item-wrapper";
+      itemWrapper.className =
+        totalBlocks <= COMPACT_MAX_BLOCKS
+          ? "item-wrapper compact"
+          : "item-wrapper";
       itemWrapper.setAttribute("data-item-name", item.name);
 
       itemWrapper.appendChild(buildItemLabel(item, !groupByCategory));

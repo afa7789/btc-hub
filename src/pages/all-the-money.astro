@@ -277,9 +277,34 @@ const description =
     :global(.blocks-wrapper) {
       grid-column: 1 / -1;
       line-height: normal;
-      display: flex;
-      flex-direction: column;
-      gap: 1.75rem;
+      display: grid;
+      grid-template-columns: repeat(40, minmax(0, 1fr));
+      gap: 1.75rem 2px;
+      align-items: start;
+      --compact-span: 13;
+    }
+
+    :global(.blocks-wrapper > *) {
+      grid-column: 1 / -1;
+    }
+
+    /*
+     * Item pequeno (cabe numa fileira curta) divide a linha com os vizinhos em
+     * vez de deixar 90% dela vazia. Ele ocupa N das 40 colunas e a grade
+     * interna tem as mesmas N: o bloco continua do tamanho dos outros.
+     */
+    :global(.blocks-wrapper > .item-wrapper.compact) {
+      grid-column: span var(--compact-span);
+    }
+
+    :global(.item-wrapper.compact .blocks-container) {
+      grid-template-columns: repeat(var(--compact-span), minmax(0, 1fr));
+    }
+
+    @media (max-width: 700px) {
+      :global(.blocks-wrapper) {
+        --compact-span: 20;
+      }
     }
 
     :global(.blocks-container) {
