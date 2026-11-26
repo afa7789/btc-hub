@@ -284,6 +284,9 @@ do favicon.
 | Primitivas `.btn-primary` / `.btn-secondary` / `.tag` / `.num` | Implementadas; aplicadas em `/dca`, `/how-much-i-fucked-up` e `/all-the-money` |
 | Padroes de pagina em `global.css` | Implementados — `.page-header` (10 paginas), `.points` (lista de prosa), `.fields`/`.field` (formulario em grade) e `.stat-grid` (numeros em `<dl>`); as copias escopadas sairam |
 | `/all-the-money` no padrao do site | Implementado — coluna de 920px, cabecalho, campos e botoes globais, bordas em `--border-width`, texto na escala `--text-*`, sem emoji nos controles; itens agrupados por categoria em grade fixa de 40 colunas (ver secao 5) |
+| `/all-the-money`: itens pequenos lado a lado | Implementado — item de ate 13 blocos ocupa so a largura do rotulo e quebra conforme a tela (flex-wrap); o bloco mede `calc((100cqw - 78px) / 40)`, o mesmo tamanho dos itens de linha inteira |
+| Marca-texto e Key findings | Implementado — `<mark>` global (fato de uma a quatro palavras, uma ou duas por ponto) em `/off-ramp`, `/dolarizacao`, `/debase`, `/bitcoin-core`, `/big-mac`, `/halving`, `/stake`; as paginas de dados abrem com uma lista "Key findings" cujos numeros saem do build |
+| `/stake` | Implementado — SRS vs ETH em stake saiu do `/debase`: SVG do build, janelas moveis, calculador "mesmo dinheiro" (SRS, stake, ETH, BTC, ouro, prata, XMR) com `src/utils/stake.ts` puro, usado no build e no navegador |
 | Tabelas com `tabular-nums` e hover de linha | Implementadas globalmente |
 | Indicador de página ativa | Implementado — `> PÁGINA <` em `Nav.astro` |
 | Ticker no BaseLayout | Implementado — presente nas 10 páginas, dentro de um landmark `<header>` |
