@@ -110,7 +110,7 @@ export const tools: Tool[] = [
   {
     href: "/stake",
     group: "chart",
-    label: "SRS VS ETH STAKE",
+    label: "SRS VERSUS ETH STAKE",
     description:
       "A fixed savings rate against staked ether, since 2023 and from every starting month",
     status: "DATASET",
