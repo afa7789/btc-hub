@@ -606,14 +606,45 @@ const polarLabel = [
     </header>
 
     <section class="section">
+      <h2>Key findings</h2>
+      <ul class="points">
+        <li>
+          <strong>The next halving is at block
+          <mark>{nextHeight.toLocaleString("en-US")}</mark>,</strong> estimated
+          for {longDate(nextHalving)}. The subsidy drops to
+          {" "}{nextSubsidy.toString()} BTC.
+        </li>
+        <li>
+          <strong>The price rose in <mark>{runUps} of {cycles.length}</mark>
+          run-ups,</strong> measured from 500 days before each halving to the
+          halving itself.
+        </li>
+        <li>
+          <strong>The cycle high landed inside the 500 days after the halving
+          in <mark>{topsInsideWindow} of {measuredTops}</mark> cycles.</strong>
+          The window is not a deadline the data supports.
+        </li>
+        <li>
+          <strong>Each cut weighs less:</strong> the {firstCut?.label} halving
+          removed {rate(firstCut?.cut ?? 0)} of circulating supply a year, the
+          {" "}{latestCut?.label} one <mark>{rate(latestCut?.cut ?? 0)}</mark>.
+        </li>
+        <li>
+          <strong><mark>Four data points</mark>.</strong> Enough to describe
+          what happened, not enough to call it a pattern.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
       <h2>What a halving is</h2>
       <p>
         Every 210,000 blocks — roughly four years at ten minutes a block — the
         block subsidy paid to miners is cut in half. It started at 50 BTC per
         block in 2009 and is {nextSubsidy.toString()} BTC after the next one.
-        Nothing else changes: no vote, no announcement, no discretion. The rule
+        Nothing else changes: <mark>no vote, no announcement, no discretion</mark>. The rule
         is in the code every node runs, so new supply arrives at half the
-        previous rate on schedule, and the issuance curve ends at 21 million.
+        previous rate on schedule, and the issuance curve ends at <mark>21 million</mark>.
       </p>
       <p>
         The chart plots the price on a log scale with each halving marked, and
@@ -650,7 +681,7 @@ const polarLabel = [
         </table>
       </div>
       <p class="muted">
-        Four halvings. Four data points. Enough to describe what happened, not
+        Four halvings. <mark>Four data points</mark>. Enough to describe what happened, not
         enough to call it a pattern.
       </p>
     </section>
@@ -668,13 +699,13 @@ const polarLabel = [
         </dl>
       </div>
       <p>
-        The date is an estimate, not a fixed point on the calendar. What the
+        The date is <mark>an estimate</mark>, not a fixed point on the calendar. What the
         protocol fixes is a block height — {nextHeight.toLocaleString("en-US")}
         — and blocks do not arrive on a clock. Difficulty retargets every 2,016
         blocks to pull the average back toward ten minutes, but hash rate keeps
         growing between retargets, so blocks tend to come in slightly fast and
         the height arrives slightly early. The figures above assume a flat four
-        years from the last halving; the real date drifts by weeks.
+        years from the last halving; the real date <mark>drifts by weeks</mark>.
       </p>
     </section>
 
@@ -696,7 +727,7 @@ const polarLabel = [
         through the window has historically worked out. That is a reading of
         four episodes, each with its own macro backdrop, market structure and
         set of leveraged blowups. The supply cut is real and mechanical; the
-        price behaviour around it is four observations of a market that was a
+        price behaviour around it is <mark>four observations</mark> of a market that was a
         different size every time.
       </p>
       <p>
@@ -704,7 +735,7 @@ const polarLabel = [
         accumulating as the window opens and trimming as it closes is the trade
         the four past cycles would have rewarded. It is a bet on the shape
         repeating a fifth time, with a sample of four and no mechanism forcing
-        it — the supply cut is scheduled, the price response is not. Size it
+        it — the supply cut is scheduled, <mark>the price response is not</mark>. Size it
         like a bet you can be wrong about, not like a plan.
       </p>
     </section>
@@ -826,10 +857,10 @@ const polarLabel = [
       <h2>The Buy Thesis</h2>
       <p>
         The argument for accumulating in the 500 days before a halving is a
-        supply argument. The cut is scheduled, mechanical and public: on a known
+        supply argument. The cut is <mark>scheduled, mechanical and public</mark>: on a known
         block height the subsidy halves, and the number of new coins reaching
         the market each day halves with it. Nobody has to agree to it. The claim
-        is that flow matters — that if demand does not fall at the same instant,
+        is that <mark>flow matters</mark> — that if demand does not fall at the same instant,
         the same buying meets half the new supply, and the price is what gives.
       </p>
       <p>
@@ -840,7 +871,7 @@ const polarLabel = [
         {runUps}
         of the {cycles.length} cycles — {cycles
           .map((cycle) => `${cycle.year} ${pct(cycle.opens.price, cycle.halving.price)}`)
-          .join(", ")}. That is the whole evidence base, and it is four numbers
+          .join(", ")}. That is the whole evidence base, and it is <mark>four numbers</mark>
         wide.
       </p>
       <div class="table-scroll" tabindex="0" role="region" aria-label="Price at each point of the 500-day window">
@@ -921,7 +952,7 @@ const polarLabel = [
         close of the window as a deadline rather than a target.
       </p>
       <p>
-        The deadline is the part the data does not support. Taking the highest
+        The deadline is the part <mark>the data does not support</mark>. Taking the highest
         daily close in the two years after each halving, the high landed
         {" "}{cycles
           .map((cycle) => `${cycle.year} day ${cycle.daysTopAfterHalving}`)
@@ -993,7 +1024,7 @@ const polarLabel = [
     <section class="section">
       <h2>What Argues Against Both</h2>
       <p>
-        There are four halvings. Four events is not a sample; it is an anecdote
+        There are four halvings. Four events is <mark>not a sample</mark>; it is an anecdote
         with dates. Every one of them happened in a market of a different size,
         under different regulation, with different instruments available and a
         different set of leveraged failures on the way down. Both theses above
@@ -1004,17 +1035,17 @@ const polarLabel = [
         size. The halving is the most telegraphed supply event in any market:
         the block height is fixed in code, the date is estimated years out, and
         every participant can see it. A cut that everyone knows is coming should
-        already be in the price. Nothing about the schedule stops that from
+        <mark>already be in the price</mark>. Nothing about the schedule stops that from
         being true.
       </p>
       <p>
-        The 2024 halving also landed in a different regime. Spot ETFs began
+        The 2024 halving also landed in a different regime. <mark>Spot ETFs</mark> began
         trading in January of that year, three months before the halving, which
         changed who was buying and through what. Whatever the previous three
         cycles measured, they measured a market without that.
       </p>
       <p>
-        And the cut itself is getting smaller. What the halving removes is a
+        And the cut itself is <mark>getting smaller</mark>. What the halving removes is a
         share of new supply, and new supply keeps shrinking against the coins
         already in existence. In {firstCut?.label} the subsidy fell from
         {" "}{firstCut?.subsidyBefore} to {firstCut?.subsidyAfter} BTC, which
