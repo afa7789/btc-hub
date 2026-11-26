@@ -17,7 +17,9 @@ const BASE = process.env.BASE_URL || "http://127.0.0.1:8162/btc-hub";
 // /how-much-i-fucked-up e texto prerenderizado com formulario. Supor "todo
 // grafico e um svg" reprovava as duas em uma arvore perfeitamente sa.
 const SCREENS = [
-  { path: "/debase/", sel: "svg path", min: 60 },
+  // 60 medidos depois que o grafico SRS foi para /stake (eram 66); 54 = um
+  // grafico a menos reprova.
+  { path: "/debase/", sel: "svg path", min: 54 },
   { path: "/rainbow/", sel: ".band-label", min: 9 },
   { path: "/big-mac/", sel: "svg path", min: 5 },
   // Dois graficos e dois seletores: o polar e SVG do build e existe com ou
@@ -30,6 +32,10 @@ const SCREENS = [
   // 323 barras medidas (uma por mes de inicio desde 1999); 100 deixa folga
   // para um prazo maior, que fecha menos janelas.
   { path: "/dolarizacao/", sel: "#dz-chart rect", min: 100 },
+  // Dois SVGs do build: as duas pernas desde 2023 e uma barra por mes de inicio
+  // (124 medidas; cresce uma por mes).
+  { path: "/stake/", sel: "#stake-growth path", min: 2 },
+  { path: "/stake/", sel: "#stake-rolling rect", min: 100 },
   { path: "/how-much-i-fucked-up/", sel: "main input, main button", min: 2 },
 ];
 

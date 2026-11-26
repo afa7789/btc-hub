@@ -1,0 +1,295 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { withBase } from "../utils/base";
+import {
+  CHART_START,
+  EDGE_CAP,
+  ETH_STAKE_APY,
+  SRS_APY,
+  breakEven,
+  edgeBarsSvg,
+  ethDays,
+  growthChartSvg,
+  rolling,
+  trailing,
+  worstDrawdown,
+} from "../utils/stake";
+
+const title = "SRS vs ETH Stake";
+const description =
+  "A fixed 4.5% savings rate against staked ether, simulated on the ether price: since 2023, over trailing windows, and from every starting month.";
+
+/*
+ * Tudo abaixo sai do CSV de preco do ether, no build. As duas taxas sao
+ * premissas (src/utils/stake.ts); o resto nao e digitado.
+ */
+const series = ethDays();
+const last = series[series.length - 1];
+if (!last) throw new Error("stake: serie de ETH vazia");
+
+const windows = trailing(series);
+const sinceStart = windows[windows.length - 1];
+const oneYear = rolling(series, 1);
+const twoYears = rolling(series, 2);
+const drawdown = worstDrawdown(series, CHART_START);
+
+const wins = (rows: { edge: number }[]) =>
+  rows.filter((r) => r.edge > 0).length;
+const extreme = (rows: { edge: number }[], pick: (...v: number[]) => number) =>
+  pick(...rows.map((r) => r.edge));
+
+const pct = (v: number): string => {
+  const abs = Math.abs(v * 100);
+  const body = abs.toLocaleString("en-US", {
+    maximumFractionDigits: abs >= 100 ? 0 : 1,
+  });
+  return `${v < 0 ? "−" : "+"}${body}%`;
+};
+const rate = (v: number): string => `${(v * 100).toFixed(1)}%`;
+const dayFmt = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+const d = (iso: string) => dayFmt.format(new Date(`${iso}T00:00:00Z`));
+const ahead = (l: { srs: number; stake: number }) =>
+  l.stake > l.srs ? "ETH stake" : "SRS";
+---
+
+<BaseLayout title={title} description={description} prerendered>
+  <style>
+    .section {
+      margin-bottom: 2.5em;
+    }
+
+    .chart :global(.grid) {
+      stroke: var(--chart-grid);
+      stroke-width: 1;
+    }
+
+    .chart :global(path) {
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .chart :global(.line-srs) {
+      stroke: var(--series-srs);
+    }
+
+    .chart :global(.line-stake) {
+      stroke: var(--series-eth-stake);
+    }
+
+    .key {
+      display: inline-block;
+      width: 0.8em;
+      height: 0.8em;
+      margin-right: 0.4em;
+      vertical-align: baseline;
+    }
+
+    .key-srs {
+      background: var(--series-srs);
+    }
+
+    .key-stake {
+      background: var(--series-eth-stake);
+    }
+  </style>
+
+  <article>
+    <header class="page-header">
+      <h1>SRS vs ETH Stake</h1>
+      <p>
+        A dollar savings rate against staked ether: Sky Protocol MakerDAO
+        Savings, called SRS here, simulated at a flat {rate(SRS_APY)} a year,
+        and Ethereum staking, simulated at {rate(ETH_STAKE_APY)} a year plus
+        whatever the ETH price did. Both measured in dollars.
+      </p>
+      <p class="muted">
+        A simulation on two assumed rates, not a recommendation. It moved here
+        from <a href={withBase("/debase")}>/debase</a>. Data through {d(last.date)}.
+      </p>
+    </header>
+
+    <section class="section">
+      <h2>Key findings</h2>
+      <ul class="points">
+        {sinceStart && (
+          <li>
+            <strong>Since {d(sinceStart.from)}, {ahead(sinceStart)} is
+            ahead:</strong> SRS <mark>{pct(sinceStart.srs)}</mark>, ETH stake
+            <mark>{pct(sinceStart.stake)}</mark>.
+          </li>
+        )}
+        <li>
+          <strong>Held for one year from the start of any month since
+          {" "}{series[0]?.date.slice(0, 4)}, ETH stake beat SRS in
+          <mark>{wins(oneYear)} of {oneYear.length}</mark> starts.</strong>
+          The gap ran from {pct(extreme(oneYear, Math.min))} to
+          {" "}{pct(extreme(oneYear, Math.max))}.
+        </li>
+        {drawdown && (
+          <li>
+            <strong>The staked leg fell <mark>{pct(drawdown.depth)}</mark>
+            from its high</strong> between {d(drawdown.peak.date)} and
+            {" "}{d(drawdown.low.date)}. The simulated SRS leg never falls.
+          </li>
+        )}
+        <li>
+          <strong>The break-even is <mark>{rate(breakEven)} a year</mark>:</strong>
+          ETH has to appreciate that much for staking to tie SRS on these two
+          rates.
+        </li>
+        <li>
+          <strong><mark>Both rates are assumptions</mark>.</strong> Neither is
+          fixed in real life; see the open questions below.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Since July 2023</h2>
+      <div
+        id="stake-growth"
+        class="chart"
+        set:html={growthChartSvg(
+          series,
+          CHART_START,
+          "SRS and staked ETH, each starting at 1.0 in July 2023",
+        )}
+      />
+      <p class="legend">
+        <span class="key key-srs"></span>SRS, simulated {rate(SRS_APY)} APY
+        &nbsp;&nbsp;
+        <span class="key key-stake"></span>ETH stake, simulated
+        {" "}{rate(ETH_STAKE_APY)} APY + ETH price. Each line starts at 1.0.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Trailing windows</h2>
+      <p>The same two legs over windows that end on {d(last.date)}.</p>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Return of each leg over trailing windows">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Window</th>
+              <th scope="col">From</th>
+              <th scope="col" class="num">SRS</th>
+              <th scope="col" class="num">ETH stake</th>
+              <th scope="col" class="num">ETH price alone</th>
+              <th scope="col">Ahead</th>
+            </tr>
+          </thead>
+          <tbody>
+            {windows.map((w) => (
+              <tr>
+                <th scope="row">{w.label}</th>
+                <td>{d(w.from)}</td>
+                <td class="num">{pct(w.srs)}</td>
+                <td class="num">{pct(w.stake)}</td>
+                <td class="num">{pct(w.eth)}</td>
+                <td>{ahead(w)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>From every starting month</h2>
+      <p>
+        One window says little: the answer depends on the day you start. So
+        the same comparison, held for one year, starting on the first day of
+        every month in the ETH series.
+      </p>
+      <div
+        id="stake-rolling"
+        class="chart"
+        set:html={edgeBarsSvg(
+          oneYear,
+          `ETH stake minus SRS over one year, by starting month: ETH stake ahead in ${wins(oneYear)} of ${oneYear.length}`,
+        )}
+      />
+      <p class="legend">
+        One bar per starting month. Above zero, ETH stake ended the year ahead
+        of SRS; below, behind. Bars are cut at ±{EDGE_CAP * 100}%: the largest
+        gap was {pct(extreme(oneYear, Math.max))}.
+      </p>
+      <ul class="points">
+        <li>
+          <strong>One year:</strong> ETH stake ahead in
+          <mark>{wins(oneYear)} of {oneYear.length}</mark> starts.
+        </li>
+        <li>
+          <strong>Two years:</strong> ETH stake ahead in
+          <mark>{wins(twoYears)} of {twoYears.length}</mark> starts, with the
+          gap between {pct(extreme(twoYears, Math.min))} and
+          {" "}{pct(extreme(twoYears, Math.max))}.
+        </li>
+        <li>
+          <strong>The early years carry the big bars.</strong> ETH was a far
+          smaller asset then, and SRS did not exist: before 2023 the fixed leg
+          is the same {rate(SRS_APY)} applied backwards, a yardstick, not a
+          history.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>What each leg is</h2>
+      <ul class="points">
+        <li>
+          <strong>SRS is a <mark>fixed, predictable yield</mark></strong> in
+          this simulation. It adds smart contract and protocol risk beyond
+          ETH's base layer.
+        </li>
+        <li>
+          <strong>ETH staking is <mark>yield plus ETH price exposure</mark>:</strong>
+          it outperforms in bull markets and underperforms in downturns. Native
+          staking relies solely on Ethereum network security.
+        </li>
+        <li>
+          <strong>The tradeoff is yield stability vs. asset price upside,</strong>
+          plus platform risk.
+        </li>
+        <li>
+          <strong>Tax treatment may differ:</strong> fixed-income yields (SRS)
+          are often taxed as interest, while ETH price gains may qualify as
+          capital gains, affecting net returns.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Open questions</h2>
+      <p class="muted">Not answered on this page yet.</p>
+      <ul class="points">
+        <li>
+          <strong>What does it look like with the <mark>real rate history</mark>?</strong>
+          The savings rate is set by governance and has moved; so has the
+          staking yield. Both are flat lines here.
+        </li>
+        <li>
+          <strong>What if the <mark>peg</mark> slips?</strong> The fixed leg is
+          paid in a dollar stablecoin, and the simulation treats it as a dollar.
+        </li>
+        <li>
+          <strong>Who is ahead <mark>measured in ETH</mark>,</strong> not in
+          dollars? A holder who thinks in ETH reads every window the other way.
+        </li>
+        <li>
+          <strong>And against <mark>bitcoin</mark>?</strong> Both legs are
+          priced in dollars here, never in sats.
+        </li>
+        <li>
+          <strong>How long does the fixed leg need</strong> to catch up after a
+          year in which ETH doubled?
+        </li>
+      </ul>
+    </section>
+  </article>
+</BaseLayout>

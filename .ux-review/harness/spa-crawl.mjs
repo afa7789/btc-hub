@@ -13,7 +13,7 @@
 import { chromium } from "playwright";
 const base = process.argv[2];
 const CHECK = {
-  "DEBASE": ["svg path", 60], "HALVING": ["#halving-chart svg path", 11], "RAINBOW": [".band-label", 9],
+  "DEBASE": ["svg path", 54], "SRS VS ETH STAKE": ["#stake-rolling rect", 100], "HALVING": ["#halving-chart svg path", 11], "RAINBOW": [".band-label", 9],
   "BIG MAC INDEX": ["svg path", 5], "DCA CALCULATOR": ["svg", 1], "ALL THE MONEY IN THE WORLD": [".block", 25000],
   "DOLARIZAÇÃO": ["#dz-chart rect", 100], "HOW MUCH I FUCKED UP": ["main input", 1], "SEM MELHORES": ["main", 1],
   "BITCOIN CORE": ["main pre", 3], "OFF-RAMP": ["main li", 30],

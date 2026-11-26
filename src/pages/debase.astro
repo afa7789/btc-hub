@@ -544,85 +544,6 @@ const nowGold = goldPoints[goldPoints.length - 1] ?? ath;
     </section>
     <br>
 
-    <!-- SRS vs ETH Stake Chart (Since July 2023) -->
-    <section class="section" style="margin-bottom: 1em;">
-      <h2>SRS vs. Ethereum Stake</h2>
-      <div id="srs-eth-stake-relative-chart-full" class="brutalist-chart"></div>
-      <div class="ath-display">
-        <p><strong>Each line starts at 1.0</strong> (its own first value, since July 2023).</p>
-      </div>
-      <p class="cycle-note">
-        The figures in this section are fixed, from the periods named in each
-        line. They do not update with the charts.
-      </p>
-      <ul class="points">
-        <li>
-          <strong>What is compared:</strong> the simulated ratio of Sky Protocol
-          MakerDAO Savings, called SRS (4.5% APY), against Ethereum staking
-          (2.7% APY + ETH price appreciation), both normalized to 1.0 at the
-          start, since mid-2023.
-        </li>
-        <li>
-          <strong>SRS is a <mark>fixed, predictable yield</mark>.</strong> ETH
-          staking is volatile: yield combined with ETH price exposure.
-        </li>
-      </ul>
-      <h3 class="cycle-h">Recent performance</h3>
-      <ul class="points">
-        <li>
-          <strong>In bearish or flat markets, SRS has outperformed ETH
-          staking.</strong>
-        </li>
-        <li>
-          <strong>3 months (Jan–Mar 2025):</strong> SRS yielded 0.109 ETH
-          ($366.71), ETH staking 0.066 ETH ($221.48), a 66% higher return.
-        </li>
-        <li>
-          <strong>1 year (Jun 2024–May 2025):</strong> SRS delivered 0.450 ETH
-          ($1,703.33), ETH staking 0.270 ETH ($1,022.00).
-        </li>
-        <li>
-          <strong>2 years (Jun 2023–May 2025):</strong> ETH staking began to
-          close the gap due to ETH's 35.8% price ratio, though SRS still
-          achieved higher yield in absolute ETH terms (0.920 ETH vs. 0.547 ETH).
-        </li>
-      </ul>
-      <h3 class="cycle-h">Market dynamics and strategy</h3>
-      <ul class="points">
-        <li>
-          <strong>ETH staking's returns are <mark>highly sensitive to price swings</mark>:</strong>
-          outperforming during bull markets, underperforming during downturns.
-          Its 2.7% base APY cannot offset losses in declining markets, as seen
-          in the 3- and 12-month results.
-        </li>
-        <li>
-          <strong>SRS's 4.5% APY remains stable regardless of ETH price,</strong>
-          offering consistent returns and lower volatility.
-        </li>
-        <li>
-          <strong>The break-even is 1.8% a year:</strong> ETH staking may be
-          favored by investors expecting long-term ETH appreciation beyond
-          that, the point where it starts to outperform SRS on yield alone.
-        </li>
-      </ul>
-      <h3 class="cycle-h">Risk considerations</h3>
-      <ul class="points">
-        <li>
-          <strong>SRS adds <mark>smart contract and protocol risk</mark></strong>
-          beyond ETH's base layer. ETH staking, particularly via native staking,
-          relies solely on Ethereum network security.
-        </li>
-        <li>
-          <strong>The tradeoff is yield stability vs. asset price upside,</strong>
-          plus platform risk.
-        </li>
-        <li>
-          <strong>Tax treatment may differ:</strong> fixed-income yields (SRS)
-          are often taxed as interest, while ETH price gains may qualify as
-          capital gains, affecting net returns.
-        </li>
-      </ul>
-    </section>
     <br>
 
     <section class="section" style="margin-bottom:2em;">
@@ -630,6 +551,11 @@ const nowGold = goldPoints[goldPoints.length - 1] ?? ath;
         Bitcoin's halvings are a supply-schedule question rather than a
         purchasing-power one, so they have their own page:
         <a href={withBase("/halving")}>the halvings and the 500-day window</a>.
+      </p>
+      <p>
+        The comparison of a fixed savings rate against staked ether moved to
+        its own page too:
+        <a href={withBase("/stake")}>SRS vs ETH stake</a>.
       </p>
     </section>
   </article>
@@ -718,13 +644,6 @@ const nowGold = goldPoints[goldPoints.length - 1] ?? ath;
       getComputedStyle(document.documentElement)
         .getPropertyValue(`--series-${name}`)
         .trim() || fallback;
-
-    // SRS and ETH Stake APY constants
-    const SRS_APY = 0.045;
-    const ETH_STAKE_APY = 0.027;
-
-    const srsDailyMultiplier = Math.pow(1 + SRS_APY, 1 / 365);
-    const ethStakeDailyMultiplier = Math.pow(1 + ETH_STAKE_APY, 1 / 365);
 
     function daysBetween(dateStr1, dateStr2) {
       const d1 = new Date(dateStr1);
@@ -934,50 +853,6 @@ const nowGold = goldPoints[goldPoints.length - 1] ?? ath;
       };
     }
 
-    function generateComparisonData(startDateStr, endDateStr, ethNormalData, srsDailyMultiplier, ethStakeDailyMultiplier) {
-      const startDate = new Date(startDateStr);
-      const endDate = new Date(endDateStr);
-
-      const srsSimulatedData = { timestamp: [], price: [] };
-      const ethStakeSimulatedData = { timestamp: [], price: [] };
-
-      let currentSrsValue = 1.0;
-      let initialEthPrice = null;
-
-      const ethPriceMap = new Map();
-      ethNormalData.timestamp.forEach((ts, i) => {
-        ethPriceMap.set(ts, ethNormalData.price[i]);
-      });
-
-      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-        const dateString = d.toISOString().split('T')[0];
-        const ethPriceToday = ethPriceMap.get(dateString);
-
-        if (ethPriceToday === undefined) {
-          continue;
-        }
-
-        if (initialEthPrice === null) {
-          initialEthPrice = ethPriceToday;
-        }
-
-        currentSrsValue *= srsDailyMultiplier;
-        srsSimulatedData.timestamp.push(dateString);
-        srsSimulatedData.price.push(currentSrsValue);
-
-        const daysSinceStart = (d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
-        const ethStakeValue = (ethPriceToday / initialEthPrice) * Math.pow(1 + ETH_STAKE_APY, daysSinceStart / 365);
-
-        ethStakeSimulatedData.timestamp.push(dateString);
-        ethStakeSimulatedData.price.push(ethStakeValue);
-      }
-
-      const normalizedSrs = normalizeUsdSeriesFromOwnStart(srsSimulatedData, "SRS Simulated");
-      const normalizedEthStake = normalizeUsdSeriesFromOwnStart(ethStakeSimulatedData, "ETH Stake Simulated");
-
-      return { srs: normalizedSrs, ethStake: normalizedEthStake };
-    }
-
     async function main() {
       console.log("Accessing global csvManager object:", csvManager);
 
@@ -1139,24 +1014,6 @@ const nowGold = goldPoints[goldPoints.length - 1] ?? ath;
         { data: silverUsdRelative, label: "SILVER (Relative Price Ratio)", color: seriesColor("silver", "#c0c0c0"), cssClass: "silver-usd-rel-line" }
       ];
       chart_drawing.drawRelativeGrowthChart(goldSilverRelativeGrowthChartData, "gold-silver-relative-growth-chart", "Gold and Silver Relative Ratio (from 2000)");
-
-      // SRS vs ETH Stake
-      const startDateJuly2023 = "2023-07-01";
-      const endDate = csvManager.getLastDate(ETH);
-
-      const comparisonData = generateComparisonData(
-        startDateJuly2023,
-        endDate,
-        ethData.normal,
-        srsDailyMultiplier,
-        ethStakeDailyMultiplier
-      );
-
-      const comparisonChartData = [
-        { data: comparisonData.srs, label: "SRS (Simulated 4.5% APY)", color: seriesColor("srs", "#1a73e8"), cssClass: "srs-simulated-line" },
-        { data: comparisonData.ethStake, label: "Ethereum Stake (Simulated 2.7% APY + ETH Price)", color: seriesColor("eth-stake", "#6f2c91"), cssClass: "eth-stake-simulated-line" }
-      ];
-      chart_drawing.drawRelativeGrowthChart(comparisonChartData, "srs-eth-stake-relative-chart-full", "SRS vs. Ethereum Stake (Since July 2023)");
     }
 
     // ClientRouter: scripts ja executados nao rodam de novo, entao main()

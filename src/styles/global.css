@@ -577,3 +577,74 @@ p:not(:last-child) {
 :not(pre) > code {
   overflow-wrap: anywhere;
 }
+
+/*
+ * Tabela e grafico SVG gerados no build (/dolarizacao, /stake). Viviam no
+ * <style> do /dolarizacao; a segunda pagina a usar trouxe para ca.
+ */
+/* A tabela rola sozinha; a pagina nao (WCAG 1.4.10 em 320px). */
+.table-wrap {
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+
+.table-wrap table {
+  width: 100%;
+  min-width: 32rem;
+}
+
+.table-wrap th,
+.table-wrap td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+
+.table-wrap tbody th {
+  background: none;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: normal;
+}
+
+/*
+ * Canvas escuro fixo nos dois temas, como os outros graficos do site
+ * (DESIGN.md 2.2). As cores das barras sao do proprio canvas, entao nao
+ * mudam com o tema; acima/abaixo de zero carrega o sentido junto da cor.
+ */
+.chart {
+  background: var(--chart-bg);
+  border: var(--border-width) solid var(--border-subtle);
+  padding: 0.75rem 0.5rem 0.25rem;
+  margin: 1em 0;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chart .bar-pos {
+  fill: #00ff66;
+}
+
+.chart .bar-neg {
+  fill: #ff3333;
+}
+
+.chart .zero {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+}
+
+.chart .tick {
+  fill: var(--chart-ink);
+  font-size: 13px;
+  font-family: var(--font);
+}
+
+.legend {
+  font-size: var(--text-micro);
+  color: var(--fg-secondary);
+}
