@@ -1,6 +1,7 @@
 /**
  * SRS (rendimento fixo simulado) contra ETH em stake (rendimento + preco do
- * ETH), calculado no build a partir do CSV de preco do ether.
+ * ETH), calculado a partir do CSV de preco do ether: no build para a pagina,
+ * no navegador para o calculador. Sem node:fs aqui, por isso.
  *
  * Saiu do /debase, onde a comparacao era desenhada em runtime e o texto citava
  * numeros digitados de 2025. Aqui todo numero sai da serie: quando o CSV
@@ -9,8 +10,6 @@
  * As duas taxas sao premissas fixas da simulacao, as mesmas do grafico
  * original. Nenhuma das duas e fixa na vida real.
  */
-import { loadPrices } from "./prerender";
-
 export const SRS_APY = 0.045;
 export const ETH_STAKE_APY = 0.027;
 /** Inicio do grafico original do /debase. */
@@ -26,10 +25,21 @@ export interface Day {
   price: number;
 }
 
-export function ethDays(): Day[] {
-  return [...loadPrices("ethereum", "start").entries()]
-    .map(([date, price]) => ({ date, price }))
-    .sort((a, b) => (a.date < b.date ? -1 : 1));
+/**
+ * Le um CSV de public/datasets. Cripto: Start,End,...,Close (coluna 5), e o
+ * fechamento do dia D fica na linha que comeca em D. Metal: data,Close.
+ * Puro (sem node:fs) porque o calculador roda no navegador com o mesmo codigo.
+ */
+export function parseDays(text: string, kind: "crypto" | "metal"): Day[] {
+  const out: Day[] = [];
+  for (const line of text.split("\n").slice(1)) {
+    const cells = line.trim().split(",");
+    const date = cells[0];
+    const price = Number.parseFloat(cells[kind === "crypto" ? 5 : 1] ?? "");
+    if (date && /^\d{4}-\d{2}-\d{2}$/.test(date) && price > 0)
+      out.push({ date, price });
+  }
+  return out.sort((x, y) => (x.date < y.date ? -1 : 1));
 }
 
 /** Valorizacao anual do ETH que empata as duas pernas so no rendimento. */
@@ -213,4 +223,84 @@ export function edgeBarsSvg(rows: Rolling[], label: string): string {
       `<text class="tick" x="${left - 6}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v * 100)}%</text>`,
   );
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}"><line class="zero" x1="${left}" x2="${W}" y1="${y(0)}" y2="${y(0)}"/>${bars.join("")}${years.join("")}${yTicks.join("")}</svg>`;
+}
+
+export interface Holding {
+  label: string;
+  note: string;
+  /** null: o ativo nao tinha preco na data pedida. */
+  value: number | null;
+}
+
+export interface Others {
+  label: string;
+  note: string;
+  days: Day[];
+}
+
+/**
+ * O mesmo dinheiro, posto no mesmo dia, em cada destino, avaliado no ultimo
+ * dia de cada serie. A data vale a partir do primeiro dia do ETH.
+ */
+export function compare(
+  usd: number,
+  from: string,
+  eth: Day[],
+  others: Others[],
+): Holding[] {
+  const start = dayAt(eth, from);
+  const end = eth[eth.length - 1];
+  if (!start || !end || start.date === end.date) return [];
+  const l = leg(start, end);
+  const held = (o: Others): Holding => {
+    const a =
+      o.days[0] && o.days[0].date <= start.date
+        ? dayAt(o.days, start.date)
+        : undefined;
+    const z = o.days[o.days.length - 1];
+    return {
+      label: o.label,
+      note: o.note,
+      value: a && z ? usd * (z.price / a.price) : null,
+    };
+  };
+  return [
+    {
+      label: "SRS",
+      note: `${(SRS_APY * 100).toFixed(1)}% a year, simulated`,
+      value: usd * (1 + l.srs),
+    },
+    {
+      label: "ETH staked",
+      note: `ETH price + ${(ETH_STAKE_APY * 100).toFixed(1)}% a year, simulated`,
+      value: usd * (1 + l.stake),
+    },
+    { label: "ETH held", note: "ETH price alone", value: usd * (1 + l.eth) },
+    ...others.map(held),
+  ].sort((x, y) => (y.value ?? -1) - (x.value ?? -1));
+}
+
+const money = (v: number): string =>
+  v.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: v >= 100 ? 0 : 2,
+  });
+
+const signedPct = (v: number): string => {
+  const abs = Math.abs(v * 100);
+  return `${v < 0 ? "−" : "+"}${abs.toLocaleString("en-US", { maximumFractionDigits: abs >= 100 ? 0 : 1 })}%`;
+};
+
+/** Linhas da tabela do calculador; o mesmo HTML no build e no navegador. */
+export function holdingsHtml(rows: Holding[], usd: number): string {
+  return rows
+    .map((r) => {
+      const cells =
+        r.value === null
+          ? `<td class="num">no price yet</td><td class="num">-</td>`
+          : `<td class="num">${money(r.value)}</td><td class="num">${signedPct(r.value / usd - 1)}</td>`;
+      return `<tr><th scope="row">${r.label}</th><td>${r.note}</td>${cells}</tr>`;
+    })
+    .join("");
 }
