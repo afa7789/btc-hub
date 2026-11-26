@@ -67,6 +67,26 @@ const longDate = (iso: string) =>
     day: "numeric",
     timeZone: "UTC",
   });
+
+/* Key findings: tudo derivado da serie, nada digitado. */
+const findings =
+  first && latest
+    ? {
+        satsThen: sats(first.bigmac_satoshi),
+        satsNow: sats(latest.bigmac_satoshi),
+        dateThen: longDate(first.date),
+        dateNow: longDate(latest.date),
+        fold: Number(
+          (first.bigmac_satoshi / latest.bigmac_satoshi).toPrecision(2),
+        ).toLocaleString("en-US"),
+        usdThen: usd(first.bigmac_usd),
+        usdNow: usd(latest.bigmac_usd),
+        usdRise: `+${Math.round((latest.bigmac_usd / first.bigmac_usd - 1) * 100)}%`,
+        years: Math.round(
+          (Date.parse(latest.date) - Date.parse(first.date)) / (365.25 * 86_400_000),
+        ),
+      }
+    : null;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -165,6 +185,34 @@ const longDate = (iso: string) =>
       </p>
     </section>
 
+    {findings && (
+      <section class="section">
+        <h2>Key findings</h2>
+        <ul class="points">
+          <li>
+            <strong>One Big Mac cost <mark>{findings.satsThen} sats</mark> on
+            {findings.dateThen}.</strong> On {findings.dateNow} it cost
+            <mark>{findings.satsNow} sats</mark>: about {findings.fold} times
+            fewer.
+          </li>
+          <li>
+            <strong>In dollars the same burger went the other way,</strong> from
+            {findings.usdThen} to <mark>{findings.usdNow}</mark>
+            ({findings.usdRise}).
+          </li>
+          <li>
+            <strong>The dollar price moves in steps:</strong>
+            <mark>{distinctUsd} values</mark> in {findings.years} years, because
+            it only changes when The Economist republishes its survey.
+          </li>
+          <li>
+            <strong>It is a <mark>serious joke</mark>,</strong> not a measure of
+            inflation: one burger, one country's menu price.
+          </li>
+        </ul>
+      </section>
+    )}
+
     <section class="section">
       <div id="bigmac-chart" class="chart-container"></div>
       <div class="stats">
@@ -181,30 +229,50 @@ const longDate = (iso: string) =>
 
     <section class="section">
       <h2>What The Index Is</h2>
-      <p>
-        The Economist invented the Big Mac index in 1986 as an informal way to
-        compare purchasing power between countries through purchasing power
-        parity (PPP). The trick is the product: a Big Mac is close to identical
-        everywhere &mdash; same ingredients, same size &mdash; and it is made
-        locally, at local cost. That makes it a basket of one item that still
-        prices labour, rent, beef, wheat and energy in a single number.
-      </p>
+      <ul class="points">
+        <li>
+          <strong>The Economist invented the Big Mac index in <mark>1986</mark></strong>
+          as an informal way to compare purchasing power between countries
+          through purchasing power parity (PPP).
+        </li>
+        <li>
+          <strong>The trick is the product.</strong> A Big Mac is
+          <mark>close to identical everywhere</mark>, same ingredients, same
+          size, and it is made locally, at local cost.
+        </li>
+        <li>
+          <strong>That makes it a <mark>basket of one item</mark></strong> that
+          still prices labour, rent, beef, wheat and energy in a single number.
+        </li>
+      </ul>
     </section>
 
     <section class="section">
       <h2>Why It Is On A Bitcoin Site</h2>
-      <p>
-        Pricing the same hamburger in satoshis shows purchasing power without
-        routing it through a fiat currency. The left axis is the price in USD, on
-        a linear scale, and it moves in steps because the number only changes
-        when The Economist republishes the survey. The right axis is the cost in
-        satoshis, on a logarithmic scale, because it has fallen by orders of
-        magnitude &mdash; from {first ? sats(first.bigmac_satoshi) : "n/a"} sats
-        on {first ? longDate(first.date) : "n/a"} to
-        {latest ? ` ${sats(latest.bigmac_satoshi)}` : " n/a"} sats on
-        {latest ? ` ${longDate(latest.date)}` : " n/a"}. A linear axis would
-        flatten almost six orders of magnitude into the floor.
-      </p>
+      <ul class="points">
+        <li>
+          <strong>Pricing the same hamburger in satoshis shows purchasing power
+          <mark>without a fiat currency</mark> in the middle.</strong>
+        </li>
+        <li>
+          <strong>The left axis is the price in USD, on a linear scale.</strong>
+          It <mark>moves in steps</mark> because the number only changes when
+          The Economist republishes the survey.
+        </li>
+        <li>
+          <strong>The right axis is the cost in satoshis, on a logarithmic
+          scale,</strong> because it has fallen by
+          <mark>orders of magnitude</mark>: from
+          {first ? ` ${sats(first.bigmac_satoshi)}` : " n/a"} sats on
+          {first ? ` ${longDate(first.date)}` : " n/a"} to
+          {latest ? ` ${sats(latest.bigmac_satoshi)}` : " n/a"} sats on
+          {latest ? ` ${longDate(latest.date)}` : " n/a"}.
+        </li>
+        <li>
+          A linear axis would flatten almost six orders of magnitude into the
+          floor.
+        </li>
+      </ul>
     </section>
 
     <section class="section">
@@ -212,8 +280,8 @@ const longDate = (iso: string) =>
       <p class="source-note">
         The series is <code>public/datasets/satsukashii/prices.json</code>,
         derived from The Economist's published
-        <code>big-mac-source-data-v2.csv</code> dataset and generated by the Go
-        service in <code>../satsukashii/</code>.
+        <code>big-mac-source-data-v2.csv</code> dataset and generated by
+        <code>scripts/compute-satsukashii.ts</code>.
       </p>
       <p class="source-note">
         As of <strong>{latest ? longDate(latest.date) : "n/a"}</strong>:
@@ -228,13 +296,21 @@ const longDate = (iso: string) =>
 
     <section class="section">
       <h2>What It Is Not</h2>
-      <p>
-        The Big Mac index is a serious joke. The Economist built it as a
-        light-hearted illustration of PPP, not as an economic instrument, and it
-        ignores differences in margin, tax, local labour cost and the chain's own
-        market power in each country. It is not a measure of inflation, and the
-        USD line here is one country's menu price, not a price level.
-      </p>
+      <ul class="points">
+        <li>
+          <strong>The Big Mac index is a <mark>serious joke</mark>.</strong>
+          The Economist built it as a light-hearted illustration of PPP, not as
+          an economic instrument.
+        </li>
+        <li>
+          <strong>It ignores</strong> differences in margin, tax, local labour
+          cost and the chain's own market power in each country.
+        </li>
+        <li>
+          <strong>It is <mark>not a measure of inflation</mark>,</strong> and
+          the USD line here is one country's menu price, not a price level.
+        </li>
+      </ul>
     </section>
   </article>
 
