@@ -274,37 +274,57 @@ const description =
 
     /* No modo agrupado o conteiner tem um filho so, o .blocks-wrapper: ele
        ocupa as 40 colunas em vez de uma. */
+    /*
+     * container-type: o tamanho do bloco sai da largura deste conteiner
+     * (--block), para o item pequeno, que nao ocupa a linha toda, desenhar
+     * blocos do mesmo tamanho dos outros.
+     */
     :global(.blocks-wrapper) {
       grid-column: 1 / -1;
       line-height: normal;
-      display: grid;
-      grid-template-columns: repeat(40, minmax(0, 1fr));
-      gap: 1.75rem 2px;
-      align-items: start;
-      --compact-span: 13;
+      container-type: inline-size;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 1.75rem 2rem;
     }
 
     :global(.blocks-wrapper > *) {
-      grid-column: 1 / -1;
+      flex: 0 0 100%;
+      min-width: 0;
     }
 
     /*
-     * Item pequeno (cabe numa fileira curta) divide a linha com os vizinhos em
-     * vez de deixar 90% dela vazia. Ele ocupa N das 40 colunas e a grade
-     * interna tem as mesmas N: o bloco continua do tamanho dos outros.
+     * Item pequeno divide a linha com os vizinhos em vez de deixar 90% dela
+     * vazia: ocupa a largura do proprio rotulo e quebra conforme a tela.
      */
     :global(.blocks-wrapper > .item-wrapper.compact) {
-      grid-column: span var(--compact-span);
+      flex: 0 1 auto;
+      max-width: min(100%, 22rem);
+    }
+
+    /* Em flex o rotulo mede nome + valor + nota numa linha so e empurrava o
+       item ate o teto; em bloco a largura e a da linha mais longa. */
+    :global(.item-wrapper.compact .item-label) {
+      display: block;
+    }
+
+    :global(.item-wrapper.compact .item-label > span) {
+      margin-right: 0.75rem;
+    }
+
+    :global(.item-wrapper.compact .item-note) {
+      display: block;
+      margin-right: 0;
     }
 
     :global(.item-wrapper.compact .blocks-container) {
-      grid-template-columns: repeat(var(--compact-span), minmax(0, 1fr));
+      display: flex;
+      flex-wrap: wrap;
     }
 
-    @media (max-width: 700px) {
-      :global(.blocks-wrapper) {
-        --compact-span: 20;
-      }
+    :global(.item-wrapper.compact .block) {
+      width: calc((100cqw - 78px) / 40);
     }
 
     :global(.blocks-container) {

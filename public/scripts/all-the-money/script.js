@@ -58,8 +58,8 @@ function colorFor(item, styles) {
  */
 const SHADE_WHITE_PCT = [0, 30, 60];
 
-// Ate este tanto de blocos o item divide a linha com os vizinhos (ver
-// --compact-span no CSS da pagina: 13 colunas, a menor largura usada).
+// Ate este tanto de blocos o item divide a linha com os vizinhos em vez de
+// ocupar uma inteira.
 const COMPACT_MAX_BLOCKS = 13;
 
 function createShadePicker(styles) {
