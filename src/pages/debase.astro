@@ -1,4 +1,6 @@
 ---
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { withBase } from "../utils/base";
 import { at, btcInGold, cycles, lowSince } from "../utils/btcgold";
@@ -35,6 +37,51 @@ const d = (iso: string) => dayFmt.format(new Date(`${iso}T00:00:00Z`));
 const oz = (v: number) => `${v >= 1 ? v.toFixed(2) : v.toPrecision(2)} oz`;
 const pct = (v: number) =>
   `${v > 0 ? "+" : "−"}${Math.abs(v * 100).toFixed(0)}%`;
+
+/*
+ * Poder de compra do dolar para os Key findings: CPI de janeiro de 1971 sobre
+ * o ultimo mes publicado. Le o CPI_U.csv (o daily_cpi_inflation.csv tem linhas
+ * projetadas ate o ano seguinte, e o texto nao pode citar projecao como dado).
+ */
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+const cpiRows = readFileSync(
+  join(process.cwd(), "public", "datasets", "CPI_U.csv"),
+  "utf8",
+)
+  .trim()
+  .split("\n")
+  .slice(1)
+  .map((line) => line.split(","));
+const cpiMonthly = cpiRows.flatMap(([year, ...cells]) =>
+  cells
+    .slice(0, 12)
+    .map((cell, m) => ({
+      label: `${MONTHS[m]} ${year}`,
+      value: Number.parseFloat(cell),
+    }))
+    .filter((c) => Number.isFinite(c.value)),
+);
+const cpiFirst = cpiMonthly[0];
+const cpiLast = cpiMonthly[cpiMonthly.length - 1];
+const cpi = {
+  power: (cpiFirst?.value ?? 1) / (cpiLast?.value ?? 1),
+  lastLabel: cpiLast?.label ?? "n/a",
+};
+const cents = (v: number) => (v * 100).toFixed(1);
+const nowGold = goldPoints[goldPoints.length - 1] ?? ath;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -216,6 +263,35 @@ const pct = (v: number) =>
           target="_blank" rel="noopener" style="color: var(--status-warning); text-decoration: underline;">Read what happened in 1971</a></p>
     </section>
 
+    <section class="section" style="margin-bottom: 2em;">
+      <h2>Key findings</h2>
+      <ul class="points">
+        <li>
+          <strong>A 1971 dollar buys <mark>{cents(cpi.power)} cents</mark> of
+          what it did,</strong> by the CPI of {cpi.lastLabel}: {pct(cpi.power - 1)}.
+        </li>
+        <li>
+          <strong>Bitcoin's high in gold is <mark>{oz(ath.oz)}</mark>,</strong>
+          on {d(ath.date)}. On {d(nowGold.date)} it stood at {oz(nowGold.oz)},
+          {" "}{pct(nowGold.oz / ath.oz - 1)} from that high.
+        </li>
+        <li>
+          <strong>Bear reading: each peak in gold clears the last
+          <mark>by less</mark>:</strong> {peakGrowth.join(", ")}.
+        </li>
+        <li>
+          <strong>Bull reading: the drops after each peak are
+          <mark>getting smaller</mark>:</strong>
+          {" "}{cyc.map((k) => pct(k.low.oz / k.peak.oz - 1)).join(", ")}.
+          The last cycle is still open.
+        </li>
+        <li>
+          <strong><mark>Five cycles is a small sample</mark>,</strong> and ratio
+          charts read both ways.
+        </li>
+      </ul>
+    </section>
+
     <!-- Dollar Purchasing Power Chart -->
     <section class="section" style="margin-bottom: 1em;">
       <h2>Dollar Purchasing Power (CPI)</h2>
@@ -223,15 +299,38 @@ const pct = (v: number) =>
       <div class="ath-display">
         <p><strong>Purchasing power is always relative to the starting date (1971).</strong></p>
       </div>
-      <p>This chart shows the decline in the purchasing power of the
-        US dollar over time, as measured by the Consumer Price Index (CPI). The line represents
-        <code>1 / (accumulated inflation multiplier)</code> since 1971. As inflation accumulates, the value of the
-        dollar falls, so the line trends downward. A value of 0.5 means the dollar <mark>buys half as much</mark> as it did at
-        the start.
-      </p>
+      <ul class="points">
+        <li>
+          <strong>The line is <code>1 / (accumulated inflation multiplier)</code>
+          since 1971,</strong> measured by the Consumer Price Index (CPI).
+        </li>
+        <li>
+          <strong>As inflation accumulates, the line <mark>trends downward</mark>.</strong>
+          A value of 0.5 means the dollar <mark>buys half as much</mark> as it
+          did at the start.
+        </li>
+      </ul>
     </section>
     <br>
 
+    <section class="section" style="margin-bottom: 1em;">
+      <h2>Reading The Price Charts</h2>
+      <ul class="points">
+        <li>
+          <strong>Normal</strong> is the price in USD, in nominal terms.
+        </li>
+        <li>
+          <strong>Fixed</strong> adjusts for inflation using the CPI
+          <mark>from the start of that asset's dataset</mark> (the launch date,
+          for ETH, BTC and XMR).
+        </li>
+        <li>
+          <strong>1971</strong> adjusts with the multiplier
+          <mark>from the year 1971</mark>.
+        </li>
+      </ul>
+    </section>
+    <br>
     <!-- Gold Chart -->
     <section class="section" style="margin-bottom: 1em;">
       <h2>Gold Price</h2>
@@ -241,9 +340,7 @@ const pct = (v: number) =>
         <p><strong>Gold ATH Adjusted (Fixed):</strong> <span id="gold-ath-inflation-fixed"></span></p>
         <p><strong>Gold ATH Adjusted (1971):</strong> <span id="gold-ath-inflation-1971"></span></p>
       </div>
-      <p>Shows the price of gold in USD, both in nominal terms and adjusted for
-        inflation. The "Fixed" line adjusts for inflation using the CPI from the start of the gold dataset, while
-        the "1971" line adjusts from the year 1971. This helps visualize gold's real purchasing power over time.</p>
+      <p>Gold in USD, nominal and adjusted for inflation: its <mark>real purchasing power</mark> over time.</p>
     </section>
     <br>
 
@@ -256,10 +353,7 @@ const pct = (v: number) =>
         <p><strong>Silver ATH Adjusted (Fixed):</strong> <span id="silver-ath-inflation-fixed"></span></p>
         <p><strong>Silver ATH Adjusted (1971):</strong> <span id="silver-ath-inflation-1971"></span></p>
       </div>
-      <p>Shows the price of silver in USD, both in nominal terms and adjusted for
-        inflation. The "Fixed" line adjusts for inflation using the CPI from the start of the silver dataset, while
-        the "1971" line adjusts from the year 1971. This helps visualize silver's real purchasing power over time.
-      </p>
+      <p>Silver in USD, nominal and adjusted for inflation: its <mark>real purchasing power</mark> over time.</p>
     </section>
     <br>
 
@@ -272,9 +366,7 @@ const pct = (v: number) =>
         <p><strong>ETH ATH Adjusted (Fixed):</strong> <span id="eth-ath-inflation-fixed"></span></p>
         <p><strong>ETH ATH Adjusted (1971):</strong> <span id="eth-ath-inflation-1971"></span></p>
       </div>
-      <p>Plots ETH price in USD, both nominal and inflation-adjusted. The
-        "Fixed" line uses inflation adjustment from ETH's launch date, while the "1971" line uses the multiplier
-        from 1971. This shows how ETH's value compares to the changing value of money.</p>
+      <p>ETH in USD, nominal and inflation-adjusted: how its value compares to the <mark>changing value of money</mark>.</p>
     </section>
     <br>
 
@@ -287,9 +379,7 @@ const pct = (v: number) =>
         <p><strong>BTC ATH Adjusted (Fixed):</strong> <span id="btc-ath-inflation-fixed"></span></p>
         <p><strong>BTC ATH Adjusted (1971):</strong> <span id="btc-ath-inflation-1971"></span></p>
       </div>
-      <p>Plots BTC price in USD, both nominal and inflation-adjusted. The
-        "Fixed" line uses inflation adjustment from BTC's launch date, while the "1971" line uses the multiplier
-        from 1971. This helps compare Bitcoin's real growth to the effects of inflation.</p>
+      <p>BTC in USD, nominal and inflation-adjusted: Bitcoin's <mark>real growth</mark> against the effects of inflation.</p>
     </section>
     <br>
 
@@ -302,9 +392,7 @@ const pct = (v: number) =>
         <p><strong>XMR ATH Adjusted (Fixed):</strong> <span id="xmr-ath-inflation-fixed"></span></p>
         <p><strong>XMR ATH Adjusted (1971):</strong> <span id="xmr-ath-inflation-1971"></span></p>
       </div>
-      <p>Plots XMR price in USD, both nominal and inflation-adjusted. The "Fixed"
-        line uses inflation adjustment from XMR's launch date, while the "1971" line uses the multiplier from 1971.
-        This helps compare Monero's real growth to the effects of inflation.</p>
+      <p>XMR in USD, nominal and inflation-adjusted: Monero's <mark>real growth</mark> against the effects of inflation.</p>
     </section>
     <br>
 
@@ -317,10 +405,16 @@ const pct = (v: number) =>
         <p><strong>BTC/Gold ATH:</strong> <span id="btc-gold-ath"></span></p>
         <p><strong>XMR/Gold ATH:</strong> <span id="xmr-gold-ath"></span></p>
       </div>
-      <p>These lines show the value of ETH, BTC, and XMR measured in ounces of
-        <mark>gold, not dollars</mark>. This helps compare crypto performance to gold, a traditional store of value, and see
-        which asset outperformed the other over time.</p>
-
+      <ul class="points">
+        <li>
+          <strong>ETH, BTC and XMR measured in ounces of
+          <mark>gold, not dollars</mark>.</strong>
+        </li>
+        <li>
+          Gold is a traditional store of value, so the chart shows
+          <mark>which asset outperformed the other</mark> over time.
+        </li>
+      </ul>
       <h3 id="btc-gold-cycles" class="cycle-h">Bitcoin in gold, cycle by cycle</h3>
       <div class="table-wrap" tabindex="0" role="region" aria-label="Bitcoin in gold: each halving cycle's peak and the low after it">
         <table>
@@ -403,16 +497,23 @@ const pct = (v: number) =>
       <div class="ath-display">
         <p><strong>Each line starts at 1.0 (its own first USD price).</strong></p>
       </div>
-      <p>This chart shows how each crypto asset (BTC, ETH, XMR)
-        has changed relative to its own starting price in USD. Each line is normalized so its first price is
-        1.0, and every point after shows the ratio of the current price to the initial price.<br><br>
-        <em>How to compare:</em> If one line is above another, it means that asset has performed better (in
-        percentage terms) since its own launch, regardless of the initial price. For example, if BTC is at 10 and ETH is at
-        5, BTC is 10x its initial price and ETH is 5x. This lets you compare the relative performance and trajectory
-        of each asset, even if they started at different times or prices.<br><br>
-        <strong>Note:</strong> The Y-axis uses a logarithmic scale to make it easier to compare ratios across
-        assets that have changed by very different amounts.
-      </p>
+      <ul class="points">
+        <li>
+          <strong>Each line is normalized so its first price is 1.0.</strong>
+          Every point after is the ratio of the current price to the initial
+          price.
+        </li>
+        <li>
+          <strong>How to compare:</strong> a line above another has
+          <mark>performed better in percentage terms</mark> since its own launch,
+          regardless of the initial price. If BTC is at 10 and ETH is at 5,
+          BTC is 10x its initial price and ETH is 5x.
+        </li>
+        <li>
+          <strong>The Y-axis is <mark>logarithmic</mark>,</strong> to compare
+          ratios across assets that have changed by very different amounts.
+        </li>
+      </ul>
     </section>
     <br>
 
@@ -423,16 +524,23 @@ const pct = (v: number) =>
       <div class="ath-display">
         <p><strong>Each line starts at 1.0 (its own first USD price, since 2000).</strong></p>
       </div>
-      <p>This chart shows how gold and silver have changed
-        relative to their own starting price in USD (from the year 2000). Each line is normalized so its first price
-        is 1.0, and every point after shows the ratio of the current price to the initial price.<br><br>
-        <em>How to compare:</em> If one line is above another, it means that asset has performed better (in
-        percentage terms) since 2000, regardless of the initial price. For example, if gold is at 8 and silver is at
-        4, gold is 8x its initial price and silver is 4x. This lets you compare the relative performance and
-        trajectory of each metal, even though they started at different prices.<br><br>
-        <strong>Note:</strong> The Y-axis uses a logarithmic scale to make it easier to compare ratios across assets
-        that have changed by very different amounts.
-      </p>
+      <ul class="points">
+        <li>
+          <strong>Each line is normalized so its first price is 1.0 (from the year 2000).</strong>
+          Every point after is the ratio of the current price to the initial
+          price.
+        </li>
+        <li>
+          <strong>How to compare:</strong> a line above another has
+          <mark>performed better in percentage terms</mark> since 2000,
+          regardless of the initial price. If gold is at 8 and silver is at 4,
+          gold is 8x its initial price and silver is 4x.
+        </li>
+        <li>
+          <strong>The Y-axis is <mark>logarithmic</mark>,</strong> to compare
+          ratios across assets that have changed by very different amounts.
+        </li>
+      </ul>
     </section>
     <br>
 
@@ -443,28 +551,77 @@ const pct = (v: number) =>
       <div class="ath-display">
         <p><strong>Each line starts at 1.0</strong> (its own first value, since July 2023).</p>
       </div>
-      <p>This chart compares the simulated ratio of Sky
-        Protocol MakerDAO Savings, called SRS (<strong>4.5% APY</strong>), with Ethereum staking (<strong>2.7% APY</strong> + ETH price appreciation),
-        both normalized to <strong>1.0</strong> at the start. SRS offers a fixed, predictable yield, while ETH staking is
-        volatile—combining yield with ETH price exposure. This analysis covers key timeframes since mid-2023,
-        highlighting performance across varying market conditions.</p>
-      <p><strong>Recent Performance Analysis:</strong> In bearish or flat markets, SRS has outperformed ETH staking.
-        Over the 3-month period (<strong>Jan–Mar 2025</strong>), SRS yielded <strong>0.109 ETH</strong> (<strong>$366.71</strong>), compared to ETH staking's <strong>0.066 ETH</strong>
-        (<strong>$221.48</strong>)—a <strong>66%</strong> higher return. Similarly, in the 1-year span (<strong>Jun 2024–May 2025</strong>), SRS delivered <strong>0.450 ETH</strong>
-        yield (<strong>$1,703.33</strong>), while ETH staking produced <strong>0.270 ETH</strong> (<strong>$1,022.00</strong>). However, over 2 years (<strong>Jun 2023–May
-        2025</strong>), ETH staking began to close the gap due to ETH's <strong>35.8%</strong> price ratio, though SRS still achieved higher
-        yield in absolute ETH terms (<strong>0.920 ETH</strong> vs. <strong>0.547 ETH</strong>).</p>
-      <p><strong>Market Dynamics and Strategy:</strong> ETH staking's returns are highly sensitive to price
-        swings—outperforming during bull markets but underperforming during downturns. Its <strong>2.7%</strong> base APY cannot
-        offset losses in declining markets, as seen in recent 3- and 12-month results. In contrast, SRS's <strong>4.5%</strong> APY
-        remains stable regardless of ETH price, offering consistent returns and lower volatility. However, ETH
-        staking may be favored by investors expecting long-term ETH appreciation beyond <strong>1.8%</strong> annually—the break-even
-        point where ETH staking starts to outperform SRS on yield alone.</p>
-      <p><strong>Risk Considerations:</strong> While SRS offers stability, it introduces smart contract and protocol
-        risk beyond ETH's base layer. ETH staking, particularly via native staking, relies solely on Ethereum
-        network security. Investors should weigh this tradeoff—<strong>yield stability vs. asset price upside</strong> and
-        <strong>platform risk</strong>. Additionally, tax treatment may differ: fixed-income yields (SRS) are often taxed as
-        interest, while ETH price gains may qualify as capital gains, affecting net returns.</p>
+      <p class="cycle-note">
+        The figures in this section are fixed, from the periods named in each
+        line. They do not update with the charts.
+      </p>
+      <ul class="points">
+        <li>
+          <strong>What is compared:</strong> the simulated ratio of Sky Protocol
+          MakerDAO Savings, called SRS (4.5% APY), against Ethereum staking
+          (2.7% APY + ETH price appreciation), both normalized to 1.0 at the
+          start, since mid-2023.
+        </li>
+        <li>
+          <strong>SRS is a <mark>fixed, predictable yield</mark>.</strong> ETH
+          staking is volatile: yield combined with ETH price exposure.
+        </li>
+      </ul>
+      <h3 class="cycle-h">Recent performance</h3>
+      <ul class="points">
+        <li>
+          <strong>In bearish or flat markets, SRS has outperformed ETH
+          staking.</strong>
+        </li>
+        <li>
+          <strong>3 months (Jan–Mar 2025):</strong> SRS yielded 0.109 ETH
+          ($366.71), ETH staking 0.066 ETH ($221.48), a 66% higher return.
+        </li>
+        <li>
+          <strong>1 year (Jun 2024–May 2025):</strong> SRS delivered 0.450 ETH
+          ($1,703.33), ETH staking 0.270 ETH ($1,022.00).
+        </li>
+        <li>
+          <strong>2 years (Jun 2023–May 2025):</strong> ETH staking began to
+          close the gap due to ETH's 35.8% price ratio, though SRS still
+          achieved higher yield in absolute ETH terms (0.920 ETH vs. 0.547 ETH).
+        </li>
+      </ul>
+      <h3 class="cycle-h">Market dynamics and strategy</h3>
+      <ul class="points">
+        <li>
+          <strong>ETH staking's returns are <mark>highly sensitive to price swings</mark>:</strong>
+          outperforming during bull markets, underperforming during downturns.
+          Its 2.7% base APY cannot offset losses in declining markets, as seen
+          in the 3- and 12-month results.
+        </li>
+        <li>
+          <strong>SRS's 4.5% APY remains stable regardless of ETH price,</strong>
+          offering consistent returns and lower volatility.
+        </li>
+        <li>
+          <strong>The break-even is 1.8% a year:</strong> ETH staking may be
+          favored by investors expecting long-term ETH appreciation beyond
+          that, the point where it starts to outperform SRS on yield alone.
+        </li>
+      </ul>
+      <h3 class="cycle-h">Risk considerations</h3>
+      <ul class="points">
+        <li>
+          <strong>SRS adds <mark>smart contract and protocol risk</mark></strong>
+          beyond ETH's base layer. ETH staking, particularly via native staking,
+          relies solely on Ethereum network security.
+        </li>
+        <li>
+          <strong>The tradeoff is yield stability vs. asset price upside,</strong>
+          plus platform risk.
+        </li>
+        <li>
+          <strong>Tax treatment may differ:</strong> fixed-income yields (SRS)
+          are often taxed as interest, while ETH price gains may qualify as
+          capital gains, affecting net returns.
+        </li>
+      </ul>
     </section>
     <br>
 
